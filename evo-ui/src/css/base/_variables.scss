@@ -1,37 +1,38 @@
-@use 'color' as *;
+@use './_color.scss' as *;
 
 // --- Semantic colors ---
-$evo-primary-color:    $evo-blue-600;
-$evo-primary-hover:    $evo-blue-700;
-$evo-primary-active:   $evo-blue-800;
-$evo-primary-focus:    $evo-blue-400;
 
-$evo-secondary-color:  $evo-gray-200;
-$evo-secondary-hover:  $evo-gray-300;
-$evo-secondary-active: $evo-gray-400;
-$evo-secondary-text:   $evo-gray-800;
-$evo-secondary-focus:  $evo-gray-400;
+$evo-primary-color:    $evo-cyan-600;
+$evo-primary-hover:    $evo-cyan-700;
+$evo-primary-active:   $evo-cyan-800;
+$evo-primary-focus:    $evo-cyan-400;
 
-$evo-danger-color:     $evo-red-600;
-$evo-danger-hover:     $evo-red-700;
-$evo-danger-active:    $evo-red-800;
-$evo-danger-focus:     $evo-red-400;
+$evo-secondary-color:  $evo-slate-200;
+$evo-secondary-hover:  $evo-slate-300;
+$evo-secondary-active: $evo-slate-400;
+$evo-secondary-text:   $evo-slate-800;
+$evo-secondary-focus:  $evo-slate-400;
 
-$evo-warning-color:    $evo-yellow-400;
-$evo-warning-hover:    $evo-yellow-500;
-$evo-warning-active:   $evo-yellow-600;
-$evo-warning-text:     $evo-yellow-900;
-$evo-warning-focus:    $evo-yellow-300;
+$evo-danger-color:     $evo-rose-600;
+$evo-danger-hover:     $evo-rose-700;
+$evo-danger-active:    $evo-rose-800;
+$evo-danger-focus:     $evo-rose-400;
 
-$evo-success-color:    $evo-green-600;
-$evo-success-hover:    $evo-green-700;
-$evo-success-active:   $evo-green-800;
-$evo-success-focus:    $evo-green-400;
+$evo-warning-color:    $evo-amber-400;
+$evo-warning-hover:    $evo-amber-500;
+$evo-warning-active:   $evo-amber-600;
+$evo-warning-text:     $evo-amber-900;
+$evo-warning-focus:    $evo-amber-300;
 
-$evo-info-color:       $evo-purple-600;
-$evo-info-hover:       $evo-purple-700;
-$evo-info-active:      $evo-purple-800;
-$evo-info-focus:       $evo-purple-400;
+$evo-success-color:    $evo-emerald-600;
+$evo-success-hover:    $evo-emerald-700;
+$evo-success-active:   $evo-emerald-800;
+$evo-success-focus:    $evo-emerald-400;
+
+$evo-info-color:       $evo-violet-600;
+$evo-info-hover:       $evo-violet-700;
+$evo-info-active:      $evo-violet-800;
+$evo-info-focus:       $evo-violet-400;
 
 // --- Button sizing ---
 $evo-btn-padding-y:       0.25rem;
@@ -46,6 +47,57 @@ $evo-btn-font-size-sm:    0.75rem;
 $evo-btn-font-size-lg:    1rem;
 $evo-btn-font-weight:     600;
 $evo-btn-line-height:     1.5;
+
+// --- Card ---
+$evo-card-bg:            $evo-white-100;
+$evo-card-border:        $evo-white-300;
+$evo-card-padding:       1rem 0.5rem;
+
+// --- Card sizing ---
+$card-width: 280px;
+$card-height: 380px;
+$card-padding: 1.25rem;
+
+// --- Border radius ---
+$radius-sm: 6px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 20px;
+$radius-full: 9999px;
+
+// --- Shadows ---
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+// --- Transitions ---
+$transition-fast: 150ms ease;
+$transition-normal: 250ms ease;
+$transition-slow: 400ms ease;
+$transition-spring: 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// --- Typography ---
+$font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-display: 'Cal Sans', 'Inter', sans-serif;
+
+$text-xs: 0.75rem;
+$text-sm: 0.875rem;
+$text-base: 1rem;
+$text-lg: 1.125rem;
+$text-xl: 1.25rem;
+$text-2xl: 1.5rem;
+$text-3xl: 1.875rem;
+
+// --- Semantic colors ---
+$color-background: $evo-slate-950;
+$color-surface: $evo-slate-900;
+$color-border: $evo-slate-700;
+$color-text-primary: $evo-white-100;
+$color-text-secondary: $evo-slate-400;
+$color-text-muted: $evo-slate-500;
+
 
 // --- Shape & motion ---
 $evo-border-radius:       8px;

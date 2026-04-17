@@ -1,15 +1,19 @@
-// Blue (primary) — bright vibrant blue
-$evo-blue-100: #e0f2fe;
-$evo-blue-200: #bae6fd;
-$evo-blue-300: #7dd3fc;
-$evo-blue-400: #38bdf8;
-$evo-blue-500: #0ea5e9;
-$evo-blue-600: #0284c7;
-$evo-blue-700: #0369a1;
-$evo-blue-800: #075985;
-$evo-blue-900: #0c3d66;
+// ===========================================
+// REFINED COLOR PALETTE - Gaming Card System
+// ===========================================
 
-// Gray (secondary)
+// Blue (primary) — bright vibrant blue
+$evo-blue-100: #dbeafe;
+$evo-blue-200: #bfdbfe;
+$evo-blue-300: #93c5fd;
+$evo-blue-400: #60a5fa;
+$evo-blue-500: #3b82f6;
+$evo-blue-600: #2563eb;
+$evo-blue-700: #1d4ed8;
+$evo-blue-800: #1e40af;
+$evo-blue-900: #1e3a8a;
+
+// Gray (secondary) — refined neutral gray
 $evo-gray-100: #f3f4f6;
 $evo-gray-200: #e5e7eb;
 $evo-gray-300: #d1d5db;
@@ -20,7 +24,7 @@ $evo-gray-700: #374151;
 $evo-gray-800: #1f2937;
 $evo-gray-900: #111827;
 
-// Red (danger)
+// Red (danger) — vivid red for alerts
 $evo-red-100: #fee2e2;
 $evo-red-200: #fecaca;
 $evo-red-300: #fca5a5;
@@ -31,7 +35,7 @@ $evo-red-700: #b91c1c;
 $evo-red-800: #991b1b;
 $evo-red-900: #7f1d1d;
 
-// Yellow (warning)
+// Yellow (warning) — warm golden yellow
 $evo-yellow-100: #fef9c3;
 $evo-yellow-200: #fef08a;
 $evo-yellow-300: #fde047;
@@ -42,7 +46,7 @@ $evo-yellow-700: #a16207;
 $evo-yellow-800: #854d0e;
 $evo-yellow-900: #713f12;
 
-// Green (success)
+// Green (success) — fresh vibrant green
 $evo-green-100: #dcfce7;
 $evo-green-200: #bbf7d0;
 $evo-green-300: #86efac;
@@ -53,7 +57,7 @@ $evo-green-700: #15803d;
 $evo-green-800: #166534;
 $evo-green-900: #14532d;
 
-// Purple (info/accent)
+// Purple (info/accent) — rich purple for special elements
 $evo-purple-100: #f3e8ff;
 $evo-purple-200: #e9d5ff;
 $evo-purple-300: #d8b4fe;
@@ -63,3 +67,93 @@ $evo-purple-600: #9333ea;
 $evo-purple-700: #7e22ce;
 $evo-purple-800: #6b21a8;
 $evo-purple-900: #581c87;
+
+// Mono White (Smoke) — refined neutral foundations
+$evo-white-100: #ffffff; // Pure White
+$evo-white-200: #fafafa; // Off White
+$evo-white-300: #f5f5f5; // Snow
+$evo-white-400: #ebebeb; // Pearl
+$evo-white-500: #e0e0e0; // Silver Mist
+$evo-white-600: #c7c7c7; // Platinum
+$evo-white-700: #a1a1a1; // Cool Gray
+$evo-white-800: #7a7a7a; // Stone
+$evo-white-900: #5c5c5c; // Graphite
+
+// Mono Black (Midnight) — deep contrast blacks
+$evo-black-100: #52525b; // Zinc
+$evo-black-200: #3f3f46; // Charcoal
+$evo-black-300: #27272a; // Onyx
+$evo-black-400: #1c1c1e; // Jet
+$evo-black-500: #18181b; // Rich Black
+$evo-black-600: #121214; // Dark Matter
+$evo-black-700: #0c0c0e; // Void
+$evo-black-800: #060608; // Abyss
+$evo-black-900: #000000; // True Black
+
+// Cyan (Primary) — Electric, futuristic blue-cyan
+$evo-cyan-100: #ecfeff;
+$evo-cyan-200: #cffafe;
+$evo-cyan-300: #a5f3fc;
+$evo-cyan-400: #22d3ee;
+$evo-cyan-500: #06b6d4;
+$evo-cyan-600: #0891b2;
+$evo-cyan-700: #0e7490;
+$evo-cyan-800: #155e75;
+$evo-cyan-900: #164e63;
+
+// Rose (Legendary) — Warm, powerful pink-red
+$evo-rose-100: #fff1f2;
+$evo-rose-200: #fecdd3;
+$evo-rose-300: #fda4af;
+$evo-rose-400: #fb7185;
+$evo-rose-500: #f43f5e;
+$evo-rose-600: #e11d48;
+$evo-rose-700: #be123c;
+$evo-rose-800: #9f1239;
+$evo-rose-900: #881337;
+
+// Emerald (Rare) — Rich, deep green
+$evo-emerald-100: #d1fae5;
+$evo-emerald-200: #a7f3d0;
+$evo-emerald-300: #6ee7b7;
+$evo-emerald-400: #34d399;
+$evo-emerald-500: #10b981;
+$evo-emerald-600: #059669;
+$evo-emerald-700: #047857;
+$evo-emerald-800: #065f46;
+$evo-emerald-900: #064e3b;
+
+// Amber (Epic) — Warm gold-orange
+$evo-amber-100: #fef3c7;
+$evo-amber-200: #fde68a;
+$evo-amber-300: #fcd34d;
+$evo-amber-400: #fbbf24;
+$evo-amber-500: #f59e0b;
+$evo-amber-600: #d97706;
+$evo-amber-700: #b45309;
+$evo-amber-800: #92400e;
+$evo-amber-900: #78350f;
+
+// Violet (Mythic) — Deep, mystical purple
+$evo-violet-100: #ede9fe;
+$evo-violet-200: #ddd6fe;
+$evo-violet-300: #c4b5fd;
+$evo-violet-400: #a78bfa;
+$evo-violet-500: #8b5cf6;
+$evo-violet-600: #7c3aed;
+$evo-violet-700: #6d28d9;
+$evo-violet-800: #5b21b6;
+$evo-violet-900: #4c1d95;
+
+// Slate (Neutral) — Modern cool grays
+$evo-slate-50:  #f8fafc;
+$evo-slate-100: #f1f5f9;
+$evo-slate-200: #e2e8f0;
+$evo-slate-300: #cbd5e1;
+$evo-slate-400: #94a3b8;
+$evo-slate-500: #64748b;
+$evo-slate-600: #475569;
+$evo-slate-700: #334155;
+$evo-slate-800: #1e293b;
+$evo-slate-900: #0f172a;
+$evo-slate-950: #020617;

@@ -1,27 +1,42 @@
 {
-  "name": "evo-ui",
+  "name": "@justin_evo/evo-ui",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "scripts": {
     "dev": "tsup src/index.ts --format cjs,esm --watch --dts",
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "vite build",
     "showcase": "vite"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+  "keywords": [
+    "react",
+    "ui",
+    "button",
+    "component",
+    "evo-ui"
+  ],
+  "author": "Justin Khor",
+  "license": "MIT",
+  "description": "A high-performance, enterprise-grade React UI component library.",
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.4",
     "sass-embedded": "^1.99.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "vite": "^6.3.2"
-  }
+    "vite": "^6.3.2",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "files": [
+    "dist",
+    "src",
+    "src/css"
+  ]
 }

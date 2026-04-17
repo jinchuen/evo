@@ -1,0 +1,6 @@
+# Ignore test, demo, and config files
+/demo
+/vite.config.ts
+/tsconfig.json
+/*.md
+/node_modules
