@@ -1,0 +1,15 @@
+# Dependency folders (very heavy, don't upload)
+node_modules/
+
+# Build outputs (we usually build these fresh on each machine)
+dist/
+build/
+
+# Environment secrets (API keys, passwords)
+.env
+.env.local
+
+# Logs and system files
+*.log
+.DS_Store
+Thumbs.db
