@@ -1,0 +1,229 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+// --- Base button ---
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $evo-btn-padding-y $evo-btn-padding-x;
+  font-size: $evo-btn-font-size;
+  font-weight: $evo-btn-font-weight;
+  line-height: $evo-btn-line-height;
+  border: 2px solid transparent;
+  border-radius: $evo-border-radius;
+  cursor: pointer;
+  transition: background-color $evo-btn-transition,
+              border-color $evo-btn-transition,
+              box-shadow $evo-btn-transition,
+              color $evo-btn-transition;
+  user-select: none;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline-width: $evo-btn-outline-width;
+    outline-style: solid;
+    outline-offset: $evo-btn-outline-offset;
+  }
+
+  &:disabled {
+    opacity: $evo-btn-disabled-opacity;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// --- Size modifiers ---
+.sm {
+  padding: $evo-btn-padding-y-sm $evo-btn-padding-x-sm;
+  font-size: $evo-btn-font-size-sm;
+  border-radius: $evo-border-radius-sm;
+}
+
+.lg {
+  padding: $evo-btn-padding-y-lg $evo-btn-padding-x-lg;
+  font-size: $evo-btn-font-size-lg;
+  border-radius: $evo-border-radius-lg;
+}
+
+// --- Variants ---
+.solid {
+}
+
+.outline {
+  background-color: transparent;
+}
+
+.ghost {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.rounded {
+  border-radius: $evo-border-radius-pill;
+}
+
+// --- Severities ---
+.primary {
+  &.solid {
+    color: #fff;
+    background-color: $evo-primary-color;
+    border-color: $evo-primary-color;
+
+    &:hover:not(:disabled)  { background-color: $evo-primary-hover;  border-color: $evo-primary-hover; }
+    &:active:not(:disabled) { background-color: $evo-primary-active; border-color: $evo-primary-active; }
+    &:focus-visible         { outline-color: $evo-primary-focus; }
+  }
+
+  &.outline {
+    color: $evo-primary-color;
+    border-color: $evo-primary-color;
+
+    &:hover:not(:disabled)  { color: #fff; background-color: $evo-primary-color; }
+    &:active:not(:disabled) { color: #fff; background-color: $evo-primary-hover; border-color: $evo-primary-hover; }
+    &:focus-visible         { outline-color: $evo-primary-focus; }
+  }
+
+  &.ghost {
+    color: $evo-primary-color;
+
+    &:hover:not(:disabled)  { background-color: $evo-blue-100; }
+    &:active:not(:disabled) { background-color: $evo-blue-200; }
+    &:focus-visible         { outline-color: $evo-primary-focus; }
+  }
+}
+
+.secondary {
+  &.solid {
+    color: $evo-secondary-text;
+    background-color: $evo-secondary-color;
+    border-color: $evo-secondary-color;
+
+    &:hover:not(:disabled)  { background-color: $evo-secondary-hover;  border-color: $evo-secondary-hover; }
+    &:active:not(:disabled) { background-color: $evo-secondary-active; border-color: $evo-secondary-active; }
+    &:focus-visible         { outline-color: $evo-secondary-focus; }
+  }
+
+  &.outline {
+    color: $evo-secondary-text;
+    border-color: $evo-secondary-color;
+
+    &:hover:not(:disabled)  { color: $evo-secondary-text; background-color: $evo-secondary-color; }
+    &:active:not(:disabled) { background-color: $evo-secondary-hover; border-color: $evo-secondary-hover; }
+    &:focus-visible         { outline-color: $evo-secondary-focus; }
+  }
+
+  &.ghost {
+    color: $evo-secondary-text;
+
+    &:focus-visible { outline-color: $evo-secondary-focus; }
+  }
+}
+
+.danger {
+  &.solid {
+    color: #fff;
+    background-color: $evo-danger-color;
+    border-color: $evo-danger-color;
+
+    &:hover:not(:disabled)  { background-color: $evo-danger-hover;  border-color: $evo-danger-hover; }
+    &:active:not(:disabled) { background-color: $evo-danger-active; border-color: $evo-danger-active; }
+    &:focus-visible         { outline-color: $evo-danger-focus; }
+  }
+
+  &.outline {
+    color: $evo-danger-color;
+    border-color: $evo-danger-color;
+
+    &:hover:not(:disabled)  { color: #fff; background-color: $evo-danger-color; }
+    &:active:not(:disabled) { color: #fff; background-color: $evo-danger-hover; border-color: $evo-danger-hover; }
+    &:focus-visible         { outline-color: $evo-danger-focus; }
+  }
+
+  &.ghost {
+    color: $evo-danger-color;
+
+    &:focus-visible { outline-color: $evo-danger-focus; }
+  }
+}
+
+.warning {
+  &.solid {
+    color: $evo-warning-text;
+    background-color: $evo-warning-color;
+    border-color: $evo-warning-color;
+
+    &:hover:not(:disabled)  { background-color: $evo-warning-hover;  border-color: $evo-warning-hover; }
+    &:active:not(:disabled) { background-color: $evo-warning-active; border-color: $evo-warning-active; }
+    &:focus-visible         { outline-color: $evo-warning-focus; }
+  }
+
+  &.outline {
+    color: $evo-warning-text;
+    border-color: $evo-warning-color;
+
+    &:hover:not(:disabled)  { background-color: $evo-warning-color; }
+    &:active:not(:disabled) { background-color: $evo-warning-hover; border-color: $evo-warning-hover; }
+    &:focus-visible         { outline-color: $evo-warning-focus; }
+  }
+
+  &.ghost {
+    color: $evo-warning-text;
+
+    &:focus-visible { outline-color: $evo-warning-focus; }
+  }
+}
+
+.success {
+  &.solid {
+    color: #fff;
+    background-color: $evo-success-color;
+    border-color: $evo-success-color;
+
+    &:hover:not(:disabled)  { background-color: $evo-success-hover;  border-color: $evo-success-hover; }
+    &:active:not(:disabled) { background-color: $evo-success-active; border-color: $evo-success-active; }
+    &:focus-visible         { outline-color: $evo-success-focus; }
+  }
+
+  &.outline {
+    color: $evo-success-color;
+    border-color: $evo-success-color;
+
+    &:hover:not(:disabled)  { color: #fff; background-color: $evo-success-color; }
+    &:active:not(:disabled) { background-color: $evo-success-hover; border-color: $evo-success-hover; }
+    &:focus-visible         { outline-color: $evo-success-focus; }
+  }
+
+  &.ghost {
+    color: $evo-success-color;
+
+    &:focus-visible { outline-color: $evo-success-focus; }
+  }
+}
+
+.info {
+  &.solid {
+    color: #fff;
+    background-color: $evo-info-color;
+    border-color: $evo-info-color;
+
+    &:hover:not(:disabled)  { background-color: $evo-info-hover;  border-color: $evo-info-hover; }
+    &:active:not(:disabled) { background-color: $evo-info-active; border-color: $evo-info-active; }
+    &:focus-visible         { outline-color: $evo-info-focus; }
+  }
+
+  &.outline {
+    color: $evo-info-color;
+    border-color: $evo-info-color;
+
+    &:hover:not(:disabled)  { color: #fff; background-color: $evo-info-color; }
+    &:active:not(:disabled) { background-color: $evo-info-hover; border-color: $evo-info-hover; }
+    &:focus-visible         { outline-color: $evo-info-focus; }
+  }
+
+  &.ghost {
+    color: $evo-info-color;
+
+    &:focus-visible { outline-color: $evo-info-focus; }
+  }
+}

@@ -1,0 +1,59 @@
+@use 'color' as *;
+
+// --- Semantic colors ---
+$evo-primary-color:    $evo-blue-600;
+$evo-primary-hover:    $evo-blue-700;
+$evo-primary-active:   $evo-blue-800;
+$evo-primary-focus:    $evo-blue-400;
+
+$evo-secondary-color:  $evo-gray-200;
+$evo-secondary-hover:  $evo-gray-300;
+$evo-secondary-active: $evo-gray-400;
+$evo-secondary-text:   $evo-gray-800;
+$evo-secondary-focus:  $evo-gray-400;
+
+$evo-danger-color:     $evo-red-600;
+$evo-danger-hover:     $evo-red-700;
+$evo-danger-active:    $evo-red-800;
+$evo-danger-focus:     $evo-red-400;
+
+$evo-warning-color:    $evo-yellow-400;
+$evo-warning-hover:    $evo-yellow-500;
+$evo-warning-active:   $evo-yellow-600;
+$evo-warning-text:     $evo-yellow-900;
+$evo-warning-focus:    $evo-yellow-300;
+
+$evo-success-color:    $evo-green-600;
+$evo-success-hover:    $evo-green-700;
+$evo-success-active:   $evo-green-800;
+$evo-success-focus:    $evo-green-400;
+
+$evo-info-color:       $evo-purple-600;
+$evo-info-hover:       $evo-purple-700;
+$evo-info-active:      $evo-purple-800;
+$evo-info-focus:       $evo-purple-400;
+
+// --- Button sizing ---
+$evo-btn-padding-y:       0.25rem;
+$evo-btn-padding-x:       0.63rem;
+$evo-btn-padding-y-sm:    0.13rem;
+$evo-btn-padding-x-sm:    0.38rem;
+$evo-btn-padding-y-lg:    0.37rem;
+$evo-btn-padding-x-lg:    0.88rem;
+
+$evo-btn-font-size:       0.875rem;
+$evo-btn-font-size-sm:    0.75rem;
+$evo-btn-font-size-lg:    1rem;
+$evo-btn-font-weight:     600;
+$evo-btn-line-height:     1.5;
+
+// --- Shape & motion ---
+$evo-border-radius:       8px;
+$evo-border-radius-sm:    4px;
+$evo-border-radius-lg:    12px;
+$evo-border-radius-pill:  9999px;
+
+$evo-btn-transition:      150ms ease;
+$evo-btn-disabled-opacity: 0.5;
+$evo-btn-outline-offset:  2px;
+$evo-btn-outline-width:   2px;
