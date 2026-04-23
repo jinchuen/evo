@@ -1,0 +1,54 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+.toggleWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-family: $font-sans;
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.hiddenInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.track {
+  position: relative;
+  display: inline-block;
+  background-color: $evo-slate-600;
+  border-radius: $radius-full;
+  transition: background-color $transition-fast;
+  flex-shrink: 0;
+
+  &.sm { width: 1.75rem; height: 1rem; }
+  &.md { width: 2.25rem; height: 1.25rem; }
+  &.lg { width: 2.75rem; height: 1.5rem; }
+
+  &.on { background-color: $evo-primary-color; }
+}
+
+.thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform $transition-fast;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.label {
+  font-size: $text-sm;
+  color: $color-text-primary;
+  user-select: none;
+}

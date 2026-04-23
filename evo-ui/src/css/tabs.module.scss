@@ -1,0 +1,63 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+.tabs {
+  width: 100%;
+  font-family: $font-sans;
+}
+
+.tabList {
+  display: flex;
+  gap: 0.125rem;
+  border-bottom: 1px solid $color-border;
+}
+
+.tab {
+  position: relative;
+  padding: 0.5rem 1rem;
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $color-text-secondary;
+  background: transparent;
+  border: none;
+  border-radius: $radius-sm $radius-sm 0 0;
+  cursor: pointer;
+  transition: color $transition-fast, background-color $transition-fast;
+  font-family: $font-sans;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: transparent;
+    transition: background-color $transition-fast;
+    border-radius: 2px 2px 0 0;
+  }
+
+  &:hover:not(.disabled):not(.active) {
+    color: $color-text-primary;
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  &.active {
+    color: $evo-primary-color;
+    &::after { background-color: $evo-primary-color; }
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.tabPanel {
+  padding: 1.25rem 0;
+  color: $color-text-secondary;
+  font-size: $text-sm;
+  line-height: 1.6;
+  font-family: $font-sans;
+}
