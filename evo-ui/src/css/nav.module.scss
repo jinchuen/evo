@@ -1,0 +1,69 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+.nav {
+  width: 100%;
+  font-family: $font-sans;
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $color-text-secondary;
+  background: transparent;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: $color-text-primary;
+  }
+
+  &.active {
+    background-color: rgba($evo-primary-color, 0.12);
+    color: $evo-primary-color;
+  }
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1rem;
+}
+
+.navGroup {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.navGroupLabel {
+  display: block;
+  font-size: $text-xs;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $color-text-muted;
+  padding: 0.5rem 0.75rem 0.25rem;
+}

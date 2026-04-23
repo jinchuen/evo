@@ -1,0 +1,89 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-family: $font-sans;
+}
+
+.fullWidth { width: 100%; }
+
+.label {
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $color-text-primary;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+
+  &:focus-within {
+    border-color: $evo-primary-color;
+    box-shadow: 0 0 0 3px rgba($evo-primary-color, 0.18);
+  }
+
+  &.hasError {
+    border-color: $evo-danger-color;
+
+    &:focus-within {
+      border-color: $evo-danger-color;
+      box-shadow: 0 0 0 3px rgba($evo-danger-color, 0.18);
+    }
+  }
+}
+
+.sm { padding: 0.25rem 0.5rem; }
+.md { padding: 0.5rem 0.75rem; }
+.lg { padding: 0.625rem 1rem; }
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: $text-sm;
+  color: $color-text-primary;
+  font-family: $font-sans;
+  width: 100%;
+  min-width: 0;
+
+  &::placeholder { color: $color-text-muted; }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.adornment {
+  display: flex;
+  align-items: center;
+  color: $color-text-muted;
+  font-size: $text-sm;
+  flex-shrink: 0;
+  padding-right: 0.375rem;
+}
+
+.trailingAdornment {
+  padding-right: 0;
+  padding-left: 0.375rem;
+}
+
+.errorText {
+  font-size: $text-xs;
+  color: $evo-danger-color;
+  margin: 0;
+}
+
+.helperText {
+  font-size: $text-xs;
+  color: $color-text-muted;
+  margin: 0;
+}
