@@ -1,0 +1,30 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+@keyframes skeletonShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.skeleton {
+  display: block;
+  background-color: $evo-slate-800;
+}
+
+.animated {
+  background: linear-gradient(
+    90deg,
+    $evo-slate-800 25%,
+    $evo-slate-700 50%,
+    $evo-slate-800 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+.textGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}

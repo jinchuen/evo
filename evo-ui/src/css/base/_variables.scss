@@ -7,11 +7,13 @@ $evo-primary-hover:    $evo-cyan-700;
 $evo-primary-active:   $evo-cyan-800;
 $evo-primary-focus:    $evo-cyan-400;
 
-$evo-secondary-color:  $evo-slate-200;
-$evo-secondary-hover:  $evo-slate-300;
-$evo-secondary-active: $evo-slate-400;
-$evo-secondary-text:   $evo-slate-800;
-$evo-secondary-focus:  $evo-slate-400;
+$evo-secondary-bg:      rgba(255, 255, 255, 0.06);
+$evo-secondary-color:   $evo-secondary-bg; // kept for back-compat alias
+$evo-secondary-border:  $evo-slate-600;
+$evo-secondary-hover:   rgba(255, 255, 255, 0.10);
+$evo-secondary-active:  rgba(255, 255, 255, 0.15);
+$evo-secondary-text:    $evo-slate-300;
+$evo-secondary-focus:   $evo-slate-400;
 
 $evo-danger-color:     $evo-rose-600;
 $evo-danger-hover:     $evo-rose-700;

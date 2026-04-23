@@ -96,27 +96,29 @@
 .secondary {
   &.solid {
     color: $evo-secondary-text;
-    background-color: $evo-secondary-color;
-    border-color: $evo-secondary-color;
+    background-color: $evo-secondary-bg;
+    border-color: $evo-secondary-border;
 
-    &:hover:not(:disabled)  { background-color: $evo-secondary-hover;  border-color: $evo-secondary-hover; }
-    &:active:not(:disabled) { background-color: $evo-secondary-active; border-color: $evo-secondary-active; }
+    &:hover:not(:disabled)  { background-color: $evo-secondary-hover;  border-color: $evo-slate-500; color: $evo-slate-200; }
+    &:active:not(:disabled) { background-color: $evo-secondary-active; border-color: $evo-slate-400; }
     &:focus-visible         { outline-color: $evo-secondary-focus; }
   }
 
   &.outline {
     color: $evo-secondary-text;
-    border-color: $evo-secondary-color;
+    border-color: $evo-secondary-border;
 
-    &:hover:not(:disabled)  { color: $evo-secondary-text; background-color: $evo-secondary-color; }
-    &:active:not(:disabled) { background-color: $evo-secondary-hover; border-color: $evo-secondary-hover; }
+    &:hover:not(:disabled)  { background-color: $evo-secondary-bg;    border-color: $evo-slate-500; color: $evo-slate-200; }
+    &:active:not(:disabled) { background-color: $evo-secondary-hover; border-color: $evo-slate-400; }
     &:focus-visible         { outline-color: $evo-secondary-focus; }
   }
 
   &.ghost {
     color: $evo-secondary-text;
 
-    &:focus-visible { outline-color: $evo-secondary-focus; }
+    &:hover:not(:disabled)  { background-color: $evo-secondary-bg; color: $evo-slate-200; }
+    &:active:not(:disabled) { background-color: $evo-secondary-hover; }
+    &:focus-visible         { outline-color: $evo-secondary-focus; }
   }
 }
 
