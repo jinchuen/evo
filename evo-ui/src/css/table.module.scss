@@ -1,0 +1,81 @@
+@use './base/variables' as *;
+@use './base/color' as *;
+
+.wrapper {
+  width: 100%;
+  border: 1px solid $evo-secondary-border;
+  border-radius: $evo-border-radius-lg;
+  overflow: hidden;
+  font-family: $font-sans;
+  background-color: $color-surface;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $text-sm;
+}
+
+// --- Header ---
+.thead {
+  background-color: $evo-slate-800;
+  border-bottom: 1px solid $evo-secondary-border;
+}
+
+.th {
+  padding: 0.625rem 1rem;
+  text-align: left;
+  font-size: $text-xs;
+  font-weight: 600;
+  color: $color-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+
+  &:not(:last-child) {
+    border-right: 1px solid rgba($evo-slate-600, 0.4);
+  }
+}
+
+// --- Body ---
+.tbody {
+  .tr {
+    border-top: 1px solid rgba($evo-slate-700, 0.6);
+    transition: background-color $transition-fast;
+    cursor: default;
+
+    &:first-child {
+      border-top: none;
+    }
+
+    &:hover {
+      background-color: $evo-secondary-hover;
+    }
+
+    &.clickable {
+      cursor: pointer;
+
+      &:active {
+        background-color: $evo-secondary-active;
+      }
+    }
+  }
+}
+
+.td {
+  padding: 0.625rem 1rem;
+  color: $color-text-primary;
+  vertical-align: middle;
+
+  &:not(:last-child) {
+    border-right: 1px solid rgba($evo-slate-700, 0.4);
+  }
+}
+
+// --- Empty state ---
+.empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: $color-text-muted;
+  font-size: $text-sm;
+}
