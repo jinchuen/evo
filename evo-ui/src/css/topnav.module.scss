@@ -1,0 +1,80 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+.topNav {
+  width: 100%;
+  font-family: $font-sans;
+  background-color: $color-surface;
+  border-bottom: 1px solid $color-border;
+}
+
+.topNavInner {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1rem;
+  height: 3.25rem;
+}
+
+.topNavBrand {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: $text-base;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.topNavMenu {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.topNavItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4375rem 0.75rem;
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $color-text-secondary;
+  background: transparent;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: $color-text-primary;
+  }
+
+  &.active {
+    background-color: rgba($evo-primary-color, 0.12);
+    color: $evo-primary-color;
+  }
+}
+
+.topNavIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1rem;
+}
+
+.topNavActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
