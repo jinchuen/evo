@@ -7,6 +7,7 @@
       "Bash(npm create *)",
       "Bash(echo \"EXIT:$?\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/)"
+
     ]
   }
 }
