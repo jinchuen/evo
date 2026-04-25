@@ -1,0 +1,66 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { EvoToastProvider } from '@justin_evo/evo-ui'
+import Layout from './components/Layout'
+import HomePage from './pages/HomePage'
+import ButtonPage from './pages/ButtonPage'
+import CardPage from './pages/CardPage'
+import InputPage from './pages/InputPage'
+import CheckboxPage from './pages/CheckboxPage'
+import RadioPage from './pages/RadioPage'
+import SelectPage from './pages/SelectPage'
+import TogglePage from './pages/TogglePage'
+import BadgePage from './pages/BadgePage'
+import ModalPage from './pages/ModalPage'
+import AlertPage from './pages/AlertPage'
+import TooltipPage from './pages/TooltipPage'
+import ToastPage from './pages/ToastPage'
+import StackPage from './pages/StackPage'
+import GridPage from './pages/GridPage'
+import TablePage from './pages/TablePage'
+import TabsPage from './pages/TabsPage'
+import PaginationPage from './pages/PaginationPage'
+import DividerPage from './pages/DividerPage'
+import SkeletonPage from './pages/SkeletonPage'
+import ContainerPage from './pages/ContainerPage'
+import FormPage from './pages/FormPage'
+import NavPage from './pages/NavPage'
+import BreadcrumbPage from './pages/BreadcrumbPage'
+import TopNavPage from './pages/TopNavPage'
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <EvoToastProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<HomePage />} />
+            <Route path="/components/button" element={<ButtonPage />} />
+            <Route path="/components/card" element={<CardPage />} />
+            <Route path="/components/input" element={<InputPage />} />
+            <Route path="/components/checkbox" element={<CheckboxPage />} />
+            <Route path="/components/radio" element={<RadioPage />} />
+            <Route path="/components/select" element={<SelectPage />} />
+            <Route path="/components/toggle" element={<TogglePage />} />
+            <Route path="/components/badge" element={<BadgePage />} />
+            <Route path="/components/modal" element={<ModalPage />} />
+            <Route path="/components/alert" element={<AlertPage />} />
+            <Route path="/components/tooltip" element={<TooltipPage />} />
+            <Route path="/components/toast" element={<ToastPage />} />
+            <Route path="/components/stack" element={<StackPage />} />
+            <Route path="/components/grid" element={<GridPage />} />
+            <Route path="/components/table" element={<TablePage />} />
+            <Route path="/components/tabs" element={<TabsPage />} />
+            <Route path="/components/pagination" element={<PaginationPage />} />
+            <Route path="/components/divider" element={<DividerPage />} />
+            <Route path="/components/skeleton" element={<SkeletonPage />} />
+            <Route path="/components/container" element={<ContainerPage />} />
+            <Route path="/components/form" element={<FormPage />} />
+            <Route path="/components/nav" element={<NavPage />} />
+            <Route path="/components/breadcrumb" element={<BreadcrumbPage />} />
+            <Route path="/components/topnav" element={<TopNavPage />} />
+          </Route>
+        </Routes>
+      </EvoToastProvider>
+    </BrowserRouter>
+  )
+}
