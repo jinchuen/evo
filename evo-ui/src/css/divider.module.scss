@@ -1,0 +1,41 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+.divider {
+  border: none;
+  flex-shrink: 0;
+}
+
+.horizontal {
+  height: 1px;
+  width: 100%;
+  background-color: $color-border;
+  display: block;
+}
+
+.vertical {
+  width: 1px;
+  align-self: stretch;
+  background-color: $color-border;
+  display: inline-block;
+}
+
+.labeled {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.line {
+  flex: 1;
+  height: 1px;
+  background-color: $color-border;
+}
+
+.labelText {
+  font-size: $text-sm;
+  color: $color-text-muted;
+  white-space: nowrap;
+  font-family: $font-sans;
+}
