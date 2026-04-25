@@ -21,6 +21,7 @@ export * from './Container/Container';
 export * from './Tabs/Tabs';
 export * from './Breadcrumb/Breadcrumb';
 export * from './Nav/Nav';
+export * from './TopNav/TopNav';
 export * from './Pagination/Pagination';
 
 // Forms & Inputs
