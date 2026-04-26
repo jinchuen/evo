@@ -7,6 +7,9 @@
  * @see {@link https://github.com/your-repo/evo-ui} Official Documentation
  */
 
+// Utility classes (bundled into dist/evo-ui.css)
+import './css/utilities/index.scss';
+
 // Existing
 export * from './Button/Button';
 export * from './Card/Card';

@@ -26,6 +26,7 @@ import FormPage from './pages/FormPage'
 import NavPage from './pages/NavPage'
 import BreadcrumbPage from './pages/BreadcrumbPage'
 import TopNavPage from './pages/TopNavPage'
+import UtilitiesPage from './pages/UtilitiesPage'
 
 export default function App() {
   return (
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="/components/nav" element={<NavPage />} />
             <Route path="/components/breadcrumb" element={<BreadcrumbPage />} />
             <Route path="/components/topnav" element={<TopNavPage />} />
+            <Route path="/utilities" element={<UtilitiesPage />} />
           </Route>
         </Routes>
       </EvoToastProvider>

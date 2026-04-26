@@ -2,14 +2,14 @@ import React from 'react';
 import styles from '../css/table.module.scss';
 
 export interface TableColumn<T> {
-  /** Key of the data object to read from. */
-  key: keyof T;
+  /** Key of the data object to read from. Supports dot notation for nested paths (e.g. 'role.name'). */
+  key: string;
   /** Display label for the column header. */
   header: string;
   /** Optional fixed width (e.g. '120px', '10%'). */
   width?: string;
   /** Custom cell renderer — falls back to string coercion. */
-  render?: (value: T[keyof T], row: T) => React.ReactNode;
+  render?: (value: unknown, row: T) => React.ReactNode;
 }
 
 interface EvoTableProps<T extends Record<string, unknown>> {
@@ -22,6 +22,15 @@ interface EvoTableProps<T extends Record<string, unknown>> {
   /** Fired when a row is double-clicked, receiving that row's data. */
   onRowDoubleClick?: (row: T) => void;
   className?: string;
+}
+
+function getNestedValue(obj: unknown, path: string): unknown {
+  return path.split('.').reduce<unknown>((acc, key) => {
+    if (acc !== null && acc !== undefined && typeof acc === 'object') {
+      return (acc as Record<string, unknown>)[key];
+    }
+    return undefined;
+  }, obj);
 }
 
 export const EvoTable = <T extends Record<string, unknown>>({
@@ -71,13 +80,14 @@ export const EvoTable = <T extends Record<string, unknown>>({
                   onRowDoubleClick ? () => onRowDoubleClick(row) : undefined
                 }
               >
-                {columns.map((col) => (
-                  <td key={String(col.key)} className={styles.td}>
-                    {col.render
-                      ? col.render(row[col.key], row)
-                      : String(row[col.key] ?? '')}
-                  </td>
-                ))}
+                {columns.map((col) => {
+                  const value = getNestedValue(row, col.key);
+                  return (
+                    <td key={col.key} className={styles.td}>
+                      {col.render ? col.render(value, row) : String(value ?? '')}
+                    </td>
+                  );
+                })}
               </tr>
             ))
           )}

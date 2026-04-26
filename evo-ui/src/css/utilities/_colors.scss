@@ -1,0 +1,66 @@
+@use '../base/color' as *;
+@use '../base/variables' as *;
+
+// ==========================================
+// COLOR UTILITIES
+// text-{color}-{shade} | bg-{color}-{shade} | border-{color}-{shade}
+// ==========================================
+
+$_palette: (
+  'blue':    (100: $evo-blue-100,    200: $evo-blue-200,    300: $evo-blue-300,    400: $evo-blue-400,    500: $evo-blue-500,    600: $evo-blue-600,    700: $evo-blue-700,    800: $evo-blue-800,    900: $evo-blue-900),
+  'gray':    (100: $evo-gray-100,    200: $evo-gray-200,    300: $evo-gray-300,    400: $evo-gray-400,    500: $evo-gray-500,    600: $evo-gray-600,    700: $evo-gray-700,    800: $evo-gray-800,    900: $evo-gray-900),
+  'red':     (100: $evo-red-100,     200: $evo-red-200,     300: $evo-red-300,     400: $evo-red-400,     500: $evo-red-500,     600: $evo-red-600,     700: $evo-red-700,     800: $evo-red-800,     900: $evo-red-900),
+  'yellow':  (100: $evo-yellow-100,  200: $evo-yellow-200,  300: $evo-yellow-300,  400: $evo-yellow-400,  500: $evo-yellow-500,  600: $evo-yellow-600,  700: $evo-yellow-700,  800: $evo-yellow-800,  900: $evo-yellow-900),
+  'green':   (100: $evo-green-100,   200: $evo-green-200,   300: $evo-green-300,   400: $evo-green-400,   500: $evo-green-500,   600: $evo-green-600,   700: $evo-green-700,   800: $evo-green-800,   900: $evo-green-900),
+  'purple':  (100: $evo-purple-100,  200: $evo-purple-200,  300: $evo-purple-300,  400: $evo-purple-400,  500: $evo-purple-500,  600: $evo-purple-600,  700: $evo-purple-700,  800: $evo-purple-800,  900: $evo-purple-900),
+  'white':   (100: $evo-white-100,   200: $evo-white-200,   300: $evo-white-300,   400: $evo-white-400,   500: $evo-white-500,   600: $evo-white-600,   700: $evo-white-700,   800: $evo-white-800,   900: $evo-white-900),
+  'black':   (100: $evo-black-100,   200: $evo-black-200,   300: $evo-black-300,   400: $evo-black-400,   500: $evo-black-500,   600: $evo-black-600,   700: $evo-black-700,   800: $evo-black-800,   900: $evo-black-900),
+  'cyan':    (100: $evo-cyan-100,    200: $evo-cyan-200,    300: $evo-cyan-300,    400: $evo-cyan-400,    500: $evo-cyan-500,    600: $evo-cyan-600,    700: $evo-cyan-700,    800: $evo-cyan-800,    900: $evo-cyan-900),
+  'rose':    (100: $evo-rose-100,    200: $evo-rose-200,    300: $evo-rose-300,    400: $evo-rose-400,    500: $evo-rose-500,    600: $evo-rose-600,    700: $evo-rose-700,    800: $evo-rose-800,    900: $evo-rose-900),
+  'emerald': (100: $evo-emerald-100, 200: $evo-emerald-200, 300: $evo-emerald-300, 400: $evo-emerald-400, 500: $evo-emerald-500, 600: $evo-emerald-600, 700: $evo-emerald-700, 800: $evo-emerald-800, 900: $evo-emerald-900),
+  'amber':   (100: $evo-amber-100,   200: $evo-amber-200,   300: $evo-amber-300,   400: $evo-amber-400,   500: $evo-amber-500,   600: $evo-amber-600,   700: $evo-amber-700,   800: $evo-amber-800,   900: $evo-amber-900),
+  'violet':  (100: $evo-violet-100,  200: $evo-violet-200,  300: $evo-violet-300,  400: $evo-violet-400,  500: $evo-violet-500,  600: $evo-violet-600,  700: $evo-violet-700,  800: $evo-violet-800,  900: $evo-violet-900),
+  'slate':   (50: $evo-slate-50, 100: $evo-slate-100, 200: $evo-slate-200, 300: $evo-slate-300, 400: $evo-slate-400, 500: $evo-slate-500, 600: $evo-slate-600, 700: $evo-slate-700, 800: $evo-slate-800, 900: $evo-slate-900, 950: $evo-slate-950),
+);
+
+@each $name, $shades in $_palette {
+  @each $shade, $value in $shades {
+    .text-#{$name}-#{$shade}   { color: $value; }
+    .bg-#{$name}-#{$shade}     { background-color: $value; }
+    .border-#{$name}-#{$shade} { border-color: $value; }
+  }
+}
+
+// Semantic shortcuts
+.text-primary  { color: $evo-primary-color; }
+.text-danger   { color: $evo-danger-color; }
+.text-warning  { color: $evo-warning-color; }
+.text-success  { color: $evo-success-color; }
+.text-info     { color: $evo-info-color; }
+.text-muted    { color: $color-text-muted; }
+.text-default  { color: $color-text-primary; }
+
+.bg-primary    { background-color: $evo-primary-color; }
+.bg-danger     { background-color: $evo-danger-color; }
+.bg-warning    { background-color: $evo-warning-color; }
+.bg-success    { background-color: $evo-success-color; }
+.bg-info       { background-color: $evo-info-color; }
+.bg-surface    { background-color: $color-surface; }
+.bg-page       { background-color: $color-background; }
+
+.border-primary { border-color: $evo-primary-color; }
+.border-danger  { border-color: $evo-danger-color; }
+.border-success { border-color: $evo-success-color; }
+.border-warning { border-color: $evo-warning-color; }
+.border-default { border-color: $color-border; }
+
+// Special values
+.text-transparent { color: transparent; }
+.text-inherit     { color: inherit; }
+.text-current     { color: currentColor; }
+.bg-transparent   { background-color: transparent; }
+.bg-inherit       { background-color: inherit; }
+.bg-white         { background-color: #fff; }
+.bg-black         { background-color: #000; }
+.text-white       { color: #fff; }
+.text-black       { color: #000; }

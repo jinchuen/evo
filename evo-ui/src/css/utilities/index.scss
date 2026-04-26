@@ -1,0 +1,20 @@
+// ==========================================
+// EVO-UI UTILITY CLASSES
+// Tailwind-inspired utility-first CSS helpers
+// ==========================================
+//
+// Import this file to get the full utility layer:
+//   import '@justin_evo/evo-ui/dist/utilities.css'
+//
+// Or rely on the utilities already bundled inside:
+//   import '@justin_evo/evo-ui/dist/evo-ui.css'
+// ==========================================
+
+@use './colors';
+@use './spacing';
+@use './typography';
+@use './layout';
+@use './sizing';
+@use './borders';
+@use './effects';
+@use './position';
