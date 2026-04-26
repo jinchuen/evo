@@ -1,0 +1,181 @@
+// ==========================================
+// LAYOUT UTILITIES
+// display | flex | grid | overflow
+// ==========================================
+
+// Display
+.block        { display: block; }
+.inline-block { display: inline-block; }
+.inline       { display: inline; }
+.flex         { display: flex; }
+.inline-flex  { display: inline-flex; }
+.grid         { display: grid; }
+.inline-grid  { display: inline-grid; }
+.contents     { display: contents; }
+.table        { display: table; }
+.hidden       { display: none; }
+
+// Flex direction
+.flex-row         { flex-direction: row; }
+.flex-row-reverse { flex-direction: row-reverse; }
+.flex-col         { flex-direction: column; }
+.flex-col-reverse { flex-direction: column-reverse; }
+
+// Flex wrap
+.flex-wrap         { flex-wrap: wrap; }
+.flex-wrap-reverse { flex-wrap: wrap-reverse; }
+.flex-nowrap       { flex-wrap: nowrap; }
+
+// Flex grow / shrink
+.flex-1      { flex: 1 1 0%; }
+.flex-auto   { flex: 1 1 auto; }
+.flex-initial { flex: 0 1 auto; }
+.flex-none   { flex: none; }
+.grow        { flex-grow: 1; }
+.grow-0      { flex-grow: 0; }
+.shrink      { flex-shrink: 1; }
+.shrink-0    { flex-shrink: 0; }
+
+// Justify content
+.justify-start   { justify-content: flex-start; }
+.justify-end     { justify-content: flex-end; }
+.justify-center  { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-around  { justify-content: space-around; }
+.justify-evenly  { justify-content: space-evenly; }
+.justify-stretch { justify-content: stretch; }
+
+// Justify items
+.justify-items-start   { justify-items: start; }
+.justify-items-end     { justify-items: end; }
+.justify-items-center  { justify-items: center; }
+.justify-items-stretch { justify-items: stretch; }
+
+// Justify self
+.justify-self-auto    { justify-self: auto; }
+.justify-self-start   { justify-self: start; }
+.justify-self-end     { justify-self: end; }
+.justify-self-center  { justify-self: center; }
+.justify-self-stretch { justify-self: stretch; }
+
+// Align items
+.items-start    { align-items: flex-start; }
+.items-end      { align-items: flex-end; }
+.items-center   { align-items: center; }
+.items-stretch  { align-items: stretch; }
+.items-baseline { align-items: baseline; }
+
+// Align content
+.content-start   { align-content: flex-start; }
+.content-end     { align-content: flex-end; }
+.content-center  { align-content: center; }
+.content-between { align-content: space-between; }
+.content-around  { align-content: space-around; }
+.content-evenly  { align-content: space-evenly; }
+.content-stretch { align-content: stretch; }
+
+// Align self
+.self-auto     { align-self: auto; }
+.self-start    { align-self: flex-start; }
+.self-end      { align-self: flex-end; }
+.self-center   { align-self: center; }
+.self-stretch  { align-self: stretch; }
+.self-baseline { align-self: baseline; }
+
+// Grid template columns
+@for $i from 1 through 12 {
+  .grid-cols-#{$i} { grid-template-columns: repeat(#{$i}, minmax(0, 1fr)); }
+}
+.grid-cols-none { grid-template-columns: none; }
+
+// Grid template rows
+@for $i from 1 through 6 {
+  .grid-rows-#{$i} { grid-template-rows: repeat(#{$i}, minmax(0, 1fr)); }
+}
+.grid-rows-none { grid-template-rows: none; }
+
+// Column span
+@for $i from 1 through 12 {
+  .col-span-#{$i} { grid-column: span #{$i} / span #{$i}; }
+}
+.col-span-full  { grid-column: 1 / -1; }
+.col-auto       { grid-column: auto; }
+
+// Row span
+@for $i from 1 through 6 {
+  .row-span-#{$i} { grid-row: span #{$i} / span #{$i}; }
+}
+.row-span-full  { grid-row: 1 / -1; }
+.row-auto       { grid-row: auto; }
+
+// Place items / content / self
+.place-items-start   { place-items: start; }
+.place-items-end     { place-items: end; }
+.place-items-center  { place-items: center; }
+.place-items-stretch { place-items: stretch; }
+.place-content-start   { place-content: start; }
+.place-content-end     { place-content: end; }
+.place-content-center  { place-content: center; }
+.place-content-between { place-content: space-between; }
+.place-self-auto    { place-self: auto; }
+.place-self-start   { place-self: start; }
+.place-self-end     { place-self: end; }
+.place-self-center  { place-self: center; }
+.place-self-stretch { place-self: stretch; }
+
+// Overflow
+.overflow-auto    { overflow: auto; }
+.overflow-hidden  { overflow: hidden; }
+.overflow-visible { overflow: visible; }
+.overflow-scroll  { overflow: scroll; }
+.overflow-clip    { overflow: clip; }
+.overflow-x-auto    { overflow-x: auto; }
+.overflow-x-hidden  { overflow-x: hidden; }
+.overflow-x-visible { overflow-x: visible; }
+.overflow-x-scroll  { overflow-x: scroll; }
+.overflow-y-auto    { overflow-y: auto; }
+.overflow-y-hidden  { overflow-y: hidden; }
+.overflow-y-visible { overflow-y: visible; }
+.overflow-y-scroll  { overflow-y: scroll; }
+
+// Float
+.float-start { float: inline-start; }
+.float-end   { float: inline-end; }
+.float-right { float: right; }
+.float-left  { float: left; }
+.float-none  { float: none; }
+.clearfix::after { content: ''; display: table; clear: both; }
+
+// Box sizing
+.box-border  { box-sizing: border-box; }
+.box-content { box-sizing: content-box; }
+
+// Visibility
+.visible   { visibility: visible; }
+.invisible { visibility: hidden; }
+.collapse  { visibility: collapse; }
+
+// Aspect ratio
+.aspect-auto   { aspect-ratio: auto; }
+.aspect-square { aspect-ratio: 1 / 1; }
+.aspect-video  { aspect-ratio: 16 / 9; }
+
+// Object fit
+.object-contain    { object-fit: contain; }
+.object-cover      { object-fit: cover; }
+.object-fill       { object-fit: fill; }
+.object-none       { object-fit: none; }
+.object-scale-down { object-fit: scale-down; }
+
+// Object position
+.object-center       { object-position: center; }
+.object-top          { object-position: top; }
+.object-bottom       { object-position: bottom; }
+.object-left         { object-position: left; }
+.object-right        { object-position: right; }
+.object-left-top     { object-position: left top; }
+.object-right-bottom { object-position: right bottom; }
+
+// Isolation
+.isolate         { isolation: isolate; }
+.isolation-auto  { isolation: auto; }

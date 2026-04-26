@@ -1,0 +1,75 @@
+// ==========================================
+// POSITION UTILITIES
+// position | inset | z-index
+// ==========================================
+
+// Position
+.static   { position: static; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed    { position: fixed; }
+.sticky   { position: sticky; }
+
+// Inset (top / right / bottom / left shorthand)
+.inset-0    { inset: 0; }
+.inset-auto { inset: auto; }
+.inset-full { inset: 100%; }
+.inset-px   { inset: 1px; }
+
+.inset-x-0    { left: 0; right: 0; }
+.inset-x-auto { left: auto; right: auto; }
+.inset-x-full { left: 100%; right: 100%; }
+.inset-y-0    { top: 0; bottom: 0; }
+.inset-y-auto { top: auto; bottom: auto; }
+.inset-y-full { top: 100%; bottom: 100%; }
+
+// Individual sides
+$_inset-scale: (0: 0, 1: 0.25rem, 2: 0.5rem, 3: 0.75rem, 4: 1rem, 5: 1.25rem, 6: 1.5rem, 8: 2rem, 10: 2.5rem, 12: 3rem, 14: 3.5rem, 16: 4rem, 20: 5rem, 24: 6rem, 32: 8rem, 40: 10rem, 48: 12rem, 56: 14rem, 64: 16rem);
+
+@each $key, $val in $_inset-scale {
+  .top-#{$key}    { top: $val; }
+  .right-#{$key}  { right: $val; }
+  .bottom-#{$key} { bottom: $val; }
+  .left-#{$key}   { left: $val; }
+}
+
+.top-auto    { top: auto; }
+.right-auto  { right: auto; }
+.bottom-auto { bottom: auto; }
+.left-auto   { left: auto; }
+.top-full    { top: 100%; }
+.right-full  { right: 100%; }
+.bottom-full { bottom: 100%; }
+.left-full   { left: 100%; }
+.top-px    { top: 1px; }
+.right-px  { right: 1px; }
+.bottom-px { bottom: 1px; }
+.left-px   { left: 1px; }
+
+// Negative inset
+@each $key, $val in $_inset-scale {
+  @if $key != 0 {
+    .-top-#{$key}    { top: -$val; }
+    .-right-#{$key}  { right: -$val; }
+    .-bottom-#{$key} { bottom: -$val; }
+    .-left-#{$key}   { left: -$val; }
+  }
+}
+
+// Z-index
+.z-0    { z-index: 0; }
+.z-10   { z-index: 10; }
+.z-20   { z-index: 20; }
+.z-30   { z-index: 30; }
+.z-40   { z-index: 40; }
+.z-50   { z-index: 50; }
+.z-auto { z-index: auto; }
+
+// Named z-index layers
+.z-base    { z-index: 0; }
+.z-raised  { z-index: 10; }
+.z-overlay { z-index: 100; }
+.z-modal   { z-index: 200; }
+.z-toast   { z-index: 300; }
+.z-tooltip { z-index: 400; }
+.z-top     { z-index: 9999; }

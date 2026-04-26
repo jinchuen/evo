@@ -1,0 +1,216 @@
+@use '../base/variables' as *;
+
+// ==========================================
+// EFFECTS UTILITIES
+// shadow | opacity | cursor | transition | transform | filter
+// ==========================================
+
+// Box shadow
+.shadow-none { box-shadow: none; }
+.shadow-sm   { box-shadow: $shadow-sm; }
+.shadow      { box-shadow: $shadow-md; }
+.shadow-md   { box-shadow: $shadow-md; }
+.shadow-lg   { box-shadow: $shadow-lg; }
+.shadow-xl   { box-shadow: $shadow-xl; }
+.shadow-2xl  { box-shadow: $shadow-2xl; }
+.shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05); }
+
+// Opacity
+.opacity-0   { opacity: 0; }
+.opacity-5   { opacity: 0.05; }
+.opacity-10  { opacity: 0.1; }
+.opacity-15  { opacity: 0.15; }
+.opacity-20  { opacity: 0.2; }
+.opacity-25  { opacity: 0.25; }
+.opacity-30  { opacity: 0.3; }
+.opacity-40  { opacity: 0.4; }
+.opacity-50  { opacity: 0.5; }
+.opacity-60  { opacity: 0.6; }
+.opacity-70  { opacity: 0.7; }
+.opacity-75  { opacity: 0.75; }
+.opacity-80  { opacity: 0.8; }
+.opacity-90  { opacity: 0.9; }
+.opacity-95  { opacity: 0.95; }
+.opacity-100 { opacity: 1; }
+
+// Cursor
+.cursor-auto        { cursor: auto; }
+.cursor-default     { cursor: default; }
+.cursor-pointer     { cursor: pointer; }
+.cursor-wait        { cursor: wait; }
+.cursor-text        { cursor: text; }
+.cursor-move        { cursor: move; }
+.cursor-not-allowed { cursor: not-allowed; }
+.cursor-none        { cursor: none; }
+.cursor-grab        { cursor: grab; }
+.cursor-grabbing    { cursor: grabbing; }
+.cursor-crosshair   { cursor: crosshair; }
+.cursor-zoom-in     { cursor: zoom-in; }
+.cursor-zoom-out    { cursor: zoom-out; }
+.cursor-help        { cursor: help; }
+.cursor-col-resize  { cursor: col-resize; }
+.cursor-row-resize  { cursor: row-resize; }
+
+// Pointer events
+.pointer-events-none { pointer-events: none; }
+.pointer-events-auto { pointer-events: auto; }
+
+// User select
+.select-none { user-select: none; }
+.select-text { user-select: text; }
+.select-all  { user-select: all; }
+.select-auto { user-select: auto; }
+
+// Transition
+.transition-none   { transition: none; }
+.transition        { transition: color $transition-normal, background-color $transition-normal, border-color $transition-normal, text-decoration-color $transition-normal, fill $transition-normal, stroke $transition-normal, opacity $transition-normal, box-shadow $transition-normal, transform $transition-normal, filter $transition-normal; }
+.transition-all    { transition: all $transition-normal; }
+.transition-colors { transition: color $transition-normal, background-color $transition-normal, border-color $transition-normal; }
+.transition-opacity   { transition: opacity $transition-normal; }
+.transition-shadow    { transition: box-shadow $transition-normal; }
+.transition-transform { transition: transform $transition-normal; }
+
+// Duration
+.duration-75   { transition-duration: 75ms; }
+.duration-100  { transition-duration: 100ms; }
+.duration-150  { transition-duration: 150ms; }
+.duration-200  { transition-duration: 200ms; }
+.duration-300  { transition-duration: 300ms; }
+.duration-500  { transition-duration: 500ms; }
+.duration-700  { transition-duration: 700ms; }
+.duration-1000 { transition-duration: 1000ms; }
+
+// Easing
+.ease-linear  { transition-timing-function: linear; }
+.ease-in      { transition-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+.ease-out     { transition-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+.ease-in-out  { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+.ease-spring  { transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+// Transform utilities
+.transform-none  { transform: none; }
+.transform-gpu   { transform: translateZ(0); }
+.scale-0    { transform: scale(0); }
+.scale-50   { transform: scale(0.5); }
+.scale-75   { transform: scale(0.75); }
+.scale-90   { transform: scale(0.9); }
+.scale-95   { transform: scale(0.95); }
+.scale-100  { transform: scale(1); }
+.scale-105  { transform: scale(1.05); }
+.scale-110  { transform: scale(1.1); }
+.scale-125  { transform: scale(1.25); }
+.scale-150  { transform: scale(1.5); }
+
+.rotate-0    { transform: rotate(0deg); }
+.rotate-1    { transform: rotate(1deg); }
+.rotate-2    { transform: rotate(2deg); }
+.rotate-3    { transform: rotate(3deg); }
+.rotate-6    { transform: rotate(6deg); }
+.rotate-12   { transform: rotate(12deg); }
+.rotate-45   { transform: rotate(45deg); }
+.rotate-90   { transform: rotate(90deg); }
+.rotate-180  { transform: rotate(180deg); }
+.-rotate-1   { transform: rotate(-1deg); }
+.-rotate-2   { transform: rotate(-2deg); }
+.-rotate-3   { transform: rotate(-3deg); }
+.-rotate-6   { transform: rotate(-6deg); }
+.-rotate-12  { transform: rotate(-12deg); }
+.-rotate-45  { transform: rotate(-45deg); }
+.-rotate-90  { transform: rotate(-90deg); }
+.-rotate-180 { transform: rotate(-180deg); }
+
+.translate-x-0    { transform: translateX(0); }
+.translate-y-0    { transform: translateY(0); }
+.-translate-x-1\/2 { transform: translateX(-50%); }
+.-translate-y-1\/2 { transform: translateY(-50%); }
+.translate-x-full { transform: translateX(100%); }
+.translate-y-full { transform: translateY(100%); }
+.-translate-x-full { transform: translateX(-100%); }
+.-translate-y-full { transform: translateY(-100%); }
+
+// Skew
+.skew-x-0  { transform: skewX(0deg); }
+.skew-x-1  { transform: skewX(1deg); }
+.skew-x-2  { transform: skewX(2deg); }
+.skew-x-3  { transform: skewX(3deg); }
+.skew-x-6  { transform: skewX(6deg); }
+.skew-x-12 { transform: skewX(12deg); }
+.skew-y-0  { transform: skewY(0deg); }
+.skew-y-1  { transform: skewY(1deg); }
+.skew-y-2  { transform: skewY(2deg); }
+.skew-y-3  { transform: skewY(3deg); }
+.skew-y-6  { transform: skewY(6deg); }
+.skew-y-12 { transform: skewY(12deg); }
+
+// Transform origin
+.origin-center       { transform-origin: center; }
+.origin-top          { transform-origin: top; }
+.origin-top-right    { transform-origin: top right; }
+.origin-right        { transform-origin: right; }
+.origin-bottom-right { transform-origin: bottom right; }
+.origin-bottom       { transform-origin: bottom; }
+.origin-bottom-left  { transform-origin: bottom left; }
+.origin-left         { transform-origin: left; }
+.origin-top-left     { transform-origin: top left; }
+
+// Backdrop filter
+.backdrop-blur-none { backdrop-filter: none; }
+.backdrop-blur-sm   { backdrop-filter: blur(4px); }
+.backdrop-blur      { backdrop-filter: blur(8px); }
+.backdrop-blur-md   { backdrop-filter: blur(12px); }
+.backdrop-blur-lg   { backdrop-filter: blur(16px); }
+.backdrop-blur-xl   { backdrop-filter: blur(24px); }
+.backdrop-blur-2xl  { backdrop-filter: blur(40px); }
+
+// Filter
+.blur-none { filter: none; }
+.blur-sm   { filter: blur(4px); }
+.blur      { filter: blur(8px); }
+.blur-md   { filter: blur(12px); }
+.blur-lg   { filter: blur(16px); }
+.blur-xl   { filter: blur(24px); }
+.grayscale   { filter: grayscale(100%); }
+.grayscale-0 { filter: grayscale(0); }
+.brightness-0   { filter: brightness(0); }
+.brightness-50  { filter: brightness(0.5); }
+.brightness-75  { filter: brightness(0.75); }
+.brightness-90  { filter: brightness(0.9); }
+.brightness-95  { filter: brightness(0.95); }
+.brightness-100 { filter: brightness(1); }
+.brightness-105 { filter: brightness(1.05); }
+.brightness-110 { filter: brightness(1.1); }
+.brightness-125 { filter: brightness(1.25); }
+.brightness-150 { filter: brightness(1.5); }
+.brightness-200 { filter: brightness(2); }
+.invert   { filter: invert(100%); }
+.invert-0 { filter: invert(0); }
+
+// Appearance
+.appearance-none { appearance: none; }
+.appearance-auto { appearance: auto; }
+
+// Resize
+.resize-none { resize: none; }
+.resize-x    { resize: horizontal; }
+.resize-y    { resize: vertical; }
+.resize      { resize: both; }
+
+// Scroll behavior
+.scroll-auto   { scroll-behavior: auto; }
+.scroll-smooth { scroll-behavior: smooth; }
+
+// Will change
+.will-change-auto      { will-change: auto; }
+.will-change-scroll    { will-change: scroll-position; }
+.will-change-contents  { will-change: contents; }
+.will-change-transform { will-change: transform; }
+
+// Mix blend mode
+.mix-blend-normal      { mix-blend-mode: normal; }
+.mix-blend-multiply    { mix-blend-mode: multiply; }
+.mix-blend-screen      { mix-blend-mode: screen; }
+.mix-blend-overlay     { mix-blend-mode: overlay; }
+.mix-blend-darken      { mix-blend-mode: darken; }
+.mix-blend-lighten     { mix-blend-mode: lighten; }
+.mix-blend-color-dodge { mix-blend-mode: color-dodge; }
+.mix-blend-color-burn  { mix-blend-mode: color-burn; }

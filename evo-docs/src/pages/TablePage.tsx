@@ -7,16 +7,16 @@ interface User extends Record<string, unknown> {
   id: number
   name: string
   email: string
-  role: string
+  role: { name: string }
   status: 'active' | 'inactive' | 'pending'
 }
 
 const data: User[] = [
-  { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin', status: 'active' },
-  { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'Editor', status: 'inactive' },
-  { id: 3, name: 'Carol White', email: 'carol@example.com', role: 'Viewer', status: 'active' },
-  { id: 4, name: 'Dave Brown', email: 'dave@example.com', role: 'Editor', status: 'pending' },
-  { id: 5, name: 'Eve Davis', email: 'eve@example.com', role: 'Viewer', status: 'active' },
+  { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: { name: 'Admin' }, status: 'active' },
+  { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: { name: 'Editor' }, status: 'inactive' },
+  { id: 3, name: 'Carol White', email: 'carol@example.com', role: { name: 'Viewer' }, status: 'active' },
+  { id: 4, name: 'Dave Brown', email: 'dave@example.com', role: { name: 'Editor' }, status: 'pending' },
+  { id: 5, name: 'Eve Davis', email: 'eve@example.com', role: { name: 'Viewer' }, status: 'active' },
 ]
 
 const statusMap = {
@@ -26,12 +26,12 @@ const statusMap = {
 } as const
 
 const columns = [
-  { key: 'id' as const, header: '#', width: '60px' },
-  { key: 'name' as const, header: 'Name' },
-  { key: 'email' as const, header: 'Email' },
-  { key: 'role' as const, header: 'Role' },
+  { key: 'id', header: '#', width: '60px' },
+  { key: 'name', header: 'Name' },
+  { key: 'email', header: 'Email' },
+  { key: 'role.name', header: 'Role' },
   {
-    key: 'status' as const,
+    key: 'status',
     header: 'Status',
     render: (val: unknown) => (
       <EvoBadge severity={statusMap[val as User['status']]} variant="subtle" size="sm" dot>
@@ -73,12 +73,14 @@ export default function TablePage() {
         <CodeBlock code={`interface User {
   id: number
   name: string
+  role: { name: string }
   status: 'active' | 'inactive'
 }
 
 const columns = [
   { key: 'id', header: '#', width: '60px' },
   { key: 'name', header: 'Name' },
+  { key: 'role.name', header: 'Role' },  // dot notation for nested fields
   {
     key: 'status',
     header: 'Status',
@@ -115,7 +117,7 @@ const columns = [
       <div className="docs-section">
         <div className="docs-section-title">TableColumn Definition</div>
         <PropsTable props={[
-          { prop: 'key', type: 'keyof T', required: true, description: 'Key in the data object to display.' },
+          { prop: 'key', type: 'string', required: true, description: "Key in the data object to display. Supports dot notation for nested fields (e.g. 'role.name')." },
           { prop: 'header', type: 'string', required: true, description: 'Column header label.' },
           { prop: 'width', type: 'string', description: "Optional fixed width, e.g. '120px' or '10%'." },
           { prop: 'render', type: '(value, row) => ReactNode', description: 'Custom cell renderer.' },

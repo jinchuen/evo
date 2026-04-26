@@ -1,0 +1,99 @@
+// ==========================================
+// SPACING UTILITIES
+// m-{n} | p-{n} | gap-{n}  (1 unit = 0.25rem)
+// ==========================================
+
+$_spacing: (
+  0:  0,
+  1:  0.25rem,
+  2:  0.5rem,
+  3:  0.75rem,
+  4:  1rem,
+  5:  1.25rem,
+  6:  1.5rem,
+  7:  1.75rem,
+  8:  2rem,
+  9:  2.25rem,
+  10: 2.5rem,
+  11: 2.75rem,
+  12: 3rem,
+  14: 3.5rem,
+  16: 4rem,
+  20: 5rem,
+  24: 6rem,
+  28: 7rem,
+  32: 8rem,
+  36: 9rem,
+  40: 10rem,
+  44: 11rem,
+  48: 12rem,
+  56: 14rem,
+  64: 16rem,
+  72: 18rem,
+  80: 20rem,
+  96: 24rem,
+);
+
+@each $key, $val in $_spacing {
+  // Margin
+  .m-#{$key}  { margin: $val; }
+  .mt-#{$key} { margin-top: $val; }
+  .mr-#{$key} { margin-right: $val; }
+  .mb-#{$key} { margin-bottom: $val; }
+  .ml-#{$key} { margin-left: $val; }
+  .mx-#{$key} { margin-inline: $val; }
+  .my-#{$key} { margin-block: $val; }
+
+  // Padding
+  .p-#{$key}  { padding: $val; }
+  .pt-#{$key} { padding-top: $val; }
+  .pr-#{$key} { padding-right: $val; }
+  .pb-#{$key} { padding-bottom: $val; }
+  .pl-#{$key} { padding-left: $val; }
+  .px-#{$key} { padding-inline: $val; }
+  .py-#{$key} { padding-block: $val; }
+
+  // Gap
+  .gap-#{$key}   { gap: $val; }
+  .gap-x-#{$key} { column-gap: $val; }
+  .gap-y-#{$key} { row-gap: $val; }
+}
+
+// Pixel variants
+.m-px  { margin: 1px; }
+.mt-px { margin-top: 1px; }
+.mr-px { margin-right: 1px; }
+.mb-px { margin-bottom: 1px; }
+.ml-px { margin-left: 1px; }
+.mx-px { margin-inline: 1px; }
+.my-px { margin-block: 1px; }
+.p-px  { padding: 1px; }
+.pt-px { padding-top: 1px; }
+.pr-px { padding-right: 1px; }
+.pb-px { padding-bottom: 1px; }
+.pl-px { padding-left: 1px; }
+.px-px { padding-inline: 1px; }
+.py-px { padding-block: 1px; }
+.gap-px { gap: 1px; }
+
+// Auto margins
+.m-auto  { margin: auto; }
+.mt-auto { margin-top: auto; }
+.mr-auto { margin-right: auto; }
+.mb-auto { margin-bottom: auto; }
+.ml-auto { margin-left: auto; }
+.mx-auto { margin-inline: auto; }
+.my-auto { margin-block: auto; }
+
+// Negative margins
+@each $key, $val in $_spacing {
+  @if $key != 0 {
+    .-m-#{$key}  { margin: -$val; }
+    .-mt-#{$key} { margin-top: -$val; }
+    .-mr-#{$key} { margin-right: -$val; }
+    .-mb-#{$key} { margin-bottom: -$val; }
+    .-ml-#{$key} { margin-left: -$val; }
+    .-mx-#{$key} { margin-inline: -$val; }
+    .-my-#{$key} { margin-block: -$val; }
+  }
+}

@@ -4,7 +4,10 @@ import { EvoNav } from '@justin_evo/evo-ui'
 const nav = [
   {
     group: 'Getting Started',
-    items: [{ label: 'Overview', path: '/' }],
+    items: [
+      { label: 'Overview', path: '/' },
+      { label: 'Utilities', path: '/utilities' },
+    ],
   },
   {
     group: 'Forms',
