@@ -1,0 +1,185 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import styles from '../css/commandpalette.module.scss';
+
+export interface CommandPaletteItem {
+  label: string;
+  description?: string;
+  group?: string;
+  icon?: React.ReactNode;
+  shortcut?: string[];
+  onSelect: () => void;
+}
+
+interface EvoCommandPaletteProps {
+  items: CommandPaletteItem[];
+  placeholder?: string;
+  open?: boolean;
+  onClose?: () => void;
+}
+
+// Detect Mac for shortcut display only — keyboard handler uses ctrlKey||metaKey for both
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
+
+const SearchIcon = () => (
+  <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+    <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M10.5 10.5L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+export const EvoCommandPalette = ({
+  items,
+  placeholder = 'Search commands…',
+  open: controlledOpen,
+  onClose,
+}: EvoCommandPaletteProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [activeIdx, setActiveIdx] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const isControlled = controlledOpen !== undefined;
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+
+  const close = useCallback(() => {
+    if (!isControlled) setInternalOpen(false);
+    onClose?.();
+  }, [isControlled, onClose]);
+
+  // Ctrl+K (Windows/Linux) / ⌘+K (Mac)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        if (!isControlled) setInternalOpen(o => !o);
+      }
+      if (e.key === 'Escape' && isOpen) close();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isControlled, isOpen, close]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setQuery('');
+      setActiveIdx(0);
+      // Small delay so the element is mounted before focus
+      const t = setTimeout(() => inputRef.current?.focus(), 30);
+      return () => clearTimeout(t);
+    }
+  }, [isOpen]);
+
+  const filtered = query.trim()
+    ? items.filter(item =>
+        item.label.toLowerCase().includes(query.toLowerCase()) ||
+        item.description?.toLowerCase().includes(query.toLowerCase()) ||
+        item.group?.toLowerCase().includes(query.toLowerCase())
+      )
+    : items;
+
+  const grouped = filtered.reduce<Record<string, CommandPaletteItem[]>>((acc, item) => {
+    const g = item.group ?? 'Actions';
+    if (!acc[g]) acc[g] = [];
+    acc[g].push(item);
+    return acc;
+  }, {});
+
+  const flat = Object.values(grouped).flat();
+
+  const scrollActiveIntoView = (idx: number) => {
+    const el = listRef.current?.querySelector(`[data-idx="${idx}"]`) as HTMLElement | null;
+    el?.scrollIntoView({ block: 'nearest' });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIdx(i => {
+        const next = Math.min(i + 1, flat.length - 1);
+        scrollActiveIntoView(next);
+        return next;
+      });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIdx(i => {
+        const next = Math.max(i - 1, 0);
+        scrollActiveIntoView(next);
+        return next;
+      });
+    } else if (e.key === 'Enter' && flat[activeIdx]) {
+      flat[activeIdx].onSelect();
+      close();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  let globalIdx = 0;
+
+  return (
+    <div className={styles.overlay} onClick={close} role="dialog" aria-modal="true">
+      <div
+        className={styles.palette}
+        onClick={e => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+      >
+        <div className={styles.searchRow}>
+          <span className={styles.searchIconWrap}><SearchIcon /></span>
+          <input
+            ref={inputRef}
+            className={styles.searchInput}
+            placeholder={placeholder}
+            value={query}
+            onChange={e => { setQuery(e.target.value); setActiveIdx(0); }}
+            aria-label="Command search"
+          />
+          <kbd className={styles.escBadge}>Esc</kbd>
+        </div>
+
+        <div className={styles.results} ref={listRef}>
+          {flat.length === 0 && (
+            <div className={styles.empty}>No results for &ldquo;{query}&rdquo;</div>
+          )}
+          {Object.entries(grouped).map(([group, groupItems]) => (
+            <div key={group} className={styles.group}>
+              <div className={styles.groupLabel}>{group}</div>
+              {groupItems.map(item => {
+                const idx = globalIdx++;
+                return (
+                  <button
+                    key={item.label}
+                    data-idx={idx}
+                    className={[styles.resultItem, idx === activeIdx ? styles.resultActive : '']
+                      .filter(Boolean)
+                      .join(' ')}
+                    onClick={() => { item.onSelect(); close(); }}
+                    onMouseEnter={() => setActiveIdx(idx)}
+                  >
+                    {item.icon && <span className={styles.resultIcon}>{item.icon}</span>}
+                    <span className={styles.resultLabel}>{item.label}</span>
+                    {item.description && <span className={styles.resultDesc}>{item.description}</span>}
+                    {item.shortcut && (
+                      <span className={styles.resultShortcut}>
+                        {item.shortcut.map((k, i) => <kbd key={i}>{k}</kbd>)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.footer}>
+          <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+          <span><kbd>↵</kbd> select</span>
+          <span><kbd>Esc</kbd> close</span>
+          <span className={styles.footerRight}>
+            <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd><kbd>K</kbd> toggle
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -26,6 +26,7 @@ export * from './Breadcrumb/Breadcrumb';
 export * from './Nav/Nav';
 export * from './TopNav/TopNav';
 export * from './Pagination/Pagination';
+export * from './CommandPalette/CommandPalette';
 
 // Forms & Inputs
 export * from './Input/Input';
