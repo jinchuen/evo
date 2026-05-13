@@ -19,33 +19,33 @@
 
 // Solid
 .solid {
-  &.primary   { background: $evo-primary-color;  color: #fff;             border-color: $evo-primary-color; }
-  &.secondary { background: $evo-slate-600;       color: #fff;             border-color: $evo-slate-600; }
-  &.success   { background: $evo-success-color;   color: #fff;             border-color: $evo-success-color; }
+  &.primary   { background: $evo-primary-color;  color: $evo-primary-fg;   border-color: $evo-primary-color; }
+  &.secondary { background: $color-surface-active; color: $color-text-primary; border-color: $color-border-strong; }
+  &.success   { background: $evo-success-color;   color: $evo-success-fg;   border-color: $evo-success-color; }
   &.warning   { background: $evo-warning-color;   color: $evo-warning-text; border-color: $evo-warning-color; }
-  &.danger    { background: $evo-danger-color;    color: #fff;             border-color: $evo-danger-color; }
-  &.info      { background: $evo-info-color;      color: #fff;             border-color: $evo-info-color; }
+  &.danger    { background: $evo-danger-color;    color: $evo-danger-fg;    border-color: $evo-danger-color; }
+  &.info      { background: $evo-info-color;      color: $evo-info-fg;      border-color: $evo-info-color; }
 }
 
 // Outline
 .outline {
   background: transparent;
-  &.primary   { color: $evo-primary-color;  border-color: $evo-primary-color; }
-  &.secondary { color: $evo-slate-400;      border-color: $evo-slate-600; }
-  &.success   { color: $evo-success-color;  border-color: $evo-success-color; }
-  &.warning   { color: $evo-warning-color;  border-color: $evo-warning-color; }
-  &.danger    { color: $evo-danger-color;   border-color: $evo-danger-color; }
-  &.info      { color: $evo-info-color;     border-color: $evo-info-color; }
+  &.primary   { color: $evo-primary-color;    border-color: $evo-primary-color; }
+  &.secondary { color: $color-text-secondary; border-color: $color-border-strong; }
+  &.success   { color: $evo-success-color;    border-color: $evo-success-color; }
+  &.warning   { color: $evo-warning-color;    border-color: $evo-warning-color; }
+  &.danger    { color: $evo-danger-color;     border-color: $evo-danger-color; }
+  &.info      { color: $evo-info-color;       border-color: $evo-info-color; }
 }
 
 // Subtle
 .subtle {
-  &.primary   { background: rgba($evo-primary-color,  0.15); color: $evo-primary-color;  border-color: transparent; }
-  &.secondary { background: rgba(255, 255, 255, 0.08); color: $evo-slate-300;           border-color: transparent; }
-  &.success   { background: rgba($evo-success-color,  0.15); color: $evo-success-color;  border-color: transparent; }
-  &.warning   { background: rgba($evo-warning-color,  0.15); color: $evo-warning-color;  border-color: transparent; }
-  &.danger    { background: rgba($evo-danger-color,   0.15); color: $evo-danger-color;   border-color: transparent; }
-  &.info      { background: rgba($evo-info-color,     0.15); color: $evo-info-color;     border-color: transparent; }
+  &.primary   { background: color-mix(in srgb, $evo-primary-color 15%, transparent); color: $evo-primary-color; border-color: transparent; }
+  &.secondary { background: $color-surface-hover; color: $color-text-secondary; border-color: transparent; }
+  &.success   { background: color-mix(in srgb, $evo-success-color 15%, transparent); color: $evo-success-color; border-color: transparent; }
+  &.warning   { background: color-mix(in srgb, $evo-warning-color 15%, transparent); color: $evo-warning-color; border-color: transparent; }
+  &.danger    { background: color-mix(in srgb, $evo-danger-color  15%, transparent); color: $evo-danger-color;  border-color: transparent; }
+  &.info      { background: color-mix(in srgb, $evo-info-color    15%, transparent); color: $evo-info-color;    border-color: transparent; }
 }
 
 .dot {

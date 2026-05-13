@@ -58,7 +58,7 @@
       transform: translate(-50%, -50%) !important;
       width: 8px;
       height: 2px;
-      background: #fff;
+      background: $evo-primary-fg;
       border: none;
       opacity: 1;
     }
@@ -98,7 +98,7 @@
     left: 3px;
     width: 5px;
     height: 8px;
-    border: 2px solid #fff;
+    border: 2px solid $evo-primary-fg;
     border-top: none;
     border-left: none;
     opacity: 0;

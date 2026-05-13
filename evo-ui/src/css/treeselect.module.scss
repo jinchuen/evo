@@ -1,0 +1,558 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+/* =====================================================================
+ * EvoTreeSelect — Hierarchical dropdown selector.
+ *
+ * Synthesizes the strongest ideas from Ant Design TreeSelect, PrimeReact,
+ * Element Plus, Naive UI and the W3C ARIA tree pattern, tuned to the
+ * Linear / Vercel / shadcn dark aesthetic already shared by EvoSelect.
+ *
+ * Highlights
+ *  - Single OR multi-select with tri-state cascade checkboxes
+ *  - Expand / collapse with rotating chevrons + subtle indent guides
+ *  - In-menu search that auto-expands ancestors of matches
+ *  - Chip rendering for multi-select with maxTagCount overflow
+ *  - Full keyboard nav (W3C tree pattern, adapted for a combobox shell)
+ * ===================================================================== */
+
+.field {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-family: $font-sans;
+  min-width: 260px;
+}
+
+.fullWidth { width: 100%; }
+
+.disabled .trigger {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.label {
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $color-text-primary;
+  letter-spacing: -0.005em;
+}
+
+.selectWrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* ---------------- Trigger button ---------------- */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  color: $color-text-primary;
+  font-family: $font-sans;
+  font-size: $text-sm;
+  line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+  text-align: left;
+  outline: none;
+
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast,
+    box-shadow $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: $color-surface-hover;
+    border-color: $color-border-strong;
+  }
+
+  &:focus-visible,
+  &.open {
+    border-color: $evo-primary-color;
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, $evo-primary-color 18%, transparent),
+      0 1px 2px rgb(0 0 0 / 0.15);
+  }
+
+  &.hasError {
+    border-color: $evo-danger-color;
+
+    &.open,
+    &:focus-visible {
+      box-shadow:
+        0 0 0 3px color-mix(in srgb, $evo-danger-color 18%, transparent),
+        0 1px 2px rgb(0 0 0 / 0.15);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ---------------- Sizes ---------------- */
+.sm {
+  padding: 0.3rem 0.5rem;
+  min-height: 32px;
+  font-size: $text-xs;
+  border-radius: $radius-sm;
+}
+
+.md {
+  padding: 0.4rem 0.625rem;
+  min-height: 38px;
+  font-size: $text-sm;
+}
+
+.lg {
+  padding: 0.5rem 0.75rem;
+  min-height: 44px;
+  font-size: $text-base;
+}
+
+/* ---------------- Trigger content ---------------- */
+.triggerValue,
+.triggerPlaceholder {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.triggerPlaceholder {
+  color: $color-text-muted;
+}
+
+.triggerText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.triggerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ---------------- Chips (multi-select) ---------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.45rem;
+  height: 22px;
+  border-radius: 999px;
+  background: color-mix(in srgb, $evo-primary-color 12%, transparent);
+  border: 1px solid color-mix(in srgb, $evo-primary-color 25%, transparent);
+  color: $evo-primary-color;
+  font-size: $text-xs;
+  font-weight: 500;
+  max-width: 180px;
+  line-height: 1;
+}
+
+.chipLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  color: $evo-primary-color;
+  cursor: pointer;
+  transition: color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    color: $color-text-primary;
+    background: $color-surface-hover;
+  }
+}
+
+.chipOverflow {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  height: 22px;
+  border-radius: 999px;
+  background: $color-surface-active;
+  border: 1px solid $color-border;
+  color: $color-text-secondary;
+  font-size: $text-xs;
+  font-weight: 500;
+}
+
+/* ---------------- Clear & chevron ---------------- */
+.clearBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: $color-text-muted;
+  cursor: pointer;
+  transition: color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    color: $color-text-primary;
+    background: $color-surface-hover;
+  }
+}
+
+.chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-muted;
+  transition: transform 180ms cubic-bezier(0.4, 0, 0.2, 1), color $transition-fast;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+  color: $evo-primary-color;
+}
+
+.trigger:hover:not(:disabled) .chevron {
+  color: $color-text-secondary;
+}
+
+/* =====================================================================
+ * Popover menu
+ * ===================================================================== */
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  background: $color-surface-elevated;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  overflow: hidden;
+
+  box-shadow:
+    0 16px 32px -12px rgb(0 0 0 / 0.35),
+    0 6px 12px -4px rgb(0 0 0 / 0.18);
+
+  transform-origin: top center;
+  animation: menuOpen 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes menuOpen {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------------- In-menu search row ---------------- */
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid $color-border-subtle;
+  background: $color-surface-sunken;
+}
+
+.searchIconWrap {
+  display: inline-flex;
+  color: $color-text-muted;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: $font-sans;
+  font-size: $text-sm;
+  color: $color-text-primary;
+  caret-color: $evo-primary-color;
+  padding: 0;
+
+  &::placeholder { color: $color-text-muted; }
+}
+
+/* ---------------- Tree list ---------------- */
+.tree {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.35rem 0.3rem;
+
+  scrollbar-width: thin;
+  scrollbar-color: $color-border-strong transparent;
+
+  &::-webkit-scrollbar { width: 8px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: $color-border-strong;
+    border-radius: 4px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: $color-text-muted;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+}
+
+.empty {
+  padding: 1.5rem 0.75rem;
+  text-align: center;
+  color: $color-text-muted;
+  font-size: $text-sm;
+}
+
+/* ---------------- Tree row ---------------- */
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.35rem 0.4rem;
+  border-radius: 6px;
+  color: $color-text-primary;
+  font-family: $font-sans;
+  font-size: $text-sm;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+  user-select: none;
+}
+
+.row:hover:not(.rowDisabled) {
+  background: $color-surface-hover;
+}
+
+.rowActive:not(.rowDisabled) {
+  background: color-mix(in srgb, $evo-primary-color 10%, transparent);
+  box-shadow: inset 0 0 0 1px $color-border-subtle;
+}
+
+.rowSelected {
+  color: $evo-primary-color;
+
+  .rowLabel { font-weight: 600; }
+}
+
+.rowDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* indent guides */
+.indent {
+  display: inline-flex;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.indentUnit {
+  width: 14px;
+  position: relative;
+  display: inline-block;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    left: 6px;
+    width: 1px;
+    background: $color-border-subtle;
+  }
+}
+
+/* expand/collapse toggle */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: $color-text-muted;
+  border-radius: 4px;
+  transition: transform 160ms cubic-bezier(0.4, 0, 0.2, 1), background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: $color-surface-hover;
+    color: $color-text-primary;
+  }
+}
+
+.toggleOpen {
+  transform: rotate(90deg);
+  color: $evo-primary-color;
+}
+
+.togglePlaceholder {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid $color-border;
+  border-top-color: $evo-primary-color;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* checkbox */
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background: $color-surface;
+  border: 1px solid $color-border-strong;
+  border-radius: 4px;
+  color: $evo-primary-color;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast,
+    color $transition-fast;
+}
+
+.row:hover:not(.rowDisabled) .checkbox {
+  border-color: $evo-primary-color;
+}
+
+.checkboxChecked {
+  background: $evo-primary-color;
+  border-color: $evo-primary-color;
+  color: $evo-primary-fg;
+}
+
+.checkboxMixed {
+  background: color-mix(in srgb, $evo-primary-color 18%, transparent);
+  border-color: $evo-primary-color;
+  color: $evo-primary-color;
+}
+
+/* icon + label */
+.rowIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  color: $color-text-secondary;
+}
+
+.rowText {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 1px;
+}
+
+.rowLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.rowDesc {
+  font-size: $text-xs;
+  color: $color-text-muted;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match {
+  color: $evo-primary-color;
+  background: color-mix(in srgb, $evo-primary-color 16%, transparent);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* trailing single-select check */
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: $evo-primary-color;
+  flex-shrink: 0;
+}
+
+/* ---------------- Footer / helpers ---------------- */
+.menuFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.75rem;
+  border-top: 1px solid $color-border-subtle;
+  background: $color-surface-sunken;
+  font-size: $text-xs;
+  color: $color-text-muted;
+}
+
+.footerBtn {
+  background: none;
+  border: none;
+  color: $evo-primary-color;
+  font-size: $text-xs;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover { background: color-mix(in srgb, $evo-primary-color 10%, transparent); color: $evo-primary-hover; }
+}
+
+.errorText {
+  font-size: $text-xs;
+  color: $evo-danger-color;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.helperText {
+  font-size: $text-xs;
+  color: $color-text-muted;
+  margin: 0;
+  line-height: 1.4;
+}

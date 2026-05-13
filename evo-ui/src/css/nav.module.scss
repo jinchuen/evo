@@ -33,12 +33,12 @@
   position: relative;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: $color-surface-hover;
     color: $color-text-primary;
   }
 
   &.active {
-    background-color: rgba($evo-primary-color, 0.12);
+    background-color: color-mix(in srgb, $evo-primary-color 12%, transparent);
     color: $evo-primary-color;
 
     &::before {
@@ -117,7 +117,7 @@
   width: 1.125rem;
   height: 1.125rem;
   border-radius: $radius-sm;
-  background: rgba(255, 255, 255, 0.06);
+  background: $color-skeleton-base;
   flex-shrink: 0;
   animation: navShimmer 1.6s ease-in-out infinite;
 }
@@ -125,7 +125,7 @@
 .navSkeletonText {
   height: 0.6875rem;
   border-radius: $radius-sm;
-  background: rgba(255, 255, 255, 0.06);
+  background: $color-skeleton-base;
   animation: navShimmer 1.6s ease-in-out infinite;
   animation-delay: 0.1s;
 }
@@ -146,19 +146,19 @@
   font-size: $text-sm;
   font-weight: 500;
   color: $evo-primary-color;
-  background: rgba($evo-primary-color, 0.08);
-  border: 1px dashed rgba($evo-primary-color, 0.35);
+  background: color-mix(in srgb, $evo-primary-color 8%, transparent);
+  border: 1px dashed color-mix(in srgb, $evo-primary-color 35%, transparent);
   border-radius: $radius-sm;
   cursor: pointer;
   font-family: $font-sans;
   transition: background-color $transition-fast, border-color $transition-fast;
 
   &:hover {
-    background: rgba($evo-primary-color, 0.15);
-    border-color: rgba($evo-primary-color, 0.55);
+    background: color-mix(in srgb, $evo-primary-color 15%, transparent);
+    border-color: color-mix(in srgb, $evo-primary-color 55%, transparent);
   }
 
   &:active {
-    background: rgba($evo-primary-color, 0.22);
+    background: color-mix(in srgb, $evo-primary-color 22%, transparent);
   }
 }

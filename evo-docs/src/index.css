@@ -1,21 +1,32 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * Evo Docs — site chrome
+ * Reads the evo-ui theme tokens (--evo-color-*) so the docs site itself
+ * flips between light and dark when EvoThemeProvider toggles the theme.
+ * Adds a few docs-only tokens layered on top.
+ * ───────────────────────────────────────────────────────────────────── */
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 :root {
-  --docs-bg: #0c0e17;
-  --docs-sidebar-bg: #080a11;
-  --docs-sidebar-border: #161929;
-  --docs-border: #1a1e2e;
-  --docs-card-bg: #11141f;
-  --docs-text: #e2e8f0;
-  --docs-text-muted: #64748b;
-  --docs-text-subtle: #3d4663;
-  --docs-accent: #22d3ee;
-  --docs-accent-dim: rgba(34, 211, 238, 0.12);
-  --docs-code-bg: #090b14;
-  --docs-code-text: #a9b1d6;
-  --docs-sidebar-width: 260px;
+  --docs-bg:              var(--evo-color-bg);
+  --docs-sidebar-bg:      var(--evo-color-surface);
+  --docs-sidebar-border:  var(--evo-color-border);
+  --docs-border:          var(--evo-color-border);
+  --docs-border-subtle:   var(--evo-color-border-subtle);
+  --docs-card-bg:         var(--evo-color-surface-elevated);
+  --docs-card-hover:      var(--evo-color-surface-hover);
+  --docs-text:            var(--evo-color-text);
+  --docs-text-muted:      var(--evo-color-text-muted);
+  --docs-text-subtle:     var(--evo-color-text-muted);
+  --docs-accent:          var(--evo-color-primary);
+  --docs-accent-rgb:      var(--evo-color-primary-rgb);
+  --docs-accent-dim:      color-mix(in srgb, var(--evo-color-primary) 12%, transparent);
+  --docs-code-bg:         var(--evo-color-surface-sunken);
+  --docs-code-text:       var(--evo-color-text-secondary);
+  --docs-sidebar-width:   260px;
+  --docs-topbar-height:   56px;
 }
 
 html, body {
@@ -23,6 +34,7 @@ html, body {
   padding: 0;
   background: var(--docs-bg);
   color: var(--docs-text);
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 body {
@@ -64,11 +76,12 @@ p { margin: 0; }
   z-index: 100;
   display: flex;
   flex-direction: column;
+  transition: transform 220ms ease, background-color 200ms ease, border-color 200ms ease;
 }
 
 .docs-sidebar::-webkit-scrollbar { width: 4px; }
 .docs-sidebar::-webkit-scrollbar-track { background: transparent; }
-.docs-sidebar::-webkit-scrollbar-thumb { background: var(--docs-sidebar-border); border-radius: 2px; }
+.docs-sidebar::-webkit-scrollbar-thumb { background: var(--docs-border); border-radius: 2px; }
 
 .docs-sidebar-logo {
   padding: 1.4rem 1.25rem 1.1rem;
@@ -94,14 +107,78 @@ p { margin: 0; }
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
   font-weight: 600;
-  border: 1px solid rgba(34, 211, 238, 0.2);
+  border: 1px solid color-mix(in srgb, var(--docs-accent) 20%, transparent);
+}
+
+/* ─── Top bar (theme toggle + mobile menu) ───────────────────────── */
+
+.docs-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  height: var(--docs-topbar-height);
+  padding: 0 1.25rem;
+  background: color-mix(in srgb, var(--docs-bg) 80%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--docs-border-subtle);
+}
+
+.docs-topbar-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--docs-text-muted);
+  letter-spacing: -0.005em;
+}
+
+.docs-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.docs-mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--docs-border);
+  border-radius: 8px;
+  color: var(--docs-text);
+  cursor: pointer;
+  padding: 0;
+}
+
+.docs-mobile-menu-btn:hover {
+  background: var(--docs-card-hover);
 }
 
 .docs-main {
   margin-left: var(--docs-sidebar-width);
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.docs-main-inner {
   padding: 2.5rem 3rem 4rem;
   max-width: 900px;
+  width: 100%;
+}
+
+/* Home page wants more breathing room so the dynamic grid can actually
+ * show 4–5 cards per row on large displays instead of being capped by
+ * the narrow docs reading column. */
+.docs-main-inner.docs-main-inner-wide {
+  max-width: 1280px;
 }
 
 /* ─── Page Header ─────────────────────────────────────────────────── */
@@ -220,7 +297,7 @@ p { margin: 0; }
   justify-content: space-between;
   padding: 0.5rem 0.85rem;
   border-bottom: 1px solid var(--docs-border);
-  background: rgba(255,255,255,0.02);
+  background: color-mix(in srgb, var(--docs-text) 3%, transparent);
 }
 
 .docs-code-lang {
@@ -276,7 +353,7 @@ p { margin: 0; }
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-bottom: 1px solid var(--docs-border);
-  background: rgba(255,255,255,0.015);
+  background: color-mix(in srgb, var(--docs-text) 2%, transparent);
 }
 
 .docs-props-table td {
@@ -291,7 +368,7 @@ p { margin: 0; }
 }
 
 .docs-props-table tr:hover td {
-  background: rgba(255,255,255,0.015);
+  background: color-mix(in srgb, var(--docs-text) 2%, transparent);
 }
 
 .prop-name {
@@ -303,14 +380,14 @@ p { margin: 0; }
 
 .prop-required {
   font-size: 0.68rem;
-  color: #f87171;
+  color: var(--evo-color-danger);
   margin-left: 4px;
 }
 
 .prop-type {
   font-family: 'Fira Code', Consolas, monospace;
   font-size: 0.75rem;
-  color: #c084fc;
+  color: var(--evo-color-info);
 }
 
 .prop-default {
@@ -356,37 +433,135 @@ p { margin: 0; }
   margin-bottom: 1.5rem;
 }
 
+/* ─── Component Group Sections (Overview) ────────────────────────── */
+
+.docs-component-group {
+  margin-top: 1.75rem;
+}
+
+.docs-component-group:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.docs-component-group-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.9rem;
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--docs-accent);
+}
+
+.docs-component-group-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--docs-text);
+  letter-spacing: -0.01em;
+}
+
+.docs-component-group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.25rem;
+  padding: 0 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--docs-accent);
+  background: var(--docs-accent-dim);
+  border-radius: 999px;
+}
+
+.docs-component-group-desc {
+  font-size: 0.8rem;
+  color: var(--docs-text-muted);
+  margin: 0;
+}
+
+/* Genuinely dynamic — fills as many columns as the container fits,
+ * never locks to a fixed count. Min track is 200px so small previews
+ * stay legible on phones; max is 1fr so columns share leftover space. */
 .docs-component-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+  gap: 0.85rem;
 }
 
 .docs-component-card {
+  display: flex;
+  flex-direction: column;
   background: var(--docs-card-bg);
   border: 1px solid var(--docs-border);
-  border-radius: 8px;
-  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  padding: 0;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s ease, background 0.15s ease,
+              transform 0.15s ease, box-shadow 0.15s ease;
   text-decoration: none;
+  overflow: hidden;
+  font-family: inherit;
+  text-align: left;
+  /* Reset native <button> chrome */
+  appearance: none;
+  -webkit-appearance: none;
+  color: inherit;
+  width: 100%;
 }
 
 .docs-component-card:hover {
-  border-color: rgba(34, 211, 238, 0.35);
-  background: rgba(34, 211, 238, 0.04);
+  border-color: color-mix(in srgb, var(--docs-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--docs-accent) 4%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -10px rgb(0 0 0 / 0.15);
+}
+
+.docs-component-card:focus-visible {
+  outline: 2px solid var(--docs-accent);
+  outline-offset: 3px;
+}
+
+.docs-component-card-preview {
+  /* Live miniature of the component */
+  flex: 1;
+  min-height: 96px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--evo-color-surface);
+  border-bottom: 1px solid var(--docs-border-subtle);
+  /* Disable interactivity — the card itself is the click target */
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.docs-component-card-preview > * {
+  /* Scale down anything that overflows the tile */
+  max-width: 100%;
+}
+
+.docs-component-card-meta {
+  padding: 0.65rem 0.9rem 0.75rem;
 }
 
 .docs-component-card-name {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--docs-text);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.15rem;
 }
 
 .docs-component-card-cat {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--docs-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
 }
 
 /* ─── Misc ────────────────────────────────────────────────────────── */
@@ -410,4 +585,110 @@ p { margin: 0; }
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+/* ─── Theming page — token swatches ─────────────────────────────── */
+
+.docs-token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.docs-token-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--docs-card-bg);
+  border: 1px solid var(--docs-border);
+  border-radius: 8px;
+}
+
+.docs-token-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--docs-border);
+  flex-shrink: 0;
+}
+
+.docs-token-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.docs-token-name {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--docs-text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.docs-token-label {
+  font-size: 0.7rem;
+  color: var(--docs-text-muted);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .docs-main-inner {
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .docs-mobile-menu-btn {
+    display: inline-flex;
+  }
+
+  .docs-sidebar {
+    transform: translateX(-100%);
+    box-shadow: 8px 0 32px rgb(0 0 0 / 0.25);
+  }
+
+  .docs-sidebar.docs-sidebar-open {
+    transform: translateX(0);
+  }
+
+  .docs-main {
+    margin-left: 0;
+  }
+
+  .docs-page-title {
+    font-size: 1.5rem;
+  }
+
+  .docs-home-hero h1 {
+    font-size: 1.9rem;
+  }
+
+  .docs-preview {
+    padding: 1.25rem;
+  }
+}
+
+.docs-sidebar-scrim {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .docs-sidebar-scrim {
+    position: fixed;
+    inset: 0;
+    background: var(--evo-color-backdrop);
+    z-index: 99;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+
+  .docs-sidebar-scrim.docs-sidebar-scrim-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }

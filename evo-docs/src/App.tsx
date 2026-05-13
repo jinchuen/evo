@@ -8,6 +8,7 @@ import InputPage from './pages/InputPage'
 import CheckboxPage from './pages/CheckboxPage'
 import RadioPage from './pages/RadioPage'
 import SelectPage from './pages/SelectPage'
+import TreeSelectPage from './pages/TreeSelectPage'
 import TogglePage from './pages/TogglePage'
 import BadgePage from './pages/BadgePage'
 import ModalPage from './pages/ModalPage'
@@ -27,6 +28,7 @@ import NavPage from './pages/NavPage'
 import BreadcrumbPage from './pages/BreadcrumbPage'
 import TopNavPage from './pages/TopNavPage'
 import UtilitiesPage from './pages/UtilitiesPage'
+import ThemingPage from './pages/ThemingPage'
 
 export default function App() {
   return (
@@ -35,12 +37,14 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
+            <Route path="/theming" element={<ThemingPage />} />
             <Route path="/components/button" element={<ButtonPage />} />
             <Route path="/components/card" element={<CardPage />} />
             <Route path="/components/input" element={<InputPage />} />
             <Route path="/components/checkbox" element={<CheckboxPage />} />
             <Route path="/components/radio" element={<RadioPage />} />
             <Route path="/components/select" element={<SelectPage />} />
+            <Route path="/components/tree-select" element={<TreeSelectPage />} />
             <Route path="/components/toggle" element={<TogglePage />} />
             <Route path="/components/badge" element={<BadgePage />} />
             <Route path="/components/modal" element={<ModalPage />} />

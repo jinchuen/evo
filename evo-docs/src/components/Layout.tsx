@@ -1,11 +1,13 @@
+import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { EvoNav } from '@justin_evo/evo-ui'
+import { EvoNav, EvoThemeToggle } from '@justin_evo/evo-ui'
 
 const nav = [
   {
     group: 'Getting Started',
     items: [
       { label: 'Overview', path: '/' },
+      { label: 'Theming', path: '/theming' },
       { label: 'Utilities', path: '/utilities' },
     ],
   },
@@ -17,6 +19,7 @@ const nav = [
       { label: 'Checkbox', path: '/components/checkbox' },
       { label: 'Radio', path: '/components/radio' },
       { label: 'Select', path: '/components/select' },
+      { label: 'Tree Select', path: '/components/tree-select' },
       { label: 'Toggle', path: '/components/toggle' },
       { label: 'Form', path: '/components/form' },
     ],
@@ -63,10 +66,24 @@ const nav = [
 export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Close mobile nav when route changes
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
+
+  // Derive a friendly page title for the topbar from the current path
+  const currentTitle =
+    nav.flatMap((g) => g.items).find((i) => i.path === location.pathname)?.label ?? 'Evo UI'
+
+  // The overview page wants a wider reading column so the component
+  // grid can grow beyond ~3 cards per row on large displays.
+  const isOverview = location.pathname === '/'
 
   return (
     <div className="docs-layout">
-      <aside className="docs-sidebar">
+      <aside className={`docs-sidebar${mobileOpen ? ' docs-sidebar-open' : ''}`}>
         <div className="docs-sidebar-logo">
           <span className="docs-logo-text">Evo UI</span>
           <span className="docs-logo-version">v1.0</span>
@@ -87,8 +104,37 @@ export default function Layout() {
           ))}
         </EvoNav>
       </aside>
+
+      <div
+        className={`docs-sidebar-scrim${mobileOpen ? ' docs-sidebar-scrim-open' : ''}`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
+
       <main className="docs-main">
-        <Outlet />
+        <header className="docs-topbar">
+          <button
+            type="button"
+            className="docs-mobile-menu-btn"
+            aria-label="Open navigation"
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6"  x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <span className="docs-topbar-title">{currentTitle}</span>
+          <div className="docs-topbar-actions">
+            <EvoThemeToggle />
+          </div>
+        </header>
+
+        <div className={`docs-main-inner${isOverview ? ' docs-main-inner-wide' : ''}`}>
+          <Outlet />
+        </div>
       </main>
     </div>
   )

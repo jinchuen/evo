@@ -25,9 +25,9 @@
   transition: background-color $transition-fast, color $transition-fast, border-color $transition-fast;
 
   &:hover:not(:disabled) {
-    background-color: rgba(255, 255, 255, 0.07);
+    background-color: $color-surface-hover;
     color: $color-text-primary;
-    border-color: $evo-slate-600;
+    border-color: $color-border-strong;
   }
 
   &:disabled {
@@ -39,12 +39,12 @@
 .activePage {
   background-color: $evo-primary-color;
   border-color: $evo-primary-color;
-  color: #fff;
+  color: $evo-primary-fg;
 
   &:hover:not(:disabled) {
     background-color: $evo-primary-hover;
     border-color: $evo-primary-hover;
-    color: #fff;
+    color: $evo-primary-fg;
   }
 }
 
