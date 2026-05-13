@@ -51,12 +51,12 @@
   transition: background-color $transition-fast, color $transition-fast;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: $color-surface-hover;
     color: $color-text-primary;
   }
 
   &.active {
-    background-color: rgba($evo-primary-color, 0.12);
+    background-color: color-mix(in srgb, $evo-primary-color 12%, transparent);
     color: $evo-primary-color;
   }
 }

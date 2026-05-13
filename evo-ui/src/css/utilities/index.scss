@@ -10,6 +10,10 @@
 //   import '@justin_evo/evo-ui/dist/evo-ui.css'
 // ==========================================
 
+// Theme tokens (light & dark CSS variables) must be emitted first
+// so every following rule can read them via `var(--evo-color-*)`.
+@use '../base/theme';
+
 @use './colors';
 @use './spacing';
 @use './typography';

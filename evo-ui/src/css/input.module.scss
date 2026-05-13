@@ -26,7 +26,7 @@
 
   &:focus-within {
     border-color: $evo-primary-color;
-    box-shadow: 0 0 0 3px rgba($evo-primary-color, 0.18);
+    box-shadow: 0 0 0 3px color-mix(in srgb, $evo-primary-color 18%, transparent);
   }
 
   &.hasError {
@@ -34,7 +34,7 @@
 
     &:focus-within {
       border-color: $evo-danger-color;
-      box-shadow: 0 0 0 3px rgba($evo-danger-color, 0.18);
+      box-shadow: 0 0 0 3px color-mix(in srgb, $evo-danger-color 18%, transparent);
     }
   }
 }

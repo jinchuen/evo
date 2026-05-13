@@ -1,0 +1,237 @@
+// ==========================================================
+// EVO-UI THEME TOKENS
+// ----------------------------------------------------------
+// Semantic CSS custom properties for light & dark themes.
+//
+// Theme is controlled by a `data-theme` attribute on <html>:
+//   <html data-theme="light">  →  light tokens
+//   <html data-theme="dark">   →  dark tokens
+//   (no attribute)             →  follows OS via prefers-color-scheme
+//
+// Developers can override any token at any scope:
+//   :root { --evo-color-primary: #ff6b6b; }
+//
+// All themed component styles read these tokens, never raw
+// palette colors, so a single attribute flip re-themes the
+// entire UI without re-rendering React or reloading CSS.
+// ==========================================================
+
+@use './color' as *;
+
+// ---------- Light theme tokens ----------
+@mixin evo-theme-light {
+  // Surfaces
+  --evo-color-bg:                  #{$evo-white-100};
+  --evo-color-bg-rgb:              255, 255, 255;
+  --evo-color-surface:             #{$evo-slate-50};
+  --evo-color-surface-elevated:    #{$evo-white-100};
+  --evo-color-surface-sunken:      #{$evo-slate-100};
+  --evo-color-surface-hover:       #{$evo-slate-100};
+  --evo-color-surface-active:      #{$evo-slate-200};
+
+  // Borders
+  --evo-color-border:              #{$evo-slate-200};
+  --evo-color-border-strong:       #{$evo-slate-300};
+  --evo-color-border-subtle:       #{$evo-slate-100};
+
+  // Text
+  --evo-color-text:                #{$evo-slate-900};
+  --evo-color-text-secondary:      #{$evo-slate-600};
+  --evo-color-text-muted:          #{$evo-slate-500};
+  --evo-color-text-inverted:       #{$evo-white-100};
+
+  // Brand (primary)
+  --evo-color-primary:             #{$evo-cyan-600};
+  --evo-color-primary-rgb:         8, 145, 178;
+  --evo-color-primary-hover:       #{$evo-cyan-700};
+  --evo-color-primary-active:      #{$evo-cyan-800};
+  --evo-color-primary-focus:       #{$evo-cyan-400};
+  --evo-color-primary-fg:          #{$evo-white-100};
+  --evo-color-primary-soft:        #{$evo-cyan-100};
+  --evo-color-primary-soft-hover:  #{$evo-cyan-200};
+
+  // Secondary (neutral chrome)
+  --evo-color-secondary:           #{$evo-slate-100};
+  --evo-color-secondary-hover:     #{$evo-slate-200};
+  --evo-color-secondary-active:    #{$evo-slate-300};
+  --evo-color-secondary-fg:        #{$evo-slate-800};
+  --evo-color-secondary-border:    #{$evo-slate-300};
+
+  // Status — Danger
+  --evo-color-danger:              #{$evo-rose-600};
+  --evo-color-danger-rgb:          225, 29, 72;
+  --evo-color-danger-hover:        #{$evo-rose-700};
+  --evo-color-danger-active:       #{$evo-rose-800};
+  --evo-color-danger-focus:        #{$evo-rose-400};
+  --evo-color-danger-fg:           #{$evo-white-100};
+  --evo-color-danger-soft:         #{$evo-rose-100};
+
+  // Status — Warning
+  --evo-color-warning:             #{$evo-amber-500};
+  --evo-color-warning-rgb:         245, 158, 11;
+  --evo-color-warning-hover:       #{$evo-amber-600};
+  --evo-color-warning-active:      #{$evo-amber-700};
+  --evo-color-warning-focus:       #{$evo-amber-300};
+  --evo-color-warning-fg:          #{$evo-amber-900};
+  --evo-color-warning-soft:        #{$evo-amber-100};
+
+  // Status — Success
+  --evo-color-success:             #{$evo-emerald-600};
+  --evo-color-success-rgb:         5, 150, 105;
+  --evo-color-success-hover:       #{$evo-emerald-700};
+  --evo-color-success-active:      #{$evo-emerald-800};
+  --evo-color-success-focus:       #{$evo-emerald-400};
+  --evo-color-success-fg:          #{$evo-white-100};
+  --evo-color-success-soft:        #{$evo-emerald-100};
+
+  // Status — Info
+  --evo-color-info:                #{$evo-violet-600};
+  --evo-color-info-rgb:            124, 58, 237;
+  --evo-color-info-hover:          #{$evo-violet-700};
+  --evo-color-info-active:         #{$evo-violet-800};
+  --evo-color-info-focus:          #{$evo-violet-400};
+  --evo-color-info-fg:             #{$evo-white-100};
+  --evo-color-info-soft:           #{$evo-violet-100};
+
+  // Overlays & effects
+  --evo-color-overlay:             rgba(15, 23, 42, 0.45);
+  --evo-color-backdrop:            rgba(15, 23, 42, 0.6);
+  --evo-shadow-color:              0 0 0;
+  --evo-shadow-strength:           0.08;
+
+  // Skeleton / shimmer
+  --evo-color-skeleton-base:       #{$evo-slate-200};
+  --evo-color-skeleton-highlight:  #{$evo-slate-100};
+
+  // Color scheme hint for native UI (scrollbars, form controls)
+  color-scheme: light;
+}
+
+// ---------- Dark theme tokens ----------
+@mixin evo-theme-dark {
+  // Surfaces — soft dark grays (not pure black) per 2026 best practice
+  --evo-color-bg:                  #{$evo-slate-950};
+  --evo-color-bg-rgb:              2, 6, 23;
+  --evo-color-surface:             #{$evo-slate-900};
+  --evo-color-surface-elevated:    #{$evo-slate-800};
+  --evo-color-surface-sunken:      #{$evo-slate-950};
+  --evo-color-surface-hover:       #{$evo-slate-800};
+  --evo-color-surface-active:      #{$evo-slate-700};
+
+  // Borders
+  --evo-color-border:              #{$evo-slate-700};
+  --evo-color-border-strong:       #{$evo-slate-600};
+  --evo-color-border-subtle:       #{$evo-slate-800};
+
+  // Text — off-white for less eye strain
+  --evo-color-text:                #{$evo-slate-50};
+  --evo-color-text-secondary:      #{$evo-slate-300};
+  --evo-color-text-muted:          #{$evo-slate-400};
+  --evo-color-text-inverted:       #{$evo-slate-900};
+
+  // Brand (primary) — lighter, more luminous in dark mode
+  --evo-color-primary:             #{$evo-cyan-400};
+  --evo-color-primary-rgb:         34, 211, 238;
+  --evo-color-primary-hover:       #{$evo-cyan-300};
+  --evo-color-primary-active:      #{$evo-cyan-500};
+  --evo-color-primary-focus:       #{$evo-cyan-300};
+  --evo-color-primary-fg:          #{$evo-slate-950};
+  --evo-color-primary-soft:        rgba(34, 211, 238, 0.12);
+  --evo-color-primary-soft-hover:  rgba(34, 211, 238, 0.18);
+
+  // Secondary
+  --evo-color-secondary:           rgba(255, 255, 255, 0.06);
+  --evo-color-secondary-hover:     rgba(255, 255, 255, 0.10);
+  --evo-color-secondary-active:    rgba(255, 255, 255, 0.15);
+  --evo-color-secondary-fg:        #{$evo-slate-200};
+  --evo-color-secondary-border:    #{$evo-slate-600};
+
+  // Status — Danger
+  --evo-color-danger:              #{$evo-rose-500};
+  --evo-color-danger-rgb:          244, 63, 94;
+  --evo-color-danger-hover:        #{$evo-rose-400};
+  --evo-color-danger-active:       #{$evo-rose-600};
+  --evo-color-danger-focus:        #{$evo-rose-300};
+  --evo-color-danger-fg:           #{$evo-white-100};
+  --evo-color-danger-soft:         rgba(244, 63, 94, 0.12);
+
+  // Status — Warning
+  --evo-color-warning:             #{$evo-amber-400};
+  --evo-color-warning-rgb:         251, 191, 36;
+  --evo-color-warning-hover:       #{$evo-amber-300};
+  --evo-color-warning-active:      #{$evo-amber-500};
+  --evo-color-warning-focus:       #{$evo-amber-300};
+  --evo-color-warning-fg:          #{$evo-slate-950};
+  --evo-color-warning-soft:        rgba(251, 191, 36, 0.12);
+
+  // Status — Success
+  --evo-color-success:             #{$evo-emerald-500};
+  --evo-color-success-rgb:         16, 185, 129;
+  --evo-color-success-hover:       #{$evo-emerald-400};
+  --evo-color-success-active:      #{$evo-emerald-600};
+  --evo-color-success-focus:       #{$evo-emerald-300};
+  --evo-color-success-fg:          #{$evo-white-100};
+  --evo-color-success-soft:        rgba(16, 185, 129, 0.12);
+
+  // Status — Info
+  --evo-color-info:                #{$evo-violet-500};
+  --evo-color-info-rgb:            139, 92, 246;
+  --evo-color-info-hover:          #{$evo-violet-400};
+  --evo-color-info-active:         #{$evo-violet-600};
+  --evo-color-info-focus:          #{$evo-violet-300};
+  --evo-color-info-fg:             #{$evo-white-100};
+  --evo-color-info-soft:           rgba(139, 92, 246, 0.12);
+
+  // Overlays & effects
+  --evo-color-overlay:             rgba(0, 0, 0, 0.65);
+  --evo-color-backdrop:            rgba(0, 0, 0, 0.75);
+  --evo-shadow-color:              0 0 0;
+  --evo-shadow-strength:           0.35;
+
+  // Skeleton / shimmer
+  --evo-color-skeleton-base:       #{$evo-slate-800};
+  --evo-color-skeleton-highlight:  #{$evo-slate-700};
+
+  color-scheme: dark;
+}
+
+// ---------- Apply themes ----------
+// 1. Explicit data-theme attribute wins (developer/user choice)
+:root,
+[data-theme='light'] {
+  @include evo-theme-light;
+}
+
+[data-theme='dark'] {
+  @include evo-theme-dark;
+}
+
+// 2. No data-theme attribute → follow OS preference automatically.
+//    Only applies when the user/site hasn't set data-theme at all.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    @include evo-theme-dark;
+  }
+}
+
+// ---------- Smooth theme transitions ----------
+// Animate color changes on theme flip — but skip during the
+// initial paint and respect users who request reduced motion.
+:root[data-theme-transition='true'] *,
+:root[data-theme-transition='true'] *::before,
+:root[data-theme-transition='true'] *::after {
+  transition: background-color 200ms ease,
+              border-color 200ms ease,
+              color 200ms ease,
+              fill 200ms ease,
+              stroke 200ms ease,
+              box-shadow 200ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme-transition='true'] *,
+  :root[data-theme-transition='true'] *::before,
+  :root[data-theme-transition='true'] *::after {
+    transition: none !important;
+  }
+}

@@ -87,8 +87,8 @@
   &.ghost {
     color: $evo-primary-color;
 
-    &:hover:not(:disabled)  { background-color: $evo-blue-100; }
-    &:active:not(:disabled) { background-color: $evo-blue-200; }
+    &:hover:not(:disabled)  { background-color: color-mix(in srgb, $evo-primary-color 10%, transparent); }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-primary-color 18%, transparent); }
     &:focus-visible         { outline-color: $evo-primary-focus; }
   }
 }
@@ -99,8 +99,8 @@
     background-color: $evo-secondary-bg;
     border-color: $evo-secondary-border;
 
-    &:hover:not(:disabled)  { background-color: $evo-secondary-hover;  border-color: $evo-slate-500; color: $evo-slate-200; }
-    &:active:not(:disabled) { background-color: $evo-secondary-active; border-color: $evo-slate-400; }
+    &:hover:not(:disabled)  { background-color: $evo-secondary-hover;  border-color: $color-border-strong; color: $color-text-primary; }
+    &:active:not(:disabled) { background-color: $evo-secondary-active; border-color: $color-border-strong; }
     &:focus-visible         { outline-color: $evo-secondary-focus; }
   }
 
@@ -108,15 +108,15 @@
     color: $evo-secondary-text;
     border-color: $evo-secondary-border;
 
-    &:hover:not(:disabled)  { background-color: $evo-secondary-bg;    border-color: $evo-slate-500; color: $evo-slate-200; }
-    &:active:not(:disabled) { background-color: $evo-secondary-hover; border-color: $evo-slate-400; }
+    &:hover:not(:disabled)  { background-color: $evo-secondary-bg;    border-color: $color-border-strong; color: $color-text-primary; }
+    &:active:not(:disabled) { background-color: $evo-secondary-hover; border-color: $color-border-strong; }
     &:focus-visible         { outline-color: $evo-secondary-focus; }
   }
 
   &.ghost {
     color: $evo-secondary-text;
 
-    &:hover:not(:disabled)  { background-color: $evo-secondary-bg; color: $evo-slate-200; }
+    &:hover:not(:disabled)  { background-color: $evo-secondary-bg; color: $color-text-primary; }
     &:active:not(:disabled) { background-color: $evo-secondary-hover; }
     &:focus-visible         { outline-color: $evo-secondary-focus; }
   }

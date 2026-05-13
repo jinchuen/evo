@@ -8,7 +8,13 @@
  */
 
 // Utility classes (bundled into dist/evo-ui.css)
+// Also emits the theme tokens (light + dark CSS variables) so consumers
+// only need a single CSS import to get themed components.
 import './css/utilities/index.scss';
+
+// Theming
+export * from './Theme/ThemeProvider';
+export * from './Theme/ThemeToggle';
 
 // Existing
 export * from './Button/Button';
@@ -31,6 +37,7 @@ export * from './CommandPalette/CommandPalette';
 // Forms & Inputs
 export * from './Input/Input';
 export * from './Select/Select';
+export * from './TreeSelect/TreeSelect';
 export * from './Checkbox/Checkbox';
 export * from './Radio/Radio';
 export * from './Toggle/Toggle';

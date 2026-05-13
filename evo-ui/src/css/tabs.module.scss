@@ -39,7 +39,7 @@
 
   &:hover:not(.disabled):not(.active) {
     color: $color-text-primary;
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $color-surface-hover;
   }
 
   &.active {

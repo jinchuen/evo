@@ -3,7 +3,7 @@
 
 .wrapper {
   width: 100%;
-  border: 1px solid $evo-secondary-border;
+  border: 1px solid $color-border;
   border-radius: $evo-border-radius-lg;
   overflow: hidden;
   font-family: $font-sans;
@@ -18,8 +18,8 @@
 
 // --- Header ---
 .thead {
-  background-color: $evo-slate-800;
-  border-bottom: 1px solid $evo-secondary-border;
+  background-color: $color-surface-sunken;
+  border-bottom: 1px solid $color-border;
 }
 
 .th {
@@ -33,14 +33,14 @@
   white-space: nowrap;
 
   &:not(:last-child) {
-    border-right: 1px solid rgba($evo-slate-600, 0.4);
+    border-right: 1px solid $color-border-subtle;
   }
 }
 
 // --- Body ---
 .tbody {
   .tr {
-    border-top: 1px solid rgba($evo-slate-700, 0.6);
+    border-top: 1px solid $color-border-subtle;
     transition: background-color $transition-fast;
     cursor: default;
 
@@ -49,14 +49,14 @@
     }
 
     &:hover {
-      background-color: $evo-secondary-hover;
+      background-color: $color-surface-hover;
     }
 
     &.clickable {
       cursor: pointer;
 
       &:active {
-        background-color: $evo-secondary-active;
+        background-color: $color-surface-active;
       }
     }
   }
@@ -68,7 +68,7 @@
   vertical-align: middle;
 
   &:not(:last-child) {
-    border-right: 1px solid rgba($evo-slate-700, 0.4);
+    border-right: 1px solid $color-border-subtle;
   }
 }
 
