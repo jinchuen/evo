@@ -28,6 +28,9 @@ import {
   ModalPreview,
   TooltipPreview,
   ToastPreview,
+  RichTextAreaPreview,
+  ImageCropperPreview,
+  CommandPalettePreview,
 } from '../components/ComponentPreviews'
 
 type Entry = { name: string; path: string; Preview: ComponentType }
@@ -47,6 +50,7 @@ const groups: Group[] = [
       { name: 'Tree Select', path: '/components/tree-select', Preview: TreeSelectPreview },
       { name: 'Toggle',      path: '/components/toggle',      Preview: TogglePreview },
       { name: 'Form',        path: '/components/form',        Preview: FormPreview },
+      { name: 'Rich Text Area', path: '/components/rich-text-area', Preview: RichTextAreaPreview },
     ],
   },
   {
@@ -68,6 +72,7 @@ const groups: Group[] = [
       { name: 'Breadcrumb', path: '/components/breadcrumb', Preview: BreadcrumbPreview },
       { name: 'Tabs',       path: '/components/tabs',       Preview: TabsPreview },
       { name: 'Pagination', path: '/components/pagination', Preview: PaginationPreview },
+      { name: 'Command Palette', path: '/components/command-palette', Preview: CommandPalettePreview },
     ],
   },
   {
@@ -88,6 +93,13 @@ const groups: Group[] = [
       { name: 'Modal',   path: '/components/modal',   Preview: ModalPreview },
       { name: 'Tooltip', path: '/components/tooltip', Preview: TooltipPreview },
       { name: 'Toast',   path: '/components/toast',   Preview: ToastPreview },
+    ],
+  },
+  {
+    name: 'Media',
+    description: 'Components for working with rich content.',
+    items: [
+      { name: 'Image Cropper', path: '/components/image-cropper', Preview: ImageCropperPreview },
     ],
   },
 ]

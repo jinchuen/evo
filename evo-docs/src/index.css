@@ -564,6 +564,212 @@ p { margin: 0; }
   font-weight: 600;
 }
 
+/* ─── Sub-page back-link ─────────────────────────────────────────────
+ * Sub-pages (e.g. Rich Text Area · API Reference) are hidden from the
+ * sidebar so the "one sidebar row = one component" rhythm is preserved.
+ * That makes the sidebar cleaner but means deep-linked users have no
+ * obvious way back to the parent. This small chevron link bridges the gap.
+ * ─────────────────────────────────────────────────────────────────── */
+
+.docs-subpage-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem 0.55rem 0.25rem 0.4rem;
+  background: transparent;
+  border: 1px solid var(--docs-border);
+  border-radius: 999px;
+  color: var(--docs-text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+.docs-subpage-back:hover {
+  color: var(--docs-text);
+  border-color: var(--docs-text-muted);
+  background: var(--docs-card-hover);
+}
+
+.docs-subpage-back::before {
+  content: '←';
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* ─── Shared content utilities ───────────────────────────────────────
+ * Pages used to repeat the same inline styles for muted paragraphs and
+ * bulleted lists. Worse, several used hard-coded slate hex values like
+ * #94a3b8 / #e2e8f0 — readable in dark mode, broken in light mode. These
+ * classes replace those patterns and stay theme-aware.
+ * ─────────────────────────────────────────────────────────────────── */
+
+.docs-section-desc {
+  color: var(--docs-text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+  line-height: 1.6;
+}
+
+.docs-section-desc-tight {
+  margin: 0;
+}
+
+.docs-list {
+  color: var(--docs-text-muted);
+  padding-left: 1.25rem;
+  margin: 0;
+  line-height: 1.85;
+}
+
+.docs-list li + li {
+  margin-top: 0.2rem;
+}
+
+.docs-next-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.docs-next-steps li {
+  padding: 0.35rem 0;
+  border-bottom: 1px dashed var(--docs-border-subtle);
+}
+
+.docs-next-steps li:last-child {
+  border-bottom: none;
+}
+
+.docs-next-steps a {
+  color: var(--docs-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.docs-next-steps a:hover {
+  text-decoration: underline;
+}
+
+.docs-util-label {
+  color: var(--docs-text-muted);
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.docs-util-label:first-child {
+  margin-top: 0;
+}
+
+.docs-readout {
+  font-size: 0.82rem;
+  color: var(--docs-text-muted);
+  margin: 0;
+}
+
+.docs-readout strong {
+  color: var(--docs-text);
+  font-weight: 600;
+}
+
+.docs-kbd-list {
+  font-size: 0.85rem;
+  line-height: 1.85;
+  color: var(--docs-text-muted);
+  margin: 0;
+}
+
+.docs-kbd-list strong {
+  color: var(--docs-text);
+  font-weight: 600;
+}
+
+/* ─── Changelog ───────────────────────────────────────────────────── */
+
+.docs-changelog {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.docs-changelog-entry {
+  background: var(--docs-card-bg);
+  border: 1px solid var(--docs-border);
+  border-radius: 10px;
+  padding: 1.25rem 1.4rem;
+}
+
+.docs-changelog-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--docs-border-subtle);
+}
+
+.docs-changelog-version {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--docs-text);
+  letter-spacing: -0.01em;
+}
+
+.docs-changelog-date {
+  font-size: 0.78rem;
+  color: var(--docs-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.docs-changelog-summary {
+  font-size: 0.88rem;
+  color: var(--docs-text-muted);
+  margin: 0.5rem 0 0.9rem;
+}
+
+.docs-changelog-section {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  align-items: start;
+}
+
+.docs-changelog-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--docs-text);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.docs-changelog-list li + li {
+  margin-top: 0.2rem;
+}
+
+.docs-changelog-migration {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: color-mix(in srgb, var(--evo-color-warning) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--evo-color-warning) 35%, transparent);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--docs-text);
+}
+
+@media (max-width: 600px) {
+  .docs-changelog-section {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+}
+
 /* ─── Misc ────────────────────────────────────────────────────────── */
 
 .docs-label {

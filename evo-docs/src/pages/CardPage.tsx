@@ -27,7 +27,7 @@ export default function CardPage() {
             <EvoCard key={v} variant={v} color="cyan">
               <div style={{ padding: '1rem 1.25rem', minWidth: 120 }}>
                 <EvoBadge severity="info" variant="subtle" size="sm">{v}</EvoBadge>
-                <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+                <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--docs-text-muted)' }}>
                   Card content
                 </p>
               </div>
@@ -66,13 +66,13 @@ export default function CardPage() {
           <EvoCard variant="playable" color="cyan">
             <EvoCard.Front>
               <div style={{ padding: '2rem', textAlign: 'center' }}>
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Hover to flip →</p>
+                <p style={{ color: 'var(--docs-text-muted)', fontSize: '0.85rem' }}>Hover to flip →</p>
                 <p style={{ fontWeight: 600 }}>Front</p>
               </div>
             </EvoCard.Front>
             <EvoCard.Back>
               <div style={{ padding: '2rem', textAlign: 'center' }}>
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>← Hover back to flip</p>
+                <p style={{ color: 'var(--docs-text-muted)', fontSize: '0.85rem' }}>← Hover back to flip</p>
                 <p style={{ fontWeight: 600 }}>Back</p>
               </div>
             </EvoCard.Back>

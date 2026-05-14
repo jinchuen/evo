@@ -20,9 +20,9 @@ export default function DividerPage() {
       <div className="docs-section">
         <div className="docs-section-title">Horizontal</div>
         <div className="docs-preview col" style={{ width: '100%' }}>
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.85rem' }}>Content above</p>
+          <p style={{ color: 'var(--docs-text-muted)', margin: 0, fontSize: '0.85rem' }}>Content above</p>
           <EvoDivider />
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.85rem' }}>Content below</p>
+          <p style={{ color: 'var(--docs-text-muted)', margin: 0, fontSize: '0.85rem' }}>Content below</p>
         </div>
         <CodeBlock code={`<p>Content above</p>
 <EvoDivider />
@@ -44,11 +44,11 @@ export default function DividerPage() {
       <div className="docs-section">
         <div className="docs-section-title">Vertical</div>
         <div className="docs-preview" style={{ height: 80, alignItems: 'center' }}>
-          <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Left</span>
+          <span style={{ color: 'var(--docs-text-muted)', fontSize: '0.85rem' }}>Left</span>
           <EvoDivider orientation="vertical" />
-          <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Center</span>
+          <span style={{ color: 'var(--docs-text-muted)', fontSize: '0.85rem' }}>Center</span>
           <EvoDivider orientation="vertical" />
-          <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Right</span>
+          <span style={{ color: 'var(--docs-text-muted)', fontSize: '0.85rem' }}>Right</span>
         </div>
         <CodeBlock code={`<div style={{ display: 'flex', alignItems: 'center', height: 80 }}>
   <span>Left</span>

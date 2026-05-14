@@ -63,8 +63,8 @@ export default function NavPage() {
               </EvoNav.Group>
             </EvoNav>
           </div>
-          <p style={{ fontSize: '0.82rem', color: '#64748b', margin: 0 }}>
-            Active: <strong style={{ color: '#e2e8f0' }}>{active}</strong>
+          <p className="docs-readout">
+            Active: <strong>{active}</strong>
           </p>
         </div>
         <CodeBlock code={`<EvoNav>
@@ -135,8 +135,8 @@ export default function NavPage() {
               </EvoNav.Item>
             </EvoNav>
           </div>
-          <p style={{ fontSize: '0.82rem', color: '#64748b', margin: 0 }}>
-            Active: <strong style={{ color: '#e2e8f0' }}>{active}</strong>
+          <p className="docs-readout">
+            Active: <strong>{active}</strong>
           </p>
         </div>
         <CodeBlock code={`<EvoNav.Item
@@ -200,10 +200,10 @@ export default function NavPage() {
               onClick={() => { setLoading(true); setTimeout(() => setLoading(false), 2000); }}
               style={{
                 padding: '0.375rem 0.875rem',
-                background: 'rgba(6,182,212,0.12)',
-                border: '1px solid rgba(6,182,212,0.3)',
+                background: 'color-mix(in srgb, var(--docs-accent) 12%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--docs-accent) 30%, transparent)',
                 borderRadius: 6,
-                color: '#06b6d4',
+                color: 'var(--docs-accent)',
                 cursor: 'pointer',
                 fontSize: '0.82rem',
                 fontWeight: 500,
@@ -253,10 +253,10 @@ export default function NavPage() {
             onClick={() => setPaletteOpen(true)}
             style={{
               padding: '0.5rem 1rem',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'var(--docs-code-bg)',
+              border: '1px solid var(--docs-border)',
               borderRadius: 8,
-              color: '#94a3b8',
+              color: 'var(--docs-text-muted)',
               cursor: 'pointer',
               fontSize: '0.875rem',
               display: 'flex',
@@ -269,10 +269,10 @@ export default function NavPage() {
             <span style={{
               display: 'flex', gap: '0.25rem', marginLeft: 'auto',
             }}>
-              <kbd style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 4, padding: '0.1rem 0.375rem', fontSize: '0.75rem' }}>
+              <kbd style={{ background: 'var(--docs-card-hover)', border: '1px solid var(--docs-border)', borderRadius: 4, padding: '0.1rem 0.375rem', fontSize: '0.75rem' }}>
                 ⌘/Ctrl
               </kbd>
-              <kbd style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 4, padding: '0.1rem 0.375rem', fontSize: '0.75rem' }}>
+              <kbd style={{ background: 'var(--docs-card-hover)', border: '1px solid var(--docs-border)', borderRadius: 4, padding: '0.1rem 0.375rem', fontSize: '0.75rem' }}>
                 K
               </kbd>
             </span>

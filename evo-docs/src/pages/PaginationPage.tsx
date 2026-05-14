@@ -26,7 +26,7 @@ export default function PaginationPage() {
         <div className="docs-section-title">Basic</div>
         <div className="docs-preview col">
           <EvoPagination total={50} page={page1} pageSize={10} onChange={setPage1} />
-          <p style={{ fontSize: '0.82rem', color: '#64748b' }}>Page: <strong style={{ color: '#e2e8f0' }}>{page1}</strong> / 5</p>
+          <p className="docs-readout">Page: <strong>{page1}</strong> / 5</p>
         </div>
         <CodeBlock code={`const [page, setPage] = useState(1)
 
@@ -37,7 +37,7 @@ export default function PaginationPage() {
         <div className="docs-section-title">Large Dataset with Ellipsis</div>
         <div className="docs-preview col">
           <EvoPagination total={500} page={page2} pageSize={10} onChange={setPage2} />
-          <p style={{ fontSize: '0.82rem', color: '#64748b' }}>Page: <strong style={{ color: '#e2e8f0' }}>{page2}</strong> / 50</p>
+          <p className="docs-readout">Page: <strong>{page2}</strong> / 50</p>
         </div>
         <CodeBlock code={`<EvoPagination total={500} page={page} pageSize={10} onChange={setPage} />`} />
       </div>

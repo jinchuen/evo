@@ -6,9 +6,21 @@ const nav = [
   {
     group: 'Getting Started',
     items: [
-      { label: 'Overview', path: '/' },
-      { label: 'Theming', path: '/theming' },
+      { label: 'Overview',  path: '/' },
+      { label: 'Changelog', path: '/changelog' },
+    ],
+  },
+  {
+    group: 'Foundations',
+    items: [
+      { label: 'Theming',   path: '/theming' },
       { label: 'Utilities', path: '/utilities' },
+    ],
+  },
+  {
+    group: 'For AI',
+    items: [
+      { label: 'Build with AI', path: '/ai' },
     ],
   },
   {
@@ -16,6 +28,7 @@ const nav = [
     items: [
       { label: 'Button', path: '/components/button' },
       { label: 'Input', path: '/components/input' },
+      { label: 'Rich Text Area', path: '/components/rich-text-area' },
       { label: 'Checkbox', path: '/components/checkbox' },
       { label: 'Radio', path: '/components/radio' },
       { label: 'Select', path: '/components/select' },
@@ -41,6 +54,7 @@ const nav = [
       { label: 'Breadcrumb', path: '/components/breadcrumb' },
       { label: 'Tabs', path: '/components/tabs' },
       { label: 'Pagination', path: '/components/pagination' },
+      { label: 'Command Palette', path: '/components/command-palette' },
     ],
   },
   {
@@ -61,7 +75,35 @@ const nav = [
       { label: 'Toast', path: '/components/toast' },
     ],
   },
+  {
+    group: 'Media',
+    items: [
+      { label: 'Image Cropper', path: '/components/image-cropper' },
+    ],
+  },
 ]
+
+// Sub-pages that don't appear in the sidebar (one sidebar row = one component)
+// but still need a topbar title and a "highlight the parent" rule for the nav.
+// Keyed by exact pathname.
+const SUB_PAGES: Record<string, { title: string; parentPath: string }> = {
+  '/components/rich-text-area/tools': {
+    title: 'Rich Text Area · Tools & Customization',
+    parentPath: '/components/rich-text-area',
+  },
+  '/components/rich-text-area/images': {
+    title: 'Rich Text Area · Image Upload',
+    parentPath: '/components/rich-text-area',
+  },
+  '/components/rich-text-area/api': {
+    title: 'Rich Text Area · API Reference',
+    parentPath: '/components/rich-text-area',
+  },
+  '/components/image-cropper/api': {
+    title: 'Image Cropper · API Reference',
+    parentPath: '/components/image-cropper',
+  },
+}
 
 export default function Layout() {
   const navigate = useNavigate()
@@ -73,9 +115,17 @@ export default function Layout() {
     setMobileOpen(false)
   }, [location.pathname])
 
-  // Derive a friendly page title for the topbar from the current path
+  // Derive a friendly page title for the topbar. Sidebar items win first;
+  // sub-pages (not in the sidebar) fall through to the SUB_PAGES map.
   const currentTitle =
-    nav.flatMap((g) => g.items).find((i) => i.path === location.pathname)?.label ?? 'Evo UI'
+    nav.flatMap((g) => g.items).find((i) => i.path === location.pathname)?.label
+    ?? SUB_PAGES[location.pathname]?.title
+    ?? 'Evo UI'
+
+  // Highlight a sidebar item when either the current path matches it directly
+  // or the current path is one of that item's registered sub-pages. This is
+  // why /components/rich-text-area/tools still highlights "Rich Text Area".
+  const activePath = SUB_PAGES[location.pathname]?.parentPath ?? location.pathname
 
   // The overview page wants a wider reading column so the component
   // grid can grow beyond ~3 cards per row on large displays.
@@ -94,7 +144,7 @@ export default function Layout() {
               {section.items.map((item) => (
                 <EvoNav.Item
                   key={item.path}
-                  active={location.pathname === item.path}
+                  active={activePath === item.path}
                   onClick={() => navigate(item.path)}
                 >
                   {item.label}

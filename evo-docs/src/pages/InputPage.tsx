@@ -68,8 +68,8 @@ export default function InputPage() {
           <EvoInput
             label="Amount"
             placeholder="0.00"
-            leadingAdornment={<span style={{ color: '#64748b', fontWeight: 600 }}>$</span>}
-            trailingAdornment={<span style={{ color: '#64748b', fontSize: '0.8rem' }}>USD</span>}
+            leadingAdornment={<span style={{ color: 'var(--docs-text-muted)', fontWeight: 600 }}>$</span>}
+            trailingAdornment={<span style={{ color: 'var(--docs-text-muted)', fontSize: '0.8rem' }}>USD</span>}
           />
         </div>
         <CodeBlock code={`<EvoInput

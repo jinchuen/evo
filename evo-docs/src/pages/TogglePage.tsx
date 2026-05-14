@@ -29,7 +29,7 @@ export default function TogglePage() {
             onChange={setOn}
             label={on ? 'Enabled' : 'Disabled'}
           />
-          <p style={{ fontSize: '0.82rem', color: '#64748b' }}>State: <strong style={{ color: '#e2e8f0' }}>{on ? 'on' : 'off'}</strong></p>
+          <p className="docs-readout">State: <strong>{on ? 'on' : 'off'}</strong></p>
         </div>
         <CodeBlock code={`const [on, setOn] = useState(false)
 

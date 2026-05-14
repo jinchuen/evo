@@ -1,24 +1,49 @@
 @use 'base/variables' as *;
 @use 'base/color' as *;
 
+// ==========================================================
+// EvoButton
+// ----------------------------------------------------------
+// Layout is built around three orthogonal axes:
+//   1. variant    — solid / outline / ghost / soft
+//   2. severity   — primary / secondary / danger / warning / success / info
+//   3. shape      — default / rounded / square
+// Plus modifiers: size (sm/md/lg), fullWidth, iconOnly, loading.
+//
+// All sizing uses `rem` + `min-height` so the component stays
+// usable on touch screens (44px target for `lg`) without needing
+// explicit mobile media queries.
+// ==========================================================
+
 // --- Base button ---
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
   padding: $evo-btn-padding-y $evo-btn-padding-x;
+  min-height: 2.25rem;
+  max-width: 100%;
+  font-family: inherit;
   font-size: $evo-btn-font-size;
   font-weight: $evo-btn-font-weight;
   line-height: $evo-btn-line-height;
+  white-space: nowrap;
+  vertical-align: middle;
   border: 2px solid transparent;
   border-radius: $evo-border-radius;
+  background-color: transparent;
+  color: inherit;
   cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition: background-color $evo-btn-transition,
               border-color $evo-btn-transition,
               box-shadow $evo-btn-transition,
               color $evo-btn-transition;
-  user-select: none;
-  text-decoration: none;
 
   &:focus-visible {
     outline-width: $evo-btn-outline-width;
@@ -33,40 +58,101 @@
   }
 }
 
+// --- Slots ---
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+
+  // Normalize SVGs so consumers don't have to size them
+  > svg {
+    width: 1em;
+    height: 1em;
+  }
+}
+
+// --- Loading spinner (CSS-only, inherits currentColor) ---
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: evo-btn-spin 0.6s linear infinite;
+}
+
+@keyframes evo-btn-spin {
+  to { transform: rotate(360deg); }
+}
+
 // --- Size modifiers ---
 .sm {
+  gap: 0.3rem;
   padding: $evo-btn-padding-y-sm $evo-btn-padding-x-sm;
+  min-height: 1.75rem;
   font-size: $evo-btn-font-size-sm;
   border-radius: $evo-border-radius-sm;
 }
 
+.md { /* default */ }
+
 .lg {
+  gap: 0.5rem;
   padding: $evo-btn-padding-y-lg $evo-btn-padding-x-lg;
+  min-height: 2.75rem;
   font-size: $evo-btn-font-size-lg;
   border-radius: $evo-border-radius-lg;
 }
 
-// --- Variants ---
-.solid {
-}
-
-.outline {
-  background-color: transparent;
-}
-
-.ghost {
-  background-color: transparent;
-  border-color: transparent;
-}
-
+// --- Shape modifiers (orthogonal to variant) ---
 .rounded {
   border-radius: $evo-border-radius-pill;
 }
 
+.square {
+  padding: 0;
+  aspect-ratio: 1 / 1;
+  min-width: 2.25rem;
+
+  &.sm { min-width: 1.75rem; }
+  &.lg { min-width: 2.75rem; }
+}
+
+// --- Icon-only (auto-applied when there's no label/children) ---
+.iconOnly {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+
+  &.sm { padding-left: 0.35rem; padding-right: 0.35rem; }
+  &.lg { padding-left: 0.65rem; padding-right: 0.65rem; }
+}
+
+// --- Layout modifiers ---
+.fullWidth {
+  display: flex;
+  width: 100%;
+}
+
+// --- Variant base looks ---
+.solid   { /* color set per-severity */ }
+.outline { background-color: transparent; }
+.ghost   { background-color: transparent; border-color: transparent; }
+.soft    { border-color: transparent; }
+
 // --- Severities ---
 .primary {
   &.solid {
-    color: #fff;
+    color: $evo-primary-fg;
     background-color: $evo-primary-color;
     border-color: $evo-primary-color;
 
@@ -79,16 +165,25 @@
     color: $evo-primary-color;
     border-color: $evo-primary-color;
 
-    &:hover:not(:disabled)  { color: #fff; background-color: $evo-primary-color; }
-    &:active:not(:disabled) { color: #fff; background-color: $evo-primary-hover; border-color: $evo-primary-hover; }
+    &:hover:not(:disabled)  { color: $evo-primary-fg; background-color: $evo-primary-color; }
+    &:active:not(:disabled) { color: $evo-primary-fg; background-color: $evo-primary-hover; border-color: $evo-primary-hover; }
     &:focus-visible         { outline-color: $evo-primary-focus; }
   }
 
   &.ghost {
     color: $evo-primary-color;
 
-    &:hover:not(:disabled)  { background-color: color-mix(in srgb, $evo-primary-color 10%, transparent); }
-    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-primary-color 18%, transparent); }
+    &:hover:not(:disabled)  { background-color: $evo-primary-soft; }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-primary-color 22%, transparent); }
+    &:focus-visible         { outline-color: $evo-primary-focus; }
+  }
+
+  &.soft {
+    color: $evo-primary-color;
+    background-color: $evo-primary-soft;
+
+    &:hover:not(:disabled)  { background-color: color-mix(in srgb, $evo-primary-color 22%, transparent); }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-primary-color 30%, transparent); }
     &:focus-visible         { outline-color: $evo-primary-focus; }
   }
 }
@@ -120,11 +215,20 @@
     &:active:not(:disabled) { background-color: $evo-secondary-hover; }
     &:focus-visible         { outline-color: $evo-secondary-focus; }
   }
+
+  &.soft {
+    color: $color-text-primary;
+    background-color: $evo-secondary-bg;
+
+    &:hover:not(:disabled)  { background-color: $evo-secondary-hover; }
+    &:active:not(:disabled) { background-color: $evo-secondary-active; }
+    &:focus-visible         { outline-color: $evo-secondary-focus; }
+  }
 }
 
 .danger {
   &.solid {
-    color: #fff;
+    color: $evo-danger-fg;
     background-color: $evo-danger-color;
     border-color: $evo-danger-color;
 
@@ -137,15 +241,26 @@
     color: $evo-danger-color;
     border-color: $evo-danger-color;
 
-    &:hover:not(:disabled)  { color: #fff; background-color: $evo-danger-color; }
-    &:active:not(:disabled) { color: #fff; background-color: $evo-danger-hover; border-color: $evo-danger-hover; }
+    &:hover:not(:disabled)  { color: $evo-danger-fg; background-color: $evo-danger-color; }
+    &:active:not(:disabled) { color: $evo-danger-fg; background-color: $evo-danger-hover; border-color: $evo-danger-hover; }
     &:focus-visible         { outline-color: $evo-danger-focus; }
   }
 
   &.ghost {
     color: $evo-danger-color;
 
-    &:focus-visible { outline-color: $evo-danger-focus; }
+    &:hover:not(:disabled)  { background-color: $evo-danger-soft; }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-danger-color 22%, transparent); }
+    &:focus-visible         { outline-color: $evo-danger-focus; }
+  }
+
+  &.soft {
+    color: $evo-danger-color;
+    background-color: $evo-danger-soft;
+
+    &:hover:not(:disabled)  { background-color: color-mix(in srgb, $evo-danger-color 22%, transparent); }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-danger-color 30%, transparent); }
+    &:focus-visible         { outline-color: $evo-danger-focus; }
   }
 }
 
@@ -172,13 +287,24 @@
   &.ghost {
     color: $evo-warning-text;
 
-    &:focus-visible { outline-color: $evo-warning-focus; }
+    &:hover:not(:disabled)  { background-color: $evo-warning-soft; }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-warning-color 22%, transparent); }
+    &:focus-visible         { outline-color: $evo-warning-focus; }
+  }
+
+  &.soft {
+    color: $evo-warning-text;
+    background-color: $evo-warning-soft;
+
+    &:hover:not(:disabled)  { background-color: color-mix(in srgb, $evo-warning-color 22%, transparent); }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-warning-color 30%, transparent); }
+    &:focus-visible         { outline-color: $evo-warning-focus; }
   }
 }
 
 .success {
   &.solid {
-    color: #fff;
+    color: $evo-success-fg;
     background-color: $evo-success-color;
     border-color: $evo-success-color;
 
@@ -191,21 +317,32 @@
     color: $evo-success-color;
     border-color: $evo-success-color;
 
-    &:hover:not(:disabled)  { color: #fff; background-color: $evo-success-color; }
-    &:active:not(:disabled) { background-color: $evo-success-hover; border-color: $evo-success-hover; }
+    &:hover:not(:disabled)  { color: $evo-success-fg; background-color: $evo-success-color; }
+    &:active:not(:disabled) { color: $evo-success-fg; background-color: $evo-success-hover; border-color: $evo-success-hover; }
     &:focus-visible         { outline-color: $evo-success-focus; }
   }
 
   &.ghost {
     color: $evo-success-color;
 
-    &:focus-visible { outline-color: $evo-success-focus; }
+    &:hover:not(:disabled)  { background-color: $evo-success-soft; }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-success-color 22%, transparent); }
+    &:focus-visible         { outline-color: $evo-success-focus; }
+  }
+
+  &.soft {
+    color: $evo-success-color;
+    background-color: $evo-success-soft;
+
+    &:hover:not(:disabled)  { background-color: color-mix(in srgb, $evo-success-color 22%, transparent); }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-success-color 30%, transparent); }
+    &:focus-visible         { outline-color: $evo-success-focus; }
   }
 }
 
 .info {
   &.solid {
-    color: #fff;
+    color: $evo-info-fg;
     background-color: $evo-info-color;
     border-color: $evo-info-color;
 
@@ -218,14 +355,31 @@
     color: $evo-info-color;
     border-color: $evo-info-color;
 
-    &:hover:not(:disabled)  { color: #fff; background-color: $evo-info-color; }
-    &:active:not(:disabled) { background-color: $evo-info-hover; border-color: $evo-info-hover; }
+    &:hover:not(:disabled)  { color: $evo-info-fg; background-color: $evo-info-color; }
+    &:active:not(:disabled) { color: $evo-info-fg; background-color: $evo-info-hover; border-color: $evo-info-hover; }
     &:focus-visible         { outline-color: $evo-info-focus; }
   }
 
   &.ghost {
     color: $evo-info-color;
 
-    &:focus-visible { outline-color: $evo-info-focus; }
+    &:hover:not(:disabled)  { background-color: $evo-info-soft; }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-info-color 22%, transparent); }
+    &:focus-visible         { outline-color: $evo-info-focus; }
   }
+
+  &.soft {
+    color: $evo-info-color;
+    background-color: $evo-info-soft;
+
+    &:hover:not(:disabled)  { background-color: color-mix(in srgb, $evo-info-color 22%, transparent); }
+    &:active:not(:disabled) { background-color: color-mix(in srgb, $evo-info-color 30%, transparent); }
+    &:focus-visible         { outline-color: $evo-info-focus; }
+  }
+}
+
+// Respect users who prefer reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+  .spinner { animation-duration: 1.6s; }
 }

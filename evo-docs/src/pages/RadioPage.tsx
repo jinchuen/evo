@@ -34,7 +34,7 @@ export default function RadioPage() {
             <EvoRadio value="pro" label="Pro — $9/month" />
             <EvoRadio value="enterprise" label="Enterprise — Custom pricing" />
           </EvoRadio.Group>
-          <p style={{ fontSize: '0.82rem', color: '#64748b' }}>Selected: <strong style={{ color: '#e2e8f0' }}>{plan}</strong></p>
+          <p className="docs-readout">Selected: <strong>{plan}</strong></p>
         </div>
         <CodeBlock code={`const [plan, setPlan] = useState('starter')
 

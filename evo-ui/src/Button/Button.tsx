@@ -1,76 +1,125 @@
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import styles from '../css/button.module.scss';
 
-type Variant = 'solid' | 'outline' | 'ghost' | 'rounded';
+type Variant = 'solid' | 'outline' | 'ghost' | 'soft';
 type Severity = 'primary' | 'secondary' | 'danger' | 'warning' | 'success' | 'info';
 type Size = 'sm' | 'md' | 'lg';
+type Shape = 'default' | 'rounded' | 'square';
 
 /**
  * Configuration properties for the EvoButton component.
+ *
+ * Extends every native `<button>` attribute (type, form, name, autoFocus,
+ * aria-*, onMouseEnter, …) so consumers don't have to ask for them one by one.
  */
-interface EvoButtonProps {
-  /** * The text content to display inside the button.
-   */
-  label: string;
+export interface EvoButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Text shown inside the button. Convenience shorthand for `children`. */
+  label?: string;
 
-  /** * The visual style of the button.
-   * - `solid`: Full background color (default).
-   * - `outline`: Border only with transparent background.
-   * - `ghost`: No background or border, only text.
-   * - `rounded`: Fully circular edges.
+  /**
+   * Visual style of the button.
+   * - `solid`   — filled background (default).
+   * - `outline` — bordered, transparent background.
+   * - `ghost`   — no border or background until hover.
+   * - `soft`    — tinted background using the severity's soft token.
    * @default 'solid'
    */
   variant?: Variant;
 
-  /** * The contextual color theme of the button.
-   * - `primary`: Main brand color.
-   * - `secondary`: Alternative accent color.
-   * - `success`: Positive actions (Green).
-   * - `info`: Informational actions (Blue).
-   * - `warning`: Cautionary actions (Orange).
-   * - `danger`: Destructive or error actions (Red).
+  /**
+   * Semantic color theme.
    * @default 'primary'
    */
   severity?: Severity;
 
-  /** * The relative size of the button component.
-   * - `sm`: Small (compact).
-   * - `md`: Medium (standard).
-   * - `lg`: Large (prominent).
-   * @default 'md'
-   */
+  /** @default 'md' */
   size?: Size;
 
-  /** * If true, prevents user interaction and applies disabled styling.
-   * @default false
+  /**
+   * Border-radius shape, orthogonal to `variant`.
+   * - `default` — normal radius.
+   * - `rounded` — pill / fully rounded edges.
+   * - `square`  — equal width/height; use for icon-only buttons.
+   * @default 'default'
    */
-  disabled?: boolean;
+  shape?: Shape;
 
-  /** * Callback function triggered when the button is clicked.
-   * @example () => alert('Action confirmed')
+  /** Icon rendered before the label. */
+  iconLeft?: ReactNode;
+
+  /** Icon rendered after the label. */
+  iconRight?: ReactNode;
+
+  /**
+   * When true, replaces icons with a spinner and disables interaction.
+   * `aria-busy` is set automatically.
    */
-  onClick?: () => void;
+  loading?: boolean;
+
+  /** Optional text shown next to the spinner while `loading` is true. */
+  loadingText?: string;
+
+  /** Stretch to fill the parent's width. */
+  fullWidth?: boolean;
 }
 
-export const EvoButton = ({
-  label,
-  variant = 'solid',
-  severity = 'primary',
-  size = 'md',
-  disabled,
-  onClick,
-}: EvoButtonProps) => {
+export const EvoButton = forwardRef<HTMLButtonElement, EvoButtonProps>(function EvoButton(
+  {
+    label,
+    children,
+    variant = 'solid',
+    severity = 'primary',
+    size = 'md',
+    shape = 'default',
+    iconLeft,
+    iconRight,
+    loading = false,
+    loadingText,
+    fullWidth = false,
+    disabled,
+    type = 'button',
+    className,
+    ...rest
+  },
+  ref,
+) {
+  const content = children ?? label;
+  const visibleContent = loading ? loadingText : content;
+  const isDisabled = disabled || loading;
+
   const classes = [
     styles.button,
     styles[variant],
     styles[severity],
-    size !== 'md' ? styles[size] : '',
+    styles[size],
+    shape !== 'default' ? styles[shape] : '',
+    fullWidth ? styles.fullWidth : '',
+    !visibleContent ? styles.iconOnly : '',
+    className,
   ]
     .filter(Boolean)
     .join(' ');
 
   return (
-    <button className={classes} disabled={disabled} onClick={onClick}>
-      {label}
+    <button
+      ref={ref}
+      type={type}
+      className={classes}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      {...rest}
+    >
+      {loading ? (
+        <span className={styles.spinner} aria-hidden="true" />
+      ) : (
+        iconLeft && <span className={styles.icon}>{iconLeft}</span>
+      )}
+
+      {visibleContent != null && visibleContent !== '' && (
+        <span className={styles.label}>{visibleContent}</span>
+      )}
+
+      {!loading && iconRight && <span className={styles.icon}>{iconRight}</span>}
     </button>
   );
-};
+});

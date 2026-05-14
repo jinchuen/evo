@@ -5,13 +5,13 @@ import { PropsTable } from '../components/PropsTable'
 const Cell = ({ children, span }: { children: React.ReactNode; span?: number }) => (
   <EvoGrid.Item colSpan={span}>
     <div style={{
-      background: 'rgba(34,211,238,0.08)',
-      border: '1px solid rgba(34,211,238,0.25)',
+      background: 'color-mix(in srgb, var(--docs-accent) 8%, transparent)',
+      border: '1px solid color-mix(in srgb, var(--docs-accent) 25%, transparent)',
       borderRadius: 6,
       padding: '0.75rem 1rem',
       textAlign: 'center',
       fontSize: '0.8rem',
-      color: '#22d3ee',
+      color: 'var(--docs-accent)',
       fontWeight: 600,
     }}>
       {children}
