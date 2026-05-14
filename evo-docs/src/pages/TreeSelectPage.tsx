@@ -151,8 +151,8 @@ export default function TreeSelectPage() {
             defaultExpandedKeys={['eu']}
             helperText="Click a chevron to expand a branch."
           />
-          <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
-            Selected: <strong style={{ color: '#e2e8f0' }}>{single || 'none'}</strong>
+          <p className="docs-readout">
+            Selected: <strong>{single || 'none'}</strong>
           </p>
         </div>
         <CodeBlock code={`const regions = [
@@ -189,8 +189,8 @@ export default function TreeSelectPage() {
             defaultExpandAll
             helperText="Checking a region selects every country inside; uncheck propagates."
           />
-          <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
-            Selected: <strong style={{ color: '#e2e8f0' }}>{multi.length ? multi.join(', ') : 'none'}</strong>
+          <p className="docs-readout">
+            Selected: <strong>{multi.length ? multi.join(', ') : 'none'}</strong>
           </p>
         </div>
         <CodeBlock code={`<EvoTreeSelect
@@ -328,15 +328,15 @@ export default function TreeSelectPage() {
       <div className="docs-section">
         <div className="docs-section-title">Keyboard</div>
         <div className="docs-preview col">
-          <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: 0, lineHeight: 1.7 }}>
-            <strong style={{ color: '#e2e8f0' }}>↑ / ↓</strong> — Move between visible nodes<br />
-            <strong style={{ color: '#e2e8f0' }}>→</strong> — Expand a collapsed branch, or step into its first child<br />
-            <strong style={{ color: '#e2e8f0' }}>←</strong> — Collapse an expanded branch, or step out to its parent<br />
-            <strong style={{ color: '#e2e8f0' }}>Enter</strong> — Select the focused node (or toggle in multi-select)<br />
-            <strong style={{ color: '#e2e8f0' }}>Space</strong> — Toggle the checkbox in multi-select<br />
-            <strong style={{ color: '#e2e8f0' }}>Home / End</strong> — Jump to the first / last visible node<br />
-            <strong style={{ color: '#e2e8f0' }}>Esc</strong> — Close the menu<br />
-            <strong style={{ color: '#e2e8f0' }}>Tab</strong> — Commit and move focus
+          <p className="docs-kbd-list">
+            <strong>↑ / ↓</strong> — Move between visible nodes<br />
+            <strong>→</strong> — Expand a collapsed branch, or step into its first child<br />
+            <strong>←</strong> — Collapse an expanded branch, or step out to its parent<br />
+            <strong>Enter</strong> — Select the focused node (or toggle in multi-select)<br />
+            <strong>Space</strong> — Toggle the checkbox in multi-select<br />
+            <strong>Home / End</strong> — Jump to the first / last visible node<br />
+            <strong>Esc</strong> — Close the menu<br />
+            <strong>Tab</strong> — Commit and move focus
           </p>
         </div>
       </div>

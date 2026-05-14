@@ -92,10 +92,10 @@ export default function UtilitiesPage() {
                 padding: '0.25rem 0.75rem',
                 borderRadius: '6px',
                 fontSize: '0.8rem',
-                background: '#1e293b',
-                color: '#94a3b8',
+                background: 'var(--docs-code-bg)',
+                color: 'var(--docs-text-muted)',
                 textDecoration: 'none',
-                border: '1px solid #334155',
+                border: '1px solid var(--docs-border)',
               }}
             >
               {label}
@@ -111,7 +111,7 @@ export default function UtilitiesPage() {
       ════════════════════════════════════════════════ */}
       <div className="docs-section">
         <SectionTitle id="colors">Colors</SectionTitle>
-        <p style={{ color: '#94a3b8', marginBottom: '1rem', lineHeight: '1.6' }}>
+        <p style={{ color: 'var(--docs-text-muted)', marginBottom: '1rem', lineHeight: '1.6' }}>
           Three utility prefixes cover every color in the EVO palette.
           Color shades run from <strong>100</strong> (lightest) to{' '}
           <strong>900</strong> (darkest). Slate also has <strong>50</strong> and{' '}
@@ -124,14 +124,14 @@ export default function UtilitiesPage() {
           { cls: 'border-{color}-{shade}', prop: 'border-color',     value: 'e.g. border-rose-400 → border-color: #fb7185' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Available color families</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Available color families</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
           {['blue','gray','red','yellow','green','purple','cyan','rose','emerald','amber','violet','slate','white','black'].map(c => (
-            <code key={c} style={{ background: '#1e293b', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', color: '#e2e8f0' }}>{c}</code>
+            <code key={c} style={{ background: 'var(--docs-code-bg)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', color: 'var(--docs-text)' }}>{c}</code>
           ))}
         </div>
 
-        <p style={{ color: '#94a3b8', marginBottom: '0.5rem', fontWeight: 600 }}>Semantic color aliases</p>
+        <p style={{ color: 'var(--docs-text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>Semantic color aliases</p>
         <ClassTable rows={[
           { cls: 'text-primary',  prop: 'color',            value: '$evo-primary-color  (cyan-600)' },
           { cls: 'text-success',  prop: 'color',            value: '$evo-success-color  (emerald-600)' },
@@ -175,7 +175,7 @@ export default function UtilitiesPage() {
       ════════════════════════════════════════════════ */}
       <div className="docs-section">
         <SectionTitle id="spacing">Spacing scale</SectionTitle>
-        <p style={{ color: '#94a3b8', marginBottom: '1rem', lineHeight: '1.6' }}>
+        <p style={{ color: 'var(--docs-text-muted)', marginBottom: '1rem', lineHeight: '1.6' }}>
           One unit = <strong>0.25 rem = 4 px</strong>. The same scale applies to
           margin, padding, gap, width, and height utilities.
           Special tokens: <code>px</code> = 1 px, <code>auto</code> = auto.
@@ -218,7 +218,7 @@ export default function UtilitiesPage() {
       ════════════════════════════════════════════════ */}
       <div className="docs-section">
         <SectionTitle id="margin">Margin</SectionTitle>
-        <p style={{ color: '#94a3b8', marginBottom: '1rem', lineHeight: '1.6' }}>
+        <p style={{ color: 'var(--docs-text-muted)', marginBottom: '1rem', lineHeight: '1.6' }}>
           Replace <code>{'{n}'}</code> with any value from the spacing scale (0–96, px, auto).
           Negative margins use a leading dash: <code>-mt-4</code>.
         </p>
@@ -282,7 +282,7 @@ export default function UtilitiesPage() {
       ════════════════════════════════════════════════ */}
       <div className="docs-section">
         <SectionTitle id="gap">Gap</SectionTitle>
-        <p style={{ color: '#94a3b8', marginBottom: '1rem' }}>
+        <p style={{ color: 'var(--docs-text-muted)', marginBottom: '1rem' }}>
           Used with <code>flex</code> or <code>grid</code> containers.
         </p>
         <ClassTable rows={[
@@ -305,7 +305,7 @@ export default function UtilitiesPage() {
       <div className="docs-section">
         <SectionTitle id="typography">Typography</SectionTitle>
 
-        <p style={{ color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>Font size</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>Font size</p>
         <ClassTable rows={[
           { cls: 'text-xs',   prop: 'font-size', value: '0.75rem  (12px)' },
           { cls: 'text-sm',   prop: 'font-size', value: '0.875rem (14px)' },
@@ -319,7 +319,7 @@ export default function UtilitiesPage() {
           { cls: 'text-6xl',  prop: 'font-size', value: '3.75rem  (60px)' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Font weight</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Font weight</p>
         <ClassTable rows={[
           { cls: 'font-thin',       prop: 'font-weight', value: '100' },
           { cls: 'font-extralight', prop: 'font-weight', value: '200' },
@@ -332,14 +332,14 @@ export default function UtilitiesPage() {
           { cls: 'font-black',      prop: 'font-weight', value: '900' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Font family</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Font family</p>
         <ClassTable rows={[
           { cls: 'font-sans',    prop: 'font-family', value: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif' },
           { cls: 'font-display', prop: 'font-family', value: 'Cal Sans, Inter, sans-serif' },
           { cls: 'font-mono',    prop: 'font-family', value: 'ui-monospace, Cascadia Code, Source Code Pro, Menlo, monospace' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Text alignment</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Text alignment</p>
         <ClassTable rows={[
           { cls: 'text-left',    prop: 'text-align', value: 'left' },
           { cls: 'text-center',  prop: 'text-align', value: 'center' },
@@ -349,7 +349,7 @@ export default function UtilitiesPage() {
           { cls: 'text-end',     prop: 'text-align', value: 'end' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Text transform</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Text transform</p>
         <ClassTable rows={[
           { cls: 'uppercase',   prop: 'text-transform', value: 'uppercase' },
           { cls: 'lowercase',   prop: 'text-transform', value: 'lowercase' },
@@ -357,7 +357,7 @@ export default function UtilitiesPage() {
           { cls: 'normal-case', prop: 'text-transform', value: 'none' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Text decoration</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Text decoration</p>
         <ClassTable rows={[
           { cls: 'underline',    prop: 'text-decoration-line', value: 'underline' },
           { cls: 'overline',     prop: 'text-decoration-line', value: 'overline' },
@@ -365,13 +365,13 @@ export default function UtilitiesPage() {
           { cls: 'no-underline', prop: 'text-decoration-line', value: 'none' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Font style</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Font style</p>
         <ClassTable rows={[
           { cls: 'italic',     prop: 'font-style', value: 'italic' },
           { cls: 'not-italic', prop: 'font-style', value: 'normal' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Line height</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Line height</p>
         <ClassTable rows={[
           { cls: 'leading-none',    prop: 'line-height', value: '1' },
           { cls: 'leading-tight',   prop: 'line-height', value: '1.25' },
@@ -381,7 +381,7 @@ export default function UtilitiesPage() {
           { cls: 'leading-loose',   prop: 'line-height', value: '2' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Letter spacing</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Letter spacing</p>
         <ClassTable rows={[
           { cls: 'tracking-tighter', prop: 'letter-spacing', value: '-0.05em' },
           { cls: 'tracking-tight',   prop: 'letter-spacing', value: '-0.025em' },
@@ -391,7 +391,7 @@ export default function UtilitiesPage() {
           { cls: 'tracking-widest',  prop: 'letter-spacing', value: '0.1em' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Overflow / truncation</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Overflow / truncation</p>
         <ClassTable rows={[
           { cls: 'truncate',       prop: 'overflow + text-overflow + white-space', value: 'hidden + ellipsis + nowrap — single-line clamp' },
           { cls: 'line-clamp-1',   prop: '-webkit-line-clamp',                    value: '1 — hide after 1 line' },
@@ -410,7 +410,7 @@ export default function UtilitiesPage() {
           { cls: 'break-all',      prop: 'word-break',                 value: 'break-all' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>List style</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>List style</p>
         <ClassTable rows={[
           { cls: 'list-none',    prop: 'list-style-type',     value: 'none' },
           { cls: 'list-disc',    prop: 'list-style-type',     value: 'disc' },
@@ -419,7 +419,7 @@ export default function UtilitiesPage() {
           { cls: 'list-outside', prop: 'list-style-position', value: 'outside' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Vertical align</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Vertical align</p>
         <ClassTable rows={[
           { cls: 'align-baseline',    prop: 'vertical-align', value: 'baseline' },
           { cls: 'align-top',         prop: 'vertical-align', value: 'top' },
@@ -463,12 +463,12 @@ export default function UtilitiesPage() {
       ════════════════════════════════════════════════ */}
       <div className="docs-section">
         <SectionTitle id="flexbox">Flexbox</SectionTitle>
-        <p style={{ color: '#94a3b8', marginBottom: '1rem' }}>
+        <p style={{ color: 'var(--docs-text-muted)', marginBottom: '1rem' }}>
           Apply <code>flex</code> or <code>inline-flex</code> to the parent first,
           then use these classes to control direction, alignment, and sizing.
         </p>
 
-        <p style={{ color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>Flex direction</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>Flex direction</p>
         <ClassTable rows={[
           { cls: 'flex-row',         prop: 'flex-direction', value: 'row          — left → right (default)' },
           { cls: 'flex-row-reverse', prop: 'flex-direction', value: 'row-reverse  — right → left' },
@@ -476,14 +476,14 @@ export default function UtilitiesPage() {
           { cls: 'flex-col-reverse', prop: 'flex-direction', value: 'column-reverse — bottom → top' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Flex wrap</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Flex wrap</p>
         <ClassTable rows={[
           { cls: 'flex-nowrap',       prop: 'flex-wrap', value: 'nowrap         — all children on one line (default)' },
           { cls: 'flex-wrap',         prop: 'flex-wrap', value: 'wrap           — children wrap to new lines' },
           { cls: 'flex-wrap-reverse', prop: 'flex-wrap', value: 'wrap-reverse   — wrap upward' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>justify-content — aligns children along the main axis</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>justify-content — aligns children along the main axis</p>
         <ClassTable rows={[
           { cls: 'justify-start',   prop: 'justify-content', value: 'flex-start    — pack to the start (left in row)' },
           { cls: 'justify-end',     prop: 'justify-content', value: 'flex-end      — pack to the end (right in row)' },
@@ -494,7 +494,7 @@ export default function UtilitiesPage() {
           { cls: 'justify-stretch', prop: 'justify-content', value: 'stretch' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>align-items — aligns children along the cross axis</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>align-items — aligns children along the cross axis</p>
         <ClassTable rows={[
           { cls: 'items-start',    prop: 'align-items', value: 'flex-start — align to the top (in a row)' },
           { cls: 'items-end',      prop: 'align-items', value: 'flex-end   — align to the bottom (in a row)' },
@@ -503,7 +503,7 @@ export default function UtilitiesPage() {
           { cls: 'items-baseline', prop: 'align-items', value: 'baseline   — align text baselines' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>align-content — aligns multiple rows/columns</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>align-content — aligns multiple rows/columns</p>
         <ClassTable rows={[
           { cls: 'content-start',   prop: 'align-content', value: 'flex-start' },
           { cls: 'content-end',     prop: 'align-content', value: 'flex-end' },
@@ -514,7 +514,7 @@ export default function UtilitiesPage() {
           { cls: 'content-stretch', prop: 'align-content', value: 'stretch' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>align-self — overrides align-items on a single child</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>align-self — overrides align-items on a single child</p>
         <ClassTable rows={[
           { cls: 'self-auto',     prop: 'align-self', value: 'auto' },
           { cls: 'self-start',    prop: 'align-self', value: 'flex-start' },
@@ -524,7 +524,7 @@ export default function UtilitiesPage() {
           { cls: 'self-baseline', prop: 'align-self', value: 'baseline' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Flex grow / shrink / basis</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Flex grow / shrink / basis</p>
         <ClassTable rows={[
           { cls: 'flex-1',      prop: 'flex', value: '1 1 0%   — grow and shrink, start from 0' },
           { cls: 'flex-auto',   prop: 'flex', value: '1 1 auto — grow and shrink, start from natural size' },
@@ -570,11 +570,11 @@ export default function UtilitiesPage() {
       ════════════════════════════════════════════════ */}
       <div className="docs-section">
         <SectionTitle id="grid">Grid</SectionTitle>
-        <p style={{ color: '#94a3b8', marginBottom: '1rem' }}>
+        <p style={{ color: 'var(--docs-text-muted)', marginBottom: '1rem' }}>
           Apply <code>grid</code> to the parent, then control columns and spans on children.
         </p>
 
-        <p style={{ color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>Grid template columns</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>Grid template columns</p>
         <ClassTable rows={[
           { cls: 'grid-cols-1',  prop: 'grid-template-columns', value: 'repeat(1, minmax(0, 1fr))' },
           { cls: 'grid-cols-2',  prop: 'grid-template-columns', value: 'repeat(2, minmax(0, 1fr))' },
@@ -591,7 +591,7 @@ export default function UtilitiesPage() {
           { cls: 'grid-cols-none', prop: 'grid-template-columns', value: 'none' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Column span (child class)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Column span (child class)</p>
         <ClassTable rows={[
           { cls: 'col-span-1',  prop: 'grid-column', value: 'span 1 / span 1' },
           { cls: 'col-span-2',  prop: 'grid-column', value: 'span 2 / span 2' },
@@ -609,7 +609,7 @@ export default function UtilitiesPage() {
           { cls: 'col-auto',    prop: 'grid-column', value: 'auto' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Grid template rows</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Grid template rows</p>
         <ClassTable rows={[
           { cls: 'grid-rows-1', prop: 'grid-template-rows', value: 'repeat(1, minmax(0, 1fr))' },
           { cls: 'grid-rows-2', prop: 'grid-template-rows', value: 'repeat(2, minmax(0, 1fr))' },
@@ -619,7 +619,7 @@ export default function UtilitiesPage() {
           { cls: 'grid-rows-6', prop: 'grid-template-rows', value: 'repeat(6, minmax(0, 1fr))' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Row span (child class)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Row span (child class)</p>
         <ClassTable rows={[
           { cls: 'row-span-1',  prop: 'grid-row', value: 'span 1 / span 1' },
           { cls: 'row-span-2',  prop: 'grid-row', value: 'span 2 / span 2' },
@@ -661,7 +661,7 @@ export default function UtilitiesPage() {
       <div className="docs-section">
         <SectionTitle id="sizing">Sizing</SectionTitle>
 
-        <p style={{ color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>Width — special values</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>Width — special values</p>
         <ClassTable rows={[
           { cls: 'w-auto',   prop: 'width', value: 'auto' },
           { cls: 'w-full',   prop: 'width', value: '100%' },
@@ -683,7 +683,7 @@ export default function UtilitiesPage() {
           { cls: 'w-5/6',    prop: 'width', value: '83.333%' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Height — special values</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Height — special values</p>
         <ClassTable rows={[
           { cls: 'h-auto',   prop: 'height', value: 'auto' },
           { cls: 'h-full',   prop: 'height', value: '100%' },
@@ -696,7 +696,7 @@ export default function UtilitiesPage() {
           { cls: 'h-px',     prop: 'height', value: '1px' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Max width</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Max width</p>
         <ClassTable rows={[
           { cls: 'max-w-none',   prop: 'max-width', value: 'none' },
           { cls: 'max-w-xs',     prop: 'max-width', value: '20rem  (320px)' },
@@ -716,7 +716,7 @@ export default function UtilitiesPage() {
           { cls: 'max-w-fit',    prop: 'max-width', value: 'fit-content' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Min width / Min height</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Min width / Min height</p>
         <ClassTable rows={[
           { cls: 'min-w-0',      prop: 'min-width',  value: '0' },
           { cls: 'min-w-full',   prop: 'min-width',  value: '100%' },
@@ -730,7 +730,7 @@ export default function UtilitiesPage() {
           { cls: 'min-h-fit',    prop: 'min-height', value: 'fit-content' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>size shorthand (width + height together)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>size shorthand (width + height together)</p>
         <ClassTable rows={[
           { cls: 'size-{n}',  prop: 'width + height', value: 'same numeric value for both (scale 0–96)' },
           { cls: 'size-auto', prop: 'width + height', value: 'auto auto' },
@@ -752,7 +752,7 @@ export default function UtilitiesPage() {
       <div className="docs-section">
         <SectionTitle id="borders">Borders</SectionTitle>
 
-        <p style={{ color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>Border width</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>Border width</p>
         <ClassTable rows={[
           { cls: 'border',   prop: 'border-width + border-style', value: '1px solid' },
           { cls: 'border-0', prop: 'border-width', value: '0' },
@@ -774,7 +774,7 @@ export default function UtilitiesPage() {
           { cls: 'border-y',   prop: 'border-block-width',  value: '1px solid — top + bottom' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Border style</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Border style</p>
         <ClassTable rows={[
           { cls: 'border-solid',  prop: 'border-style', value: 'solid' },
           { cls: 'border-dashed', prop: 'border-style', value: 'dashed' },
@@ -783,7 +783,7 @@ export default function UtilitiesPage() {
           { cls: 'border-none',   prop: 'border-style', value: 'none' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Divide — automatic border between children</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Divide — automatic border between children</p>
         <ClassTable rows={[
           { cls: 'divide-y',   prop: 'border-top on every child except first', value: '1px solid' },
           { cls: 'divide-y-2', prop: 'border-top on every child except first', value: '2px solid' },
@@ -792,7 +792,7 @@ export default function UtilitiesPage() {
           { cls: 'divide-none',prop: 'border on children', value: 'none (removes divide)' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Ring — focus ring via box-shadow</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Ring — focus ring via box-shadow</p>
         <ClassTable rows={[
           { cls: 'ring-0', prop: 'box-shadow', value: 'none' },
           { cls: 'ring-1', prop: 'box-shadow', value: '0 0 0 1px (cyan ring color)' },
@@ -803,7 +803,7 @@ export default function UtilitiesPage() {
           { cls: 'ring-inset', prop: 'box-shadow', value: 'inset 0 0 0 3px (cyan ring color)' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Outline</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Outline</p>
         <ClassTable rows={[
           { cls: 'outline-none',     prop: 'outline', value: 'none' },
           { cls: 'outline',          prop: 'outline', value: '1px solid' },
@@ -896,7 +896,7 @@ export default function UtilitiesPage() {
       <div className="docs-section">
         <SectionTitle id="transitions">Transitions</SectionTitle>
 
-        <p style={{ color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>Transition property</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>Transition property</p>
         <ClassTable rows={[
           { cls: 'transition-none',      prop: 'transition', value: 'none' },
           { cls: 'transition',           prop: 'transition', value: 'color, background-color, border-color, opacity, box-shadow, transform, filter — 250ms ease' },
@@ -907,7 +907,7 @@ export default function UtilitiesPage() {
           { cls: 'transition-transform', prop: 'transition', value: 'transform — 250ms ease' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Duration</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Duration</p>
         <ClassTable rows={[
           { cls: 'duration-75',   prop: 'transition-duration', value: '75ms' },
           { cls: 'duration-100',  prop: 'transition-duration', value: '100ms' },
@@ -919,7 +919,7 @@ export default function UtilitiesPage() {
           { cls: 'duration-1000', prop: 'transition-duration', value: '1000ms' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Easing</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Easing</p>
         <ClassTable rows={[
           { cls: 'ease-linear',  prop: 'transition-timing-function', value: 'linear' },
           { cls: 'ease-in',      prop: 'transition-timing-function', value: 'cubic-bezier(0.4, 0, 1, 1)' },
@@ -947,7 +947,7 @@ export default function UtilitiesPage() {
       <div className="docs-section">
         <SectionTitle id="transforms">Transforms</SectionTitle>
 
-        <p style={{ color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>Scale</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>Scale</p>
         <ClassTable rows={[
           { cls: 'scale-0',   prop: 'transform', value: 'scale(0)' },
           { cls: 'scale-50',  prop: 'transform', value: 'scale(0.5)' },
@@ -961,7 +961,7 @@ export default function UtilitiesPage() {
           { cls: 'scale-150', prop: 'transform', value: 'scale(1.5)' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Rotate</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Rotate</p>
         <ClassTable rows={[
           { cls: 'rotate-0',    prop: 'transform', value: 'rotate(0deg)' },
           { cls: 'rotate-1',    prop: 'transform', value: 'rotate(1deg)' },
@@ -979,7 +979,7 @@ export default function UtilitiesPage() {
           { cls: '-rotate-180', prop: 'transform', value: 'rotate(-180deg)' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Translate</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Translate</p>
         <ClassTable rows={[
           { cls: 'translate-x-0',      prop: 'transform', value: 'translateX(0)' },
           { cls: 'translate-y-0',      prop: 'transform', value: 'translateY(0)' },
@@ -991,7 +991,7 @@ export default function UtilitiesPage() {
           { cls: '-translate-y-1/2',   prop: 'transform', value: 'translateY(-50%) — center vertically over anchor' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Transform origin</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Transform origin</p>
         <ClassTable rows={[
           { cls: 'origin-center',       prop: 'transform-origin', value: 'center' },
           { cls: 'origin-top',          prop: 'transform-origin', value: 'top' },
@@ -1004,7 +1004,7 @@ export default function UtilitiesPage() {
           { cls: 'origin-top-left',     prop: 'transform-origin', value: 'top left' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Backdrop blur (frosted glass)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Backdrop blur (frosted glass)</p>
         <ClassTable rows={[
           { cls: 'backdrop-blur-none', prop: 'backdrop-filter', value: 'none' },
           { cls: 'backdrop-blur-sm',   prop: 'backdrop-filter', value: 'blur(4px)' },
@@ -1055,7 +1055,7 @@ export default function UtilitiesPage() {
       ════════════════════════════════════════════════ */}
       <div className="docs-section">
         <SectionTitle id="inset">Inset (top / right / bottom / left)</SectionTitle>
-        <p style={{ color: '#94a3b8', marginBottom: '1rem', lineHeight: '1.6' }}>
+        <p style={{ color: 'var(--docs-text-muted)', marginBottom: '1rem', lineHeight: '1.6' }}>
           Used with <code>absolute</code>, <code>fixed</code>, or <code>sticky</code> positioning.
           Replace <code>{'{n}'}</code> with 0–64 from the spacing scale.
           Negative versions use <code>{'-top-{n}'}</code>.
@@ -1098,7 +1098,7 @@ export default function UtilitiesPage() {
           { cls: 'z-50',   prop: 'z-index', value: '50' },
           { cls: 'z-auto', prop: 'z-index', value: 'auto' },
         ]} />
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Named z-index layers (semantic aliases)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Named z-index layers (semantic aliases)</p>
         <ClassTable rows={[
           { cls: 'z-base',    prop: 'z-index', value: '0   — normal flow' },
           { cls: 'z-raised',  prop: 'z-index', value: '10  — dropdowns, popovers' },
@@ -1167,13 +1167,13 @@ export default function UtilitiesPage() {
       <div className="docs-section">
         <SectionTitle id="misc">Misc</SectionTitle>
 
-        <p style={{ color: '#94a3b8', margin: '0 0 0.5rem', fontWeight: 600 }}>Pointer events</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '0 0 0.5rem', fontWeight: 600 }}>Pointer events</p>
         <ClassTable rows={[
           { cls: 'pointer-events-none', prop: 'pointer-events', value: 'none — element ignores all mouse events' },
           { cls: 'pointer-events-auto', prop: 'pointer-events', value: 'auto — restore pointer events' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>User select (text selection)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>User select (text selection)</p>
         <ClassTable rows={[
           { cls: 'select-none', prop: 'user-select', value: 'none — can\'t select text' },
           { cls: 'select-text', prop: 'user-select', value: 'text — normal text selection' },
@@ -1181,13 +1181,13 @@ export default function UtilitiesPage() {
           { cls: 'select-auto', prop: 'user-select', value: 'auto' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Appearance</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Appearance</p>
         <ClassTable rows={[
           { cls: 'appearance-none', prop: 'appearance', value: 'none — remove browser default styling (inputs, selects)' },
           { cls: 'appearance-auto', prop: 'appearance', value: 'auto' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Resize</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Resize</p>
         <ClassTable rows={[
           { cls: 'resize-none', prop: 'resize', value: 'none — can\'t resize' },
           { cls: 'resize-x',    prop: 'resize', value: 'horizontal — only horizontal' },
@@ -1195,26 +1195,26 @@ export default function UtilitiesPage() {
           { cls: 'resize',      prop: 'resize', value: 'both — free resize' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Scroll behavior</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Scroll behavior</p>
         <ClassTable rows={[
           { cls: 'scroll-auto',   prop: 'scroll-behavior', value: 'auto   — instant jump' },
           { cls: 'scroll-smooth', prop: 'scroll-behavior', value: 'smooth — animated scroll' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Box sizing</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Box sizing</p>
         <ClassTable rows={[
           { cls: 'box-border',  prop: 'box-sizing', value: 'border-box  — padding/border included in width (recommended)' },
           { cls: 'box-content', prop: 'box-sizing', value: 'content-box — padding/border added on top of width (browser default)' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Aspect ratio</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Aspect ratio</p>
         <ClassTable rows={[
           { cls: 'aspect-auto',   prop: 'aspect-ratio', value: 'auto' },
           { cls: 'aspect-square', prop: 'aspect-ratio', value: '1 / 1   — square' },
           { cls: 'aspect-video',  prop: 'aspect-ratio', value: '16 / 9  — widescreen video' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Object fit (for img / video)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Object fit (for img / video)</p>
         <ClassTable rows={[
           { cls: 'object-contain',    prop: 'object-fit', value: 'contain    — whole image visible, may letterbox' },
           { cls: 'object-cover',      prop: 'object-fit', value: 'cover      — fills box, may crop' },
@@ -1223,7 +1223,7 @@ export default function UtilitiesPage() {
           { cls: 'object-scale-down', prop: 'object-fit', value: 'scale-down — smaller of contain / none' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Will change (performance hint)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Will change (performance hint)</p>
         <ClassTable rows={[
           { cls: 'will-change-auto',      prop: 'will-change', value: 'auto' },
           { cls: 'will-change-scroll',    prop: 'will-change', value: 'scroll-position' },
@@ -1231,7 +1231,7 @@ export default function UtilitiesPage() {
           { cls: 'will-change-transform', prop: 'will-change', value: 'transform — hint GPU to promote to its own layer' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Float / clearfix</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Float / clearfix</p>
         <ClassTable rows={[
           { cls: 'float-left',  prop: 'float', value: 'left' },
           { cls: 'float-right', prop: 'float', value: 'right' },
@@ -1239,7 +1239,7 @@ export default function UtilitiesPage() {
           { cls: 'clearfix',    prop: '::after pseudo-element', value: 'clears floated children' },
         ]} />
 
-        <p style={{ color: '#94a3b8', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Isolation (creates new stacking context)</p>
+        <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Isolation (creates new stacking context)</p>
         <ClassTable rows={[
           { cls: 'isolate',        prop: 'isolation', value: 'isolate — new stacking context, stops z-index bleed' },
           { cls: 'isolation-auto', prop: 'isolation', value: 'auto' },

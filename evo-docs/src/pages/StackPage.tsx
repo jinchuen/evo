@@ -2,7 +2,7 @@ import { EvoStack, EvoDivider } from '@justin_evo/evo-ui'
 import { CodeBlock } from '../components/CodeBlock'
 import { PropsTable } from '../components/PropsTable'
 
-const Box = ({ children, color = '#22d3ee' }: { children: React.ReactNode; color?: string }) => (
+const Box = ({ children, color = 'var(--docs-accent)' }: { children: React.ReactNode; color?: string }) => (
   <div style={{
     background: `${color}18`,
     border: `1px solid ${color}40`,
@@ -70,7 +70,7 @@ export default function StackPage() {
           {(['start', 'center', 'end', 'between'] as const).map((j) => (
             <div key={j} style={{ width: '100%' }}>
               <span className="docs-label">justify="{j}"</span>
-              <EvoStack direction="row" justify={j} gap="0.5rem" style={{ width: '100%', background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: '0.5rem' }}>
+              <EvoStack direction="row" justify={j} gap="0.5rem" style={{ width: '100%', background: 'var(--docs-code-bg)', borderRadius: 6, padding: '0.5rem' }}>
                 <Box>A</Box>
                 <Box>B</Box>
                 <Box>C</Box>

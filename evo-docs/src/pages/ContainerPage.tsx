@@ -27,12 +27,12 @@ export default function ContainerPage() {
               <span className="docs-label">size="{size}"</span>
               <EvoContainer size={size}>
                 <div style={{
-                  background: 'rgba(34,211,238,0.08)',
-                  border: '1px solid rgba(34,211,238,0.25)',
+                  background: 'color-mix(in srgb, var(--docs-accent) 8%, transparent)',
+                  border: '1px solid color-mix(in srgb, var(--docs-accent) 25%, transparent)',
                   borderRadius: 6,
                   padding: '0.6rem 1rem',
                   fontSize: '0.8rem',
-                  color: '#22d3ee',
+                  color: 'var(--docs-accent)',
                   textAlign: 'center',
                 }}>
                   {size} container

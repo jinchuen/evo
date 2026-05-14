@@ -72,8 +72,8 @@ export default function SelectPage() {
             onChange={setCountry}
             helperText="Used for billing region"
           />
-          <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
-            Selected: <strong style={{ color: '#e2e8f0' }}>{country || 'none'}</strong>
+          <p className="docs-readout">
+            Selected: <strong>{country || 'none'}</strong>
           </p>
         </div>
         <CodeBlock code={`const [country, setCountry] = useState('')
@@ -239,12 +239,12 @@ export default function SelectPage() {
       <div className="docs-section">
         <div className="docs-section-title">Keyboard</div>
         <div className="docs-preview col">
-          <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: 0, lineHeight: 1.7 }}>
-            <strong style={{ color: '#e2e8f0' }}>↑ / ↓</strong> — Move the active option<br />
-            <strong style={{ color: '#e2e8f0' }}>Home / End</strong> — Jump to first / last<br />
-            <strong style={{ color: '#e2e8f0' }}>Enter / Space</strong> — Open or select<br />
-            <strong style={{ color: '#e2e8f0' }}>Esc</strong> — Close menu<br />
-            <strong style={{ color: '#e2e8f0' }}>Tab</strong> — Close menu and move focus
+          <p className="docs-kbd-list">
+            <strong>↑ / ↓</strong> — Move the active option<br />
+            <strong>Home / End</strong> — Jump to first / last<br />
+            <strong>Enter / Space</strong> — Open or select<br />
+            <strong>Esc</strong> — Close menu<br />
+            <strong>Tab</strong> — Close menu and move focus
           </p>
         </div>
       </div>

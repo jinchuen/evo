@@ -46,7 +46,7 @@ export default function BreadcrumbPage() {
             <EvoBreadcrumb.Item href="#">API</EvoBreadcrumb.Item>
             <EvoBreadcrumb.Item current>EvoButton</EvoBreadcrumb.Item>
           </EvoBreadcrumb>
-          <EvoBreadcrumb separator={<span style={{ color: '#64748b' }}>•</span>}>
+          <EvoBreadcrumb separator={<span style={{ color: 'var(--docs-text-muted)' }}>•</span>}>
             <EvoBreadcrumb.Item href="#">Blog</EvoBreadcrumb.Item>
             <EvoBreadcrumb.Item href="#">2024</EvoBreadcrumb.Item>
             <EvoBreadcrumb.Item current>Article Title</EvoBreadcrumb.Item>

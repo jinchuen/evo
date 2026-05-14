@@ -241,12 +241,12 @@ export default function FormPage() {
             <code style={{
               display: 'block',
               padding: '0.5rem 0.75rem',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--docs-code-bg)',
+              border: '1px solid var(--docs-border)',
               borderRadius: 6,
               fontSize: '0.8rem',
               fontFamily: 'monospace',
-              color: '#cbd5e1',
+              color: 'var(--docs-text)',
             }}>
               sk_live_••••••••••••••••a93f
             </code>

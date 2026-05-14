@@ -33,7 +33,7 @@ export default function ModalPage() {
             Confirm Action
           </EvoModal.Header>
           <EvoModal.Body>
-            <p style={{ color: '#94a3b8', margin: 0 }}>
+            <p style={{ color: 'var(--docs-text-muted)', margin: 0 }}>
               Are you sure you want to proceed? This action cannot be undone.
             </p>
           </EvoModal.Body>
@@ -78,8 +78,8 @@ export default function ModalPage() {
           <EvoModal key={size} open={open} onClose={() => setOpen(false)} size={size}>
             <EvoModal.Header onClose={() => setOpen(false)}>{label}</EvoModal.Header>
             <EvoModal.Body>
-              <p style={{ color: '#94a3b8', margin: 0 }}>
-                This modal uses <code style={{ color: '#22d3ee', background: 'rgba(34,211,238,0.1)', padding: '0 4px', borderRadius: 3 }}>size="{size}"</code>.
+              <p style={{ color: 'var(--docs-text-muted)', margin: 0 }}>
+                This modal uses <code style={{ color: 'var(--docs-accent)', background: 'color-mix(in srgb, var(--docs-accent) 10%, transparent)', padding: '0 4px', borderRadius: 3 }}>size="{size}"</code>.
               </p>
             </EvoModal.Body>
             <EvoModal.Footer>

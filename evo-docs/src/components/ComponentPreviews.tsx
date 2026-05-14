@@ -357,6 +357,118 @@ export const TooltipPreview = () => (
   </div>
 )
 
+// ---------- Newly added previews ----------
+
+export const RichTextAreaPreview = () => (
+  <div
+    style={{
+      width: '100%',
+      maxWidth: 220,
+      background: 'var(--evo-color-surface)',
+      border: '1px solid var(--evo-color-border)',
+      borderRadius: 6,
+      overflow: 'hidden',
+      fontSize: '0.65rem',
+    }}
+  >
+    <div
+      style={{
+        display: 'flex',
+        gap: '0.25rem',
+        padding: '0.3rem 0.4rem',
+        borderBottom: '1px solid var(--evo-color-border)',
+        background: 'var(--evo-color-surface-sunken)',
+      }}
+    >
+      <strong style={{ padding: '0 0.2rem' }}>B</strong>
+      <em style={{ padding: '0 0.2rem' }}>I</em>
+      <span style={{ padding: '0 0.2rem', textDecoration: 'underline' }}>U</span>
+      <span style={{ marginLeft: 'auto', color: 'var(--evo-color-text-muted)' }}>H1</span>
+    </div>
+    <div style={{ padding: '0.4rem 0.5rem', color: 'var(--evo-color-text)' }}>
+      Type something <strong>bold</strong>…
+    </div>
+  </div>
+)
+
+export const ImageCropperPreview = () => (
+  <div
+    style={{
+      width: 130,
+      height: 80,
+      position: 'relative',
+      borderRadius: 6,
+      overflow: 'hidden',
+      background:
+        'linear-gradient(135deg, color-mix(in srgb, var(--evo-color-primary) 60%, transparent), color-mix(in srgb, var(--evo-color-info) 60%, transparent))',
+      border: '1px solid var(--evo-color-border)',
+    }}
+  >
+    <div
+      style={{
+        position: 'absolute',
+        inset: '12px 16px',
+        border: '1.5px dashed white',
+        borderRadius: 3,
+        boxShadow: '0 0 0 9999px rgb(0 0 0 / 0.35)',
+      }}
+    />
+  </div>
+)
+
+export const CommandPalettePreview = () => (
+  <div
+    style={{
+      width: '100%',
+      maxWidth: 220,
+      background: 'var(--evo-color-surface-elevated)',
+      border: '1px solid var(--evo-color-border)',
+      borderRadius: 8,
+      overflow: 'hidden',
+      fontSize: '0.7rem',
+      boxShadow: '0 8px 16px -8px rgb(0 0 0 / 0.25)',
+    }}
+  >
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        padding: '0.4rem 0.55rem',
+        borderBottom: '1px solid var(--evo-color-border)',
+      }}
+    >
+      <span style={{ color: 'var(--evo-color-text-muted)' }}>⌕</span>
+      <span style={{ color: 'var(--evo-color-text-muted)' }}>Search…</span>
+      <kbd
+        style={{
+          marginLeft: 'auto',
+          fontSize: '0.55rem',
+          padding: '0.05rem 0.3rem',
+          border: '1px solid var(--evo-color-border)',
+          borderRadius: 3,
+          color: 'var(--evo-color-text-muted)',
+        }}
+      >
+        ⌘K
+      </kbd>
+    </div>
+    <div style={{ padding: '0.3rem 0.55rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <span
+          style={{
+            width: 4,
+            height: 4,
+            borderRadius: '50%',
+            background: 'var(--evo-color-primary)',
+          }}
+        />
+        New file
+      </div>
+    </div>
+  </div>
+)
+
 export const ToastPreview = () => (
   <div
     style={{

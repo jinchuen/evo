@@ -27,7 +27,7 @@ export default function TabsPage() {
               <EvoTabs.Tab id="api">API</EvoTabs.Tab>
             </EvoTabs.List>
             <EvoTabs.Panel id="overview">
-              <p style={{ color: '#94a3b8', margin: '1rem 0 0' }}>
+              <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0' }}>
                 This is the overview panel. Use tabs to organize related content into sections.
               </p>
             </EvoTabs.Panel>
@@ -44,7 +44,7 @@ export default function TabsPage() {
 </EvoTabs>`} />
             </EvoTabs.Panel>
             <EvoTabs.Panel id="api">
-              <p style={{ color: '#94a3b8', margin: '1rem 0 0' }}>
+              <p style={{ color: 'var(--docs-text-muted)', margin: '1rem 0 0' }}>
                 See the props table below for a full API reference.
               </p>
             </EvoTabs.Panel>
@@ -72,13 +72,13 @@ export default function TabsPage() {
               <EvoTabs.Tab id="c" disabled>Coming Soon</EvoTabs.Tab>
             </EvoTabs.List>
             <EvoTabs.Panel id="a">
-              <p style={{ color: '#94a3b8', marginTop: '1rem' }}>Panel A content.</p>
+              <p style={{ color: 'var(--docs-text-muted)', marginTop: '1rem' }}>Panel A content.</p>
             </EvoTabs.Panel>
             <EvoTabs.Panel id="b">
-              <p style={{ color: '#94a3b8', marginTop: '1rem' }}>Panel B content.</p>
+              <p style={{ color: 'var(--docs-text-muted)', marginTop: '1rem' }}>Panel B content.</p>
             </EvoTabs.Panel>
             <EvoTabs.Panel id="c">
-              <p style={{ color: '#94a3b8', marginTop: '1rem' }}>Panel C content.</p>
+              <p style={{ color: 'var(--docs-text-muted)', marginTop: '1rem' }}>Panel C content.</p>
             </EvoTabs.Panel>
           </EvoTabs>
         </div>

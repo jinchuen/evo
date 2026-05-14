@@ -36,6 +36,7 @@ export * from './CommandPalette/CommandPalette';
 
 // Forms & Inputs
 export * from './Input/Input';
+export * from './RichTextArea/RichTextArea';
 export * from './Select/Select';
 export * from './TreeSelect/TreeSelect';
 export * from './Checkbox/Checkbox';
@@ -53,3 +54,6 @@ export * from './Alert/Alert';
 export * from './Badge/Badge';
 export * from './Skeleton/Skeleton';
 export * from './Table/Table';
+
+// Media
+export * from './ImageCropper/ImageCropper';

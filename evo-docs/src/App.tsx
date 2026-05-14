@@ -5,6 +5,10 @@ import HomePage from './pages/HomePage'
 import ButtonPage from './pages/ButtonPage'
 import CardPage from './pages/CardPage'
 import InputPage from './pages/InputPage'
+import RichTextAreaPage from './pages/RichTextAreaPage'
+import RichTextAreaToolsPage from './pages/RichTextAreaToolsPage'
+import RichTextAreaImagesPage from './pages/RichTextAreaImagesPage'
+import RichTextAreaApiPage from './pages/RichTextAreaApiPage'
 import CheckboxPage from './pages/CheckboxPage'
 import RadioPage from './pages/RadioPage'
 import SelectPage from './pages/SelectPage'
@@ -29,6 +33,11 @@ import BreadcrumbPage from './pages/BreadcrumbPage'
 import TopNavPage from './pages/TopNavPage'
 import UtilitiesPage from './pages/UtilitiesPage'
 import ThemingPage from './pages/ThemingPage'
+import ImageCropperPage from './pages/ImageCropperPage'
+import ImageCropperApiPage from './pages/ImageCropperApiPage'
+import ChangelogPage from './pages/ChangelogPage'
+import AIPromptPage from './pages/AIPromptPage'
+import CommandPalettePage from './pages/CommandPalettePage'
 
 export default function App() {
   return (
@@ -37,10 +46,16 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
+            <Route path="/changelog" element={<ChangelogPage />} />
+            <Route path="/ai" element={<AIPromptPage />} />
             <Route path="/theming" element={<ThemingPage />} />
             <Route path="/components/button" element={<ButtonPage />} />
             <Route path="/components/card" element={<CardPage />} />
             <Route path="/components/input" element={<InputPage />} />
+            <Route path="/components/rich-text-area" element={<RichTextAreaPage />} />
+            <Route path="/components/rich-text-area/tools" element={<RichTextAreaToolsPage />} />
+            <Route path="/components/rich-text-area/images" element={<RichTextAreaImagesPage />} />
+            <Route path="/components/rich-text-area/api" element={<RichTextAreaApiPage />} />
             <Route path="/components/checkbox" element={<CheckboxPage />} />
             <Route path="/components/radio" element={<RadioPage />} />
             <Route path="/components/select" element={<SelectPage />} />
@@ -63,6 +78,9 @@ export default function App() {
             <Route path="/components/nav" element={<NavPage />} />
             <Route path="/components/breadcrumb" element={<BreadcrumbPage />} />
             <Route path="/components/topnav" element={<TopNavPage />} />
+            <Route path="/components/command-palette" element={<CommandPalettePage />} />
+            <Route path="/components/image-cropper" element={<ImageCropperPage />} />
+            <Route path="/components/image-cropper/api" element={<ImageCropperApiPage />} />
             <Route path="/utilities" element={<UtilitiesPage />} />
           </Route>
         </Routes>
