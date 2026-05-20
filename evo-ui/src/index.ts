@@ -46,7 +46,7 @@ export * from './Form/Form';
 
 // Feedback & Overlays
 export * from './Modal/Modal';
-export * from './Toast/Toast';
+export * from './Notification/Notification';
 export * from './Tooltip/Tooltip';
 export * from './Alert/Alert';
 

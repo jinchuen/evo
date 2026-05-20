@@ -80,8 +80,10 @@ export default function NavPage() {
       <div className="docs-section">
         <div className="docs-section-title">Nested Multi-level Menu</div>
         <p className="docs-section-desc">
-          Pass an <code>items</code> array to any <code>EvoNav.Item</code> to create collapsible sub-menus.
-          Nesting is recursive — sub-items can have their own <code>items</code>.
+          Nest <code>EvoNav.SubItem</code> elements inside an <code>EvoNav.Item</code> to create
+          collapsible sub-menus. Nesting is recursive — a <code>SubItem</code> can contain more
+          <code>SubItem</code>s. Use <code>defaultOpen</code> (uncontrolled) or
+          <code>open</code> + <code>onOpenChange</code> (controlled) to drive the disclosure state.
         </p>
         <div className="docs-preview" style={{ alignItems: 'flex-start' }}>
           <div style={{ width: 240, background: 'var(--docs-code-bg)', borderRadius: 8, padding: '0.5rem 0' }}>
@@ -93,45 +95,50 @@ export default function NavPage() {
               >
                 Home
               </EvoNav.Item>
-              <EvoNav.Item
-                icon={<span>👥</span>}
-                active={active === 'users'}
-                onClick={() => setActive('users')}
-                items={[
-                  {
-                    label: 'All Users',
-                    active: active === 'all-users',
-                    onClick: () => setActive('all-users'),
-                  },
-                  {
-                    label: 'Roles',
-                    active: active === 'roles',
-                    onClick: () => setActive('roles'),
-                    items: [
-                      { label: 'Admin', active: active === 'admin', onClick: () => setActive('admin') },
-                      { label: 'Editor', active: active === 'editor', onClick: () => setActive('editor') },
-                    ],
-                  },
-                  {
-                    label: 'Invites',
-                    active: active === 'invites',
-                    onClick: () => setActive('invites'),
-                  },
-                ]}
-              >
+              <EvoNav.Item icon={<span>👥</span>} defaultOpen>
                 Users
+                <EvoNav.SubItem
+                  active={active === 'all-users'}
+                  onClick={() => setActive('all-users')}
+                >
+                  All Users
+                </EvoNav.SubItem>
+                <EvoNav.SubItem
+                  active={active === 'roles'}
+                  onClick={() => setActive('roles')}
+                >
+                  Roles
+                  <EvoNav.SubItem
+                    active={active === 'admin'}
+                    onClick={() => setActive('admin')}
+                  >
+                    Admin
+                  </EvoNav.SubItem>
+                  <EvoNav.SubItem
+                    active={active === 'editor'}
+                    onClick={() => setActive('editor')}
+                  >
+                    Editor
+                  </EvoNav.SubItem>
+                </EvoNav.SubItem>
+                <EvoNav.SubItem
+                  active={active === 'invites'}
+                  onClick={() => setActive('invites')}
+                >
+                  Invites
+                </EvoNav.SubItem>
               </EvoNav.Item>
-              <EvoNav.Item
-                icon={<span>⚙️</span>}
-                active={active === 'settings'}
-                onClick={() => setActive('settings')}
-                items={[
-                  { label: 'General', active: active === 'general', onClick: () => setActive('general') },
-                  { label: 'Security', active: active === 'security', onClick: () => setActive('security') },
-                  { label: 'Billing', active: active === 'billing-s', onClick: () => setActive('billing-s') },
-                ]}
-              >
+              <EvoNav.Item icon={<span>⚙️</span>}>
                 Settings
+                <EvoNav.SubItem active={active === 'general'} onClick={() => setActive('general')}>
+                  General
+                </EvoNav.SubItem>
+                <EvoNav.SubItem active={active === 'security'} onClick={() => setActive('security')}>
+                  Security
+                </EvoNav.SubItem>
+                <EvoNav.SubItem active={active === 'billing-s'} onClick={() => setActive('billing-s')}>
+                  Billing
+                </EvoNav.SubItem>
               </EvoNav.Item>
             </EvoNav>
           </div>
@@ -139,20 +146,14 @@ export default function NavPage() {
             Active: <strong>{active}</strong>
           </p>
         </div>
-        <CodeBlock code={`<EvoNav.Item
-  icon={<UsersIcon />}
-  items={[
-    { label: 'All Users', onClick: () => setActive('all-users') },
-    {
-      label: 'Roles',
-      items: [
-        { label: 'Admin', onClick: () => setActive('admin') },
-        { label: 'Editor', onClick: () => setActive('editor') },
-      ],
-    },
-  ]}
->
+        <CodeBlock code={`<EvoNav.Item icon={<UsersIcon />} defaultOpen>
   Users
+  <EvoNav.SubItem onClick={() => setActive('all-users')}>All Users</EvoNav.SubItem>
+  <EvoNav.SubItem>
+    Roles
+    <EvoNav.SubItem onClick={() => setActive('admin')}>Admin</EvoNav.SubItem>
+    <EvoNav.SubItem onClick={() => setActive('editor')}>Editor</EvoNav.SubItem>
+  </EvoNav.SubItem>
 </EvoNav.Item>`} />
       </div>
 
@@ -318,22 +319,90 @@ const items: CommandPaletteItem[] = [
 </EvoNav>`} />
       </div>
 
+      {/* ── Keyboard / a11y ── */}
+      <div className="docs-section">
+        <div className="docs-section-title">Keyboard & Accessibility</div>
+        <p className="docs-section-desc">
+          The nav landmark is a <code>&lt;nav role="navigation"&gt;</code> with an{' '}
+          <code>aria-label</code>. The active item gets <code>aria-current="page"</code>;
+          expandable rows get <code>aria-expanded</code> + <code>aria-controls</code> pointing
+          at their nested <code>&lt;ul role="group"&gt;</code>.
+        </p>
+        <ul className="docs-list">
+          <li><strong>↑ / ↓</strong> — move focus to the previous / next focusable row (walks into open subtrees, skips disabled).</li>
+          <li><strong>→</strong> — on an expandable row, opens it; if already open, focuses the first child.</li>
+          <li><strong>←</strong> — on an open expandable row, collapses it; otherwise focuses the parent row.</li>
+          <li><strong>Home / End</strong> — first / last row.</li>
+          <li><strong>Enter / Space</strong> — invokes <code>onClick</code> and toggles disclosure on expandable rows.</li>
+        </ul>
+      </div>
+
+      {/* ── Responsive drawer ── */}
+      <div className="docs-section">
+        <div className="docs-section-title">Responsive Drawer</div>
+        <p className="docs-section-desc">
+          Below <code>breakpoint</code> (default 768&nbsp;px), the nav collapses to an off-canvas
+          drawer with a built-in hamburger trigger; at or above, it renders inline as a sidebar.
+          Drawer state can be controlled with <code>drawerOpen</code> +{' '}
+          <code>onDrawerOpenChange</code>, or seeded with <code>defaultDrawerOpen</code>.
+          Use <code>hideTrigger</code> if you want to render the trigger somewhere else
+          (e.g. inside an <code>EvoTopNav</code>).
+        </p>
+        <CodeBlock code={`// Default — built-in hamburger below 768px
+<EvoNav>
+  <EvoNav.Group label="Main">
+    <EvoNav.Item active href="/">Dashboard</EvoNav.Item>
+  </EvoNav.Group>
+</EvoNav>
+
+// Controlled drawer state, trigger lives elsewhere
+const [open, setOpen] = useState(false)
+<>
+  <EvoButton onClick={() => setOpen(true)}>Menu</EvoButton>
+  <EvoNav
+    hideTrigger
+    drawerOpen={open}
+    onDrawerOpenChange={setOpen}
+  >
+    {/* … */}
+  </EvoNav>
+</>`} />
+      </div>
+
       <EvoDivider />
 
       {/* ── Props ── */}
       <div className="docs-section">
         <div className="docs-section-title">EvoNav Props</div>
         <PropsTable props={[
-          { prop: 'EvoNav.Item — children', type: 'ReactNode', required: true, description: 'Item label.' },
-          { prop: 'EvoNav.Item — active', type: 'boolean', description: 'Highlights item with accent indicator.' },
-          { prop: 'EvoNav.Item — icon', type: 'ReactNode', description: 'Icon rendered before the label.' },
-          { prop: 'EvoNav.Item — onClick', type: '() => void', description: 'Click handler. Also toggles sub-menu when items is set.' },
-          { prop: 'EvoNav.Item — items', type: 'NavSubItem[]', description: 'Sub-items for nested collapse/expand menus.' },
-          { prop: 'EvoNav.Group — label', type: 'string', required: true, description: 'Group heading text.' },
+          { prop: 'EvoNav — children', type: 'ReactNode', required: true, description: 'EvoNav.Group, EvoNav.Item, EvoNav.QuickAction, or EvoNav.Skeleton elements.' },
+          { prop: 'EvoNav — breakpoint', type: 'number', description: 'Viewport width (px) below which the nav becomes a drawer. Default 768.' },
+          { prop: 'EvoNav — drawerOpen', type: 'boolean', description: 'Controlled drawer open state (mobile only).' },
+          { prop: 'EvoNav — defaultDrawerOpen', type: 'boolean', description: 'Uncontrolled initial drawer state. Default false.' },
+          { prop: 'EvoNav — onDrawerOpenChange', type: '(open: boolean) => void', description: 'Called when the drawer opens or closes.' },
+          { prop: 'EvoNav — hideTrigger', type: 'boolean', description: 'Hide the built-in hamburger trigger. Pair with drawerOpen / onDrawerOpenChange.' },
+          { prop: 'EvoNav — aria-label', type: 'string', description: 'Accessible label for the <nav> landmark. Default "Main navigation".' },
+
+          { prop: 'EvoNav.Group — label', type: 'string', required: true, description: 'Group heading text. Linked to the nested list via aria-labelledby.' },
           { prop: 'EvoNav.Group — children', type: 'ReactNode', required: true, description: 'EvoNav.Item elements.' },
-          { prop: 'EvoNav.Skeleton — count', type: 'number', description: 'Number of skeleton rows (default 4).' },
-          { prop: 'EvoNav.QuickAction — label', type: 'string', description: 'Button text (default "Create New").' },
-          { prop: 'EvoNav.QuickAction — onClick', type: '() => void', description: 'Click handler.' },
+
+          { prop: 'EvoNav.Item — children', type: 'ReactNode', required: true, description: 'Row label. Nested EvoNav.SubItem children turn the row into a disclosure.' },
+          { prop: 'EvoNav.Item — active', type: 'boolean', description: 'Marks this row as the current page. Sets aria-current="page" and applies the active visual state.' },
+          { prop: 'EvoNav.Item — icon', type: 'ReactNode', description: 'Icon rendered before the label.' },
+          { prop: 'EvoNav.Item — href', type: 'string', description: 'When set, renders as <a href> instead of <button>.' },
+          { prop: 'EvoNav.Item — onClick', type: '(e) => void', description: 'Click / keyboard activate handler (Enter, Space, click).' },
+          { prop: 'EvoNav.Item — open', type: 'boolean', description: 'Controlled expand state (only meaningful with SubItem children).' },
+          { prop: 'EvoNav.Item — defaultOpen', type: 'boolean', description: 'Uncontrolled initial expand state.' },
+          { prop: 'EvoNav.Item — onOpenChange', type: '(open: boolean) => void', description: 'Called when expand state changes.' },
+          { prop: 'EvoNav.Item — disabled', type: 'boolean', description: 'Disables the row (no click, no keyboard activation).' },
+
+          { prop: 'EvoNav.SubItem — *', type: '(same as EvoNav.Item)', description: 'Nested row with the same prop shape. Can contain more SubItems for deeper trees.' },
+
+          { prop: 'EvoNav.Skeleton — count', type: 'number', description: 'Number of skeleton rows. Default 4.' },
+
+          { prop: 'EvoNav.QuickAction — label', type: 'string', description: 'Button text. Default "Create New".' },
+          { prop: 'EvoNav.QuickAction — icon', type: 'ReactNode', description: 'Custom icon. Defaults to a plus glyph.' },
+          { prop: 'EvoNav.QuickAction — ...rest', type: 'ButtonHTMLAttributes', description: 'Every native <button> attribute (onClick, form, name, autoFocus, aria-*, …) passes through.' },
         ]} />
       </div>
 

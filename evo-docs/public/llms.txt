@@ -1,0 +1,72 @@
+# Evo UI
+
+> A high-performance, enterprise-grade React UI component library published as `@justin_evo/evo-ui`. Zero runtime dependencies, CSS-variable theming with built-in light/dark mode, mobile-first (≥44px touch targets), and full keyboard/ARIA accessibility. Every component exports `EvoX`, forwards `ref`, and spreads `...rest` to its root element.
+
+Consumers install with `npm install @justin_evo/evo-ui` and wrap their app in `<EvoThemeProvider>`. All components use the `Evo` prefix and are imported from the package root (never deep paths). Theming flows through `--evo-color-*`, `--evo-spacing-*`, and `--evo-radius-*` CSS variables.
+
+## Getting started
+
+- [Overview / Home](/): What Evo UI is, design principles, and a tile grid of every component.
+- [Theming](/theming): How `EvoThemeProvider` works, the full token list, and how to override tokens.
+- [Utilities](/utilities): Spacing, layout, and helper classes shipped alongside components.
+- [Changelog](/changelog): Versioned release notes (`Added` / `Changed` / `Fixed` / `Breaking` + migration notes).
+
+## Forms & inputs
+
+- [EvoInput](/components/input): Text input with label, hint, error, and prefix/suffix slots.
+- [EvoCheckbox](/components/checkbox): Accessible checkbox with indeterminate state.
+- [EvoRadio](/components/radio): Single-select radio group.
+- [EvoToggle](/components/toggle): Switch-style boolean control.
+- [EvoSelect](/components/select): Single/multi-select dropdown with keyboard navigation.
+- [EvoTreeSelect](/components/tree-select): Hierarchical select for nested options.
+- [EvoForm](/components/form): Compose-based form primitives (`Form.Field`, `Form.Label`, etc.).
+- [EvoRichTextArea](/components/rich-text-area): Rich-text editor with toolbar, image support, and a programmatic API.
+
+## Buttons & actions
+
+- [EvoButton](/components/button): Variants × severity × shape × size; always `type="button"` by default.
+- [EvoBadge](/components/badge): Inline status/label pill.
+
+## Layout & containers
+
+- [EvoCard](/components/card): Surface container with sub-components (`Card.Header`, `Card.Footer`).
+- [EvoStack](/components/stack): Vertical/horizontal flex layout primitive.
+- [EvoGrid](/components/grid): Responsive CSS-grid wrapper.
+- [EvoContainer](/components/container): Max-width content container.
+- [EvoDivider](/components/divider): Horizontal/vertical rule.
+
+## Overlays & feedback
+
+- [EvoModal](/components/modal): Accessible dialog with focus trap, scroll lock, and z-index management.
+- [EvoTooltip](/components/tooltip): Hover/focus tooltip with positioning.
+- [EvoAlert](/components/alert): Static inline message with severity variants.
+- [EvoToast](/components/toast): Transient notification stack.
+- [EvoSkeleton](/components/skeleton): Loading placeholder.
+
+## Navigation
+
+- [EvoNav](/components/nav): Vertical sidebar/section navigation.
+- [EvoTopNav](/components/topnav): Top application bar.
+- [EvoBreadcrumb](/components/breadcrumb): Hierarchical location trail.
+- [EvoTabs](/components/tabs): Tabbed view switcher with keyboard support.
+- [EvoPagination](/components/pagination): Page selector for long lists.
+- [EvoCommandPalette](/components/command-palette): Cmd/Ctrl+K palette for global actions.
+
+## Data display
+
+- [EvoTable](/components/table): Tabular data with sorting and selection.
+
+## Media
+
+- [EvoImageCropper](/components/image-cropper): Interactive image crop UI.
+- [EvoImageCropper API](/components/image-cropper/api): Programmatic crop/export methods.
+
+## For AI coding tools
+
+- [AI prompt page](/ai): The canonical catalogue Evo UI ships for downstream AI tools — lists every component and its docs URL so AI assistants don't hallucinate component names or props.
+
+## Optional
+
+- [EvoRichTextArea tools](/components/rich-text-area/tools): Custom toolbar buttons and tool API.
+- [EvoRichTextArea images](/components/rich-text-area/images): Inline image insertion and handling.
+- [EvoRichTextArea API](/components/rich-text-area/api): Imperative editor handle and commands.

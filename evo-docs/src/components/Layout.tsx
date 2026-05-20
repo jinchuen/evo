@@ -72,7 +72,7 @@ const nav = [
       { label: 'Alert', path: '/components/alert' },
       { label: 'Modal', path: '/components/modal' },
       { label: 'Tooltip', path: '/components/tooltip' },
-      { label: 'Toast', path: '/components/toast' },
+      { label: 'Notification', path: '/components/notification' },
     ],
   },
   {

@@ -1,9 +1,28 @@
 @use 'base/variables' as *;
 @use 'base/color' as *;
 
-.nav {
+// ==========================================================
+// EvoNav — compose-based sidebar / drawer.
+// ----------------------------------------------------------
+// Layout layers:
+//   .navContainer  — the <nav> landmark
+//   .navList       — top-level <ul>
+//   .navSubList    — nested <ul> (uses --evo-nav-indent on rows)
+//   .navRow        — shared row (button or anchor)
+//   .navGroup      — group with heading
+//
+// Responsive:
+//   .navDesktop    — inline sidebar (>= breakpoint)
+//   .navMobile     — off-canvas drawer (< breakpoint, default 768)
+//
+// Tokens only — no raw hex. Touch targets stay >= 44px on mobile via
+// rem-based `min-height` on rows.
+// ==========================================================
+
+.navContainer {
   width: 100%;
   font-family: $font-sans;
+  color: $color-text-secondary;
 }
 
 .navList {
@@ -15,30 +34,51 @@
   gap: 0.125rem;
 }
 
-.navItem {
+.navLi {
+  list-style: none;
+}
+
+// ---------- Row (button or anchor) ----------
+
+.navRow {
+  // Stretch the click area across the row, no matter button-vs-anchor.
   display: flex;
   align-items: center;
   gap: 0.625rem;
   width: 100%;
   padding: 0.5rem 0.75rem;
+  padding-left: calc(0.75rem + var(--evo-nav-indent, 0rem));
+  min-height: 2.25rem;
+  font-family: inherit;
   font-size: $text-sm;
   font-weight: 500;
+  line-height: 1.4;
   color: $color-text-secondary;
   background: transparent;
   border: none;
   border-radius: $radius-sm;
   cursor: pointer;
   text-align: left;
-  transition: background-color $transition-fast, color $transition-fast;
+  text-decoration: none;
+  transition:
+    background-color $transition-fast,
+    color $transition-fast;
   position: relative;
+  // Ensure the focus outline isn't clipped by sibling rows.
+  outline-offset: 2px;
 
   &:hover {
     background-color: $color-surface-hover;
     color: $color-text-primary;
   }
 
+  &:focus-visible {
+    outline: $evo-btn-outline-width solid $evo-primary-focus;
+    outline-offset: $evo-btn-outline-offset;
+  }
+
   &.active {
-    background-color: color-mix(in srgb, $evo-primary-color 12%, transparent);
+    background-color: $evo-primary-soft;
     color: $evo-primary-color;
 
     &::before {
@@ -48,25 +88,50 @@
       top: 25%;
       bottom: 25%;
       width: 2px;
-      border-radius: 999px;
+      border-radius: $radius-full;
       background: $evo-primary-color;
     }
   }
+
+  &.disabled,
+  &[aria-disabled='true'] {
+    opacity: $evo-btn-disabled-opacity;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 }
 
-.navItemLabel {
+.navRowTop {
+  font-weight: 500;
+}
+
+.navRowSub {
+  font-weight: 400;
+  font-size: $text-sm;
+  // Tighter density for nested rows.
+  min-height: 2rem;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+.navLabel {
   flex: 1;
   text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .navIcon {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   width: 1.125rem;
   height: 1.125rem;
   font-size: 1rem;
+  line-height: 1;
 }
 
 .chevron {
@@ -86,7 +151,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
+
+  &[hidden] {
+    display: none;
+  }
 }
+
+// ---------- Group ----------
 
 .navGroup {
   list-style: none;
@@ -104,7 +175,7 @@
   padding: 0.5rem 0.75rem 0.25rem;
 }
 
-// --- Skeleton loading ---
+// ---------- Skeleton ----------
 
 .navSkeletonItem {
   display: flex;
@@ -132,10 +203,10 @@
 
 @keyframes navShimmer {
   0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
+  50%      { opacity: 0.9; }
 }
 
-// --- Quick action button ---
+// ---------- Quick action ----------
 
 .navQuickAction {
   display: flex;
@@ -143,15 +214,18 @@
   gap: 0.625rem;
   width: 100%;
   padding: 0.5rem 0.75rem;
+  min-height: 2.25rem;
+  font-family: inherit;
   font-size: $text-sm;
   font-weight: 500;
   color: $evo-primary-color;
-  background: color-mix(in srgb, $evo-primary-color 8%, transparent);
+  background: $evo-primary-soft;
   border: 1px dashed color-mix(in srgb, $evo-primary-color 35%, transparent);
   border-radius: $radius-sm;
   cursor: pointer;
-  font-family: $font-sans;
-  transition: background-color $transition-fast, border-color $transition-fast;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast;
 
   &:hover {
     background: color-mix(in srgb, $evo-primary-color 15%, transparent);
@@ -160,5 +234,106 @@
 
   &:active {
     background: color-mix(in srgb, $evo-primary-color 22%, transparent);
+  }
+
+  &:focus-visible {
+    outline: $evo-btn-outline-width solid $evo-primary-focus;
+    outline-offset: $evo-btn-outline-offset;
+  }
+}
+
+// ---------- Responsive: hamburger + drawer ----------
+
+.navTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  background: transparent;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  color: $color-text-primary;
+  cursor: pointer;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast;
+
+  &:hover {
+    background-color: $color-surface-hover;
+    border-color: $color-border-strong;
+  }
+
+  &:focus-visible {
+    outline: $evo-btn-outline-width solid $evo-primary-focus;
+    outline-offset: $evo-btn-outline-offset;
+  }
+}
+
+.navBackdrop {
+  position: fixed;
+  inset: 0;
+  background: $color-backdrop;
+  z-index: 60;
+  animation: navFadeIn $transition-fast;
+}
+
+// Desktop default — nav renders inline as a sidebar.
+.navDesktop {
+  position: relative;
+}
+
+// Mobile default — nav lives off-canvas. The trigger sits next to it
+// (rendered by the root before the <nav>); the drawer slides in when
+// `aria-hidden` is not set.
+.navMobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(280px, 85vw);
+  padding: 1rem 0.75rem;
+  background: $color-surface-elevated;
+  border-right: 1px solid $color-border;
+  box-shadow: $shadow-lg;
+  z-index: 70;
+  transform: translateX(-100%);
+  transition: transform $transition-normal;
+  // Always allow scrolling inside the drawer; touch-action keeps native
+  // scroll smooth on mobile.
+  overflow-y: auto;
+  touch-action: pan-y;
+
+  // Slightly larger touch targets inside the drawer.
+  .navRow,
+  .navQuickAction {
+    min-height: 2.75rem;
+  }
+}
+
+.navMobile.navDrawerOpen {
+  transform: translateX(0);
+}
+
+@keyframes navFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// ---------- Reduced motion ----------
+
+@media (prefers-reduced-motion: reduce) {
+  .navRow,
+  .navQuickAction,
+  .chevron,
+  .navTrigger,
+  .navMobile {
+    transition: none;
+  }
+  .navSkeletonIcon,
+  .navSkeletonText,
+  .navBackdrop {
+    animation-duration: 0.001ms;
   }
 }
