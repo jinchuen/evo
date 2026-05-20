@@ -81,7 +81,7 @@ const CATALOGUE: { group: string; items: { name: string; path: string }[] }[] = 
       { name: 'EvoAlert',   path: '/components/alert'   },
       { name: 'EvoModal',   path: '/components/modal'   },
       { name: 'EvoTooltip', path: '/components/tooltip' },
-      { name: 'EvoToast',   path: '/components/toast'   },
+      { name: 'EvoNotification', path: '/components/notification' },
     ],
   },
   {
@@ -109,7 +109,10 @@ function buildPrompt(origin: string): string {
 2. Import the stylesheet ONCE in the app entry:
    \`import '@justin_evo/evo-ui/dist/evo-ui.css'\`
 3. Wrap the app in \`<EvoThemeProvider defaultTheme="system">\` for light/dark theming.
-4. Wrap anything that may show toasts in \`<EvoToastProvider>\`.
+4. Wrap the app in \`<EvoNotification.Provider>\` and mount \`<EvoNotification.Toaster />\`
+   once. Call toasts/notifications from anywhere via the \`evoNotify\` singleton
+   (no hook required) — e.g. \`evoNotify.toast.success('Saved')\`,
+   \`evoNotify.push({ title, description })\`.
 
 # Naming and imports
 - Every component is named \`Evo<Name>\` (e.g. \`EvoButton\`, \`EvoInput\`).

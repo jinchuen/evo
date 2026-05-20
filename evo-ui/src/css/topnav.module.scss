@@ -1,7 +1,31 @@
 @use 'base/variables' as *;
 @use 'base/color' as *;
 
+// ---------------------------------------------------------------------------
+// Animations (token-aligned with modal.module.scss — see CLAUDE.md §0.2)
+// ---------------------------------------------------------------------------
+
+@keyframes topNavOverlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes topNavDrawerSlideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes topNavDropdownFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ---------------------------------------------------------------------------
+// Root
+// ---------------------------------------------------------------------------
+
 .topNav {
+  position: relative;
   width: 100%;
   font-family: $font-sans;
   background-color: $color-surface;
@@ -13,8 +37,12 @@
   align-items: center;
   gap: 1.5rem;
   padding: 0 1rem;
-  height: 3.25rem;
+  min-height: 3.25rem;
 }
+
+// ---------------------------------------------------------------------------
+// Brand
+// ---------------------------------------------------------------------------
 
 .topNavBrand {
   display: flex;
@@ -25,6 +53,10 @@
   color: $color-text-primary;
 }
 
+// ---------------------------------------------------------------------------
+// Menu — horizontal on desktop
+// ---------------------------------------------------------------------------
+
 .topNavMenu {
   display: flex;
   align-items: center;
@@ -33,13 +65,39 @@
   padding: 0;
   gap: 0.125rem;
   flex: 1;
+  min-width: 0;
 }
 
-.topNavItem {
+.topNavItemRow {
   display: flex;
+  align-items: stretch;
+}
+
+// ---------------------------------------------------------------------------
+// Menu — horizontal-scroll fallback (only when collapsed AND no Toggle present)
+// ---------------------------------------------------------------------------
+
+.topNavMenuScroll {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  > li { flex-shrink: 0; }
+}
+
+// ---------------------------------------------------------------------------
+// Item / Dropdown trigger (shared visual class)
+// ---------------------------------------------------------------------------
+
+.topNavItem {
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.4375rem 0.75rem;
+  min-height: 2rem;
   font-size: $text-sm;
   font-weight: 500;
   color: $color-text-secondary;
@@ -48,21 +106,39 @@
   border-radius: $radius-sm;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color $transition-fast, color $transition-fast;
+  text-decoration: none;
+  transition:
+    background-color $transition-fast,
+    color $transition-fast;
+  font-family: inherit;
 
   &:hover {
     background-color: $color-surface-hover;
     color: $color-text-primary;
   }
 
-  &.active {
-    background-color: color-mix(in srgb, $evo-primary-color 12%, transparent);
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
+  }
+}
+
+.topNavItemActive {
+  background-color: color-mix(in srgb, $evo-primary-color 12%, transparent);
+  color: $evo-primary-color;
+
+  &:hover {
+    background-color: color-mix(in srgb, $evo-primary-color 18%, transparent);
     color: $evo-primary-color;
   }
 }
 
+.topNavItemLabel {
+  display: inline-block;
+}
+
 .topNavIcon {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
@@ -71,10 +147,250 @@
   font-size: 1rem;
 }
 
+// ---------------------------------------------------------------------------
+// Actions slot
+// ---------------------------------------------------------------------------
+
 .topNavActions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
   flex-shrink: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Toggle (hamburger) — hidden above the collapse breakpoint
+// ---------------------------------------------------------------------------
+
+.topNavToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  margin-left: 0.25rem;
+  background: transparent;
+  border: none;
+  border-radius: $radius-sm;
+  color: $color-text-primary;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $color-surface-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
+  }
+}
+
+.toggleIcon {
+  display: block;
+}
+
+// ---------------------------------------------------------------------------
+// Dropdown
+// ---------------------------------------------------------------------------
+
+.topNavDropdown {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.topNavDropdownTrigger {
+  // inherits .topNavItem styles
+}
+
+.topNavDropdownChevron {
+  transition: transform $transition-fast;
+  margin-left: 0.125rem;
+  opacity: 0.7;
+}
+
+.topNavDropdownChevronOpen {
+  transform: rotate(180deg);
+}
+
+.topNavDropdownContent {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  left: 0;
+  min-width: 12rem;
+  list-style: none;
+  margin: 0;
+  padding: 0.375rem;
+  background-color: $color-surface-elevated;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-lg;
+  z-index: 50;
+  // Hidden by default — the .topNavDropdownContentOpen modifier flips display
+  // to flex. Using display:none here keeps focus + tab order behaviour correct
+  // and avoids the [hidden] / display:flex specificity conflict that left the
+  // empty panel visible.
+  display: none;
+  flex-direction: column;
+  gap: 0.125rem;
+
+  > li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.topNavDropdownContentOpen {
+  display: flex;
+  animation: topNavDropdownFadeIn 140ms ease;
+}
+
+.topNavDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  min-height: 2rem;
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $color-text-secondary;
+  background: transparent;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color $transition-fast, color $transition-fast;
+  font-family: inherit;
+
+  &:hover,
+  &:focus-visible {
+    background-color: $color-surface-hover;
+    color: $color-text-primary;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile drawer (≤ collapseBelow breakpoint)
+// ---------------------------------------------------------------------------
+
+@media (max-width: 767px) {
+  .topNavInner {
+    gap: 0.75rem;
+  }
+
+  .topNavToggle {
+    display: inline-flex;
+  }
+
+  // Menu becomes the drawer panel (only when a Toggle is registered —
+  // see .topNavMenuScroll for the no-Toggle fallback handled above).
+  .topNavMenuDrawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(20rem, 88vw);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    padding: 4rem 1rem 1.5rem;
+    background-color: $color-surface-elevated;
+    border-left: 1px solid $color-border;
+    box-shadow: $shadow-2xl;
+    overflow-y: auto;
+    z-index: 60;
+    animation: topNavDrawerSlideIn 220ms ease;
+
+    // Items in the drawer take the full row and become taller for touch.
+    .topNavItem,
+    .topNavDropdownTrigger {
+      width: 100%;
+      justify-content: flex-start;
+      min-height: 2.75rem;
+      padding: 0.625rem 0.75rem;
+      font-size: $text-base;
+    }
+  }
+
+  // Drawer closed → keep it mounted (state preserved) but visually hidden
+  // and removed from the a11y tree.
+  .topNavMenuDrawerClosed {
+    transform: translateX(100%);
+    pointer-events: none;
+    animation: none;
+    visibility: hidden;
+  }
+
+  // Dropdowns inside the drawer flatten to an inline expandable section
+  // (no floating panel — would clip on mobile).
+  .topNavDropdownInDrawer {
+    flex-direction: column;
+    align-items: stretch;
+
+    .topNavDropdownContent {
+      position: static;
+      box-shadow: none;
+      border: none;
+      background: transparent;
+      padding: 0.125rem 0 0.125rem 1rem;
+      min-width: 0;
+      animation: none;
+    }
+  }
+
+  .topNavBackdrop {
+    position: fixed;
+    inset: 0;
+    background-color: $color-backdrop;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    z-index: 55;
+    animation: topNavOverlayFadeIn 180ms ease;
+  }
+}
+
+// Above the breakpoint, drawer-specific bits never render visually.
+@media (min-width: 768px) {
+  .topNavMenuDrawer,
+  .topNavMenuDrawerClosed,
+  .topNavBackdrop {
+    // no-op: structural classes shouldn't leak desktop styles
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reduced motion — kill animations
+// ---------------------------------------------------------------------------
+
+.topNavReducedMotion {
+  .topNavMenuDrawer,
+  .topNavDropdownContentOpen,
+  .topNavBackdrop {
+    animation: none;
+  }
+
+  .topNavDropdownChevron {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topNavMenuDrawer,
+  .topNavDropdownContentOpen,
+  .topNavBackdrop {
+    animation: none;
+  }
 }

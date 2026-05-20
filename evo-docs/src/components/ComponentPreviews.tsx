@@ -469,38 +469,94 @@ export const CommandPalettePreview = () => (
   </div>
 )
 
-export const ToastPreview = () => (
-  <div
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.45rem',
-      padding: '0.4rem 0.6rem',
-      background: 'var(--evo-color-surface-elevated)',
-      backgroundImage: 'linear-gradient(color-mix(in srgb, var(--evo-color-success) 12%, transparent), color-mix(in srgb, var(--evo-color-success) 12%, transparent))',
-      border: '1px solid color-mix(in srgb, var(--evo-color-success) 35%, transparent)',
-      borderRadius: 6,
-      boxShadow: '0 8px 24px rgb(0 0 0 / 0.15)',
-      fontSize: '0.7rem',
-      color: 'var(--evo-color-text)',
-    }}
-  >
-    <span
+export const NotificationPreview = () => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+    {/* Toast card */}
+    <div
       style={{
-        width: 14,
-        height: 14,
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '0.4rem',
+        padding: '0.4rem 0.55rem 0.4rem 0.6rem',
+        background: 'var(--evo-color-surface-elevated)',
+        border: '1px solid var(--evo-color-border)',
+        borderLeft: '3px solid var(--evo-color-success)',
+        borderRadius: 6,
+        boxShadow: '0 8px 24px rgb(0 0 0 / 0.15)',
+        fontSize: '0.65rem',
+        color: 'var(--evo-color-text)',
+        minWidth: 110,
+      }}
+    >
+      <span
+        style={{
+          width: 12,
+          height: 12,
+          borderRadius: '50%',
+          background: 'var(--evo-color-success)',
+          color: 'var(--evo-color-success-fg)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '0.55rem',
+          fontWeight: 700,
+          flexShrink: 0,
+          marginTop: 1,
+        }}
+      >
+        ✓
+      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+        <span style={{ fontWeight: 600 }}>Saved</span>
+        <span style={{ color: 'var(--evo-color-text-secondary)', fontSize: '0.6rem' }}>
+          Changes are live
+        </span>
+      </div>
+    </div>
+    {/* Bell with badge */}
+    <div
+      style={{
+        position: 'relative',
+        width: 26,
+        height: 26,
         borderRadius: '50%',
-        background: 'var(--evo-color-success)',
-        color: 'var(--evo-color-success-fg)',
+        background: 'var(--evo-color-surface)',
+        border: '1px solid var(--evo-color-border)',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '0.6rem',
-        fontWeight: 700,
+        color: 'var(--evo-color-text)',
+        flexShrink: 0,
       }}
+      aria-hidden="true"
     >
-      ✓
-    </span>
-    Saved
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8" />
+        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+      </svg>
+      <span
+        style={{
+          position: 'absolute',
+          top: -2,
+          right: -2,
+          minWidth: 12,
+          height: 12,
+          padding: '0 3px',
+          background: 'var(--evo-color-danger)',
+          color: 'var(--evo-color-danger-fg)',
+          fontSize: '0.5rem',
+          fontWeight: 700,
+          borderRadius: 9999,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '2px solid var(--evo-color-surface)',
+          lineHeight: 1,
+        }}
+      >
+        3
+      </span>
+    </div>
   </div>
 )

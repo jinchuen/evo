@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { EvoToastProvider } from '@justin_evo/evo-ui'
+import { EvoNotification } from '@justin_evo/evo-ui'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ButtonPage from './pages/ButtonPage'
@@ -18,7 +18,7 @@ import BadgePage from './pages/BadgePage'
 import ModalPage from './pages/ModalPage'
 import AlertPage from './pages/AlertPage'
 import TooltipPage from './pages/TooltipPage'
-import ToastPage from './pages/ToastPage'
+import NotificationPage from './pages/NotificationPage'
 import StackPage from './pages/StackPage'
 import GridPage from './pages/GridPage'
 import TablePage from './pages/TablePage'
@@ -42,7 +42,8 @@ import CommandPalettePage from './pages/CommandPalettePage'
 export default function App() {
   return (
     <BrowserRouter>
-      <EvoToastProvider>
+      <EvoNotification.Provider>
+        <EvoNotification.Toaster />
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
@@ -65,7 +66,7 @@ export default function App() {
             <Route path="/components/modal" element={<ModalPage />} />
             <Route path="/components/alert" element={<AlertPage />} />
             <Route path="/components/tooltip" element={<TooltipPage />} />
-            <Route path="/components/toast" element={<ToastPage />} />
+            <Route path="/components/notification" element={<NotificationPage />} />
             <Route path="/components/stack" element={<StackPage />} />
             <Route path="/components/grid" element={<GridPage />} />
             <Route path="/components/table" element={<TablePage />} />
@@ -84,7 +85,7 @@ export default function App() {
             <Route path="/utilities" element={<UtilitiesPage />} />
           </Route>
         </Routes>
-      </EvoToastProvider>
+      </EvoNotification.Provider>
     </BrowserRouter>
   )
 }

@@ -1,570 +1,217 @@
 @use './base/variables' as *;
-@use './base/color' as *;
 
-// ===========================================
-// DYNAMIC COLOR SYSTEM
-// ===========================================
-[data-color="cyan"] { 
-  --accent: #{$evo-cyan-400}; 
-  --accent-dark: #{$evo-cyan-600};
-  --glow: #{rgba($evo-cyan-400, 0.5)}; 
-  --glow-strong: #{rgba($evo-cyan-400, 0.8)};
-  --surface: #{$evo-slate-900}; 
-  --surface-light: #{$evo-cyan-100}; 
-}
+// ============================================================
+// EvoCard
+// ------------------------------------------------------------
+// Three orthogonal axes:
+//   1. variant     — elevated / outlined / ghost
+//   2. orientation — vertical / horizontal / responsive
+//   3. interactive — adds hover / focus / press states for
+//                    when the root is a <button> or <a>
+//
+// All colours / shadows come from semantic tokens so the same
+// rules render correctly under data-theme="light" and "dark".
+// ============================================================
 
-[data-color="rose"] { 
-  --accent: #{$evo-rose-400}; 
-  --accent-dark: #{$evo-rose-600};
-  --glow: #{rgba($evo-rose-400, 0.5)}; 
-  --glow-strong: #{rgba($evo-rose-400, 0.8)};
-  --surface: #{$evo-slate-900}; 
-  --surface-light: #{$evo-rose-100}; 
-}
-
-[data-color="emerald"] { 
-  --accent: #{$evo-emerald-400}; 
-  --accent-dark: #{$evo-emerald-600};
-  --glow: #{rgba($evo-emerald-400, 0.5)}; 
-  --glow-strong: #{rgba($evo-emerald-400, 0.8)};
-  --surface: #{$evo-slate-900}; 
-  --surface-light: #{$evo-emerald-100}; 
-}
-
-[data-color="amber"] { 
-  --accent: #{$evo-amber-400}; 
-  --accent-dark: #{$evo-amber-600};
-  --glow: #{rgba($evo-amber-400, 0.5)}; 
-  --glow-strong: #{rgba($evo-amber-400, 0.8)};
-  --surface: #{$evo-slate-900}; 
-  --surface-light: #{$evo-amber-100}; 
-}
-
-[data-color="violet"] { 
-  --accent: #{$evo-violet-400}; 
-  --accent-dark: #{$evo-violet-600};
-  --glow: #{rgba($evo-violet-400, 0.5)}; 
-  --glow-strong: #{rgba($evo-violet-400, 0.8)};
-  --surface: #{$evo-slate-900}; 
-  --surface-light: #{$evo-violet-100}; 
-}
-
-// ===========================================
-// BASE CARD STYLES
-// ===========================================
-.cardBase {
-  width: $card-width;
-  height: $card-height;
-  border-radius: $radius-lg;
-  position: relative;
-  cursor: pointer;
-  font-family: $font-sans;
-}
-
-// ===========================================
-// 1. NORMAL CARD - Clean, minimal design
-// ===========================================
-.normalCard {
-  @extend .cardBase;
-  background: linear-gradient(145deg, $evo-slate-800, $evo-slate-900);
-  border: 1px solid $evo-slate-700;
-  padding: $card-padding;
-  transition: all $transition-normal;
-  box-shadow: $shadow-lg;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-dark));
-    opacity: 0;
-    transition: opacity $transition-normal;
-  }
-
-  &:hover {
-    transform: translateY(-6px);
-    border-color: var(--accent);
-    box-shadow: $shadow-xl, 0 0 30px var(--glow);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  &:active {
-    transform: translateY(-2px);
-  }
-}
-
-// ===========================================
-// 2. PLAYABLE CARD - 180° flip with hologram
-// ===========================================
-.playableContainer {
-  @extend .cardBase;
-  perspective: 1200px;
-
-  &:hover .flipper {
-    transform: translateY(-12px) rotateY(180deg);
-  }
-
-  &:hover .hologram {
-    left: 150%;
-    transition: left 0.7s ease-in-out;
-  }
-}
-
-.flipper {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-style: preserve-3d;
-  border-radius: $radius-lg;
-}
-
-.front, .back {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  backface-visibility: hidden;
-  border-radius: $radius-lg;
-  padding: $card-padding;
+.root {
   display: flex;
+  flex-direction: column;
+  background-color: $color-surface-elevated;
+  color: $color-text-primary;
+  border: 1px solid transparent;
+  border-radius: $evo-border-radius-lg;
+  overflow: hidden;
+  text-align: left;
+  text-decoration: none;
+  font-family: inherit;
+  transition:
+    box-shadow $transition-fast,
+    transform $transition-fast,
+    border-color $transition-fast,
+    background-color $transition-fast;
+}
+
+// ----- Variants ---------------------------------------------
+
+.elevated {
+  background-color: $color-surface-elevated;
+  box-shadow: $shadow-md;
+}
+
+.outlined {
+  background-color: $color-surface;
+  border-color: $color-border;
+  box-shadow: none;
+}
+
+.ghost {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+// ----- Orientation ------------------------------------------
+//
+// Horizontal layouts use CSS grid: a fixed-ish media column on
+// the left and content stacked on the right. `:has(> .media)`
+// gates the two-column grid so cards without a media slot stay
+// single-column even in horizontal/responsive mode.
+
+.orient-vertical {
   flex-direction: column;
 }
 
-.front {
-  background: linear-gradient(160deg, var(--surface) 0%, $evo-slate-950 100%);
-  border: 1px solid var(--accent);
-  box-shadow: $shadow-xl, inset 0 1px 0 rgba(255,255,255,0.05);
-  z-index: 2;
-  overflow: hidden;
-}
+.orient-horizontal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
 
-.back {
-  background: linear-gradient(160deg, $evo-slate-950, var(--surface));
-  border: 2px solid var(--accent);
-  transform: rotateY(180deg);
-  box-shadow: inset 0 0 60px var(--glow);
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  color: $evo-white-100;
-}
-
-.hologram {
-  position: absolute;
-  top: -50%;
-  left: -150%;
-  width: 60%;
-  height: 200%;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    var(--glow-strong) 50%,
-    transparent 100%
-  );
-  transform: rotate(25deg);
-  z-index: 10;
-  pointer-events: none;
-}
-
-// ===========================================
-// 3. GLASS CARD - Frosted glass morphism
-// ===========================================
-.glassCard {
-  @extend .cardBase;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.03) 100%
-  );
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.28);
-  border-left: 1px solid rgba(255, 255, 255, 0.22);
-  padding: $card-padding;
-  transition: all $transition-normal;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-
-  // Top-left inner highlight — the key to real glass
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 45%;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      transparent 100%
-    );
-    border-radius: $radius-lg $radius-lg 0 0;
-    pointer-events: none;
+  &:has(> .media) {
+    grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
   }
 
-  // Accent color tint bleeding in from bottom
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -20%;
-    left: 10%;
-    right: 10%;
-    height: 60%;
-    background: radial-gradient(ellipse at center, var(--glow) 0%, transparent 70%);
-    opacity: 0.18;
-    transition: opacity $transition-normal;
-    pointer-events: none;
-    filter: blur(12px);
+  > .media {
+    grid-row: 1 / -1;
+    grid-column: 1;
   }
 
-  &:hover {
-    transform: translateY(-8px) scale(1.02);
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.12) 0%,
-      rgba(255, 255, 255, 0.05) 100%
-    );
-    border-color: rgba(255, 255, 255, 0.25);
-    border-top-color: rgba(255, 255, 255, 0.4);
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.5),
-      0 0 40px var(--glow),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  > :not(.media) {
+    grid-column: -2;
+  }
+}
 
-    &::after {
-      opacity: 0.35;
+.orient-responsive {
+  flex-direction: column;
+
+  @media (min-width: 768px) {
+    display: grid;
+    flex-direction: initial;
+    grid-template-columns: minmax(0, 1fr);
+
+    &:has(> .media) {
+      grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
+    }
+
+    > .media {
+      grid-row: 1 / -1;
+      grid-column: 1;
+    }
+
+    > :not(.media) {
+      grid-column: -2;
     }
   }
 }
 
-// ===========================================
-// 4. NEON CARD - Glowing neon borders
-// ===========================================
-.neonCard {
-  @extend .cardBase;
-  background: $evo-slate-950;
-  border: 2px solid var(--accent);
-  padding: $card-padding;
-  transition: all $transition-normal;
-  box-shadow: 
-    0 0 10px var(--glow),
-    inset 0 0 30px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
+// ----- Interactive (real <button> / <a>) --------------------
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    background: linear-gradient(45deg, var(--accent), transparent, var(--accent));
-    border-radius: inherit;
-    z-index: -1;
+.interactive {
+  cursor: pointer;
+  user-select: none;
+  appearance: none;
+  width: 100%;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  // a11y: cards used as buttons can be short — guarantee a 44px
+  // touch target so they stay tappable on mobile.
+  min-height: 2.75rem;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+  }
+
+  &.outlined:hover:not(:disabled) {
+    border-color: $color-border-strong;
+  }
+
+  &.ghost:hover:not(:disabled) {
+    background-color: $color-surface-hover;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: $shadow-sm;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
     opacity: 0.5;
-    animation: neonPulse 2s ease-in-out infinite;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120%;
-    height: 120%;
-    background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    transition: opacity $transition-slow;
+    cursor: not-allowed;
     pointer-events: none;
   }
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 
-      0 0 20px var(--glow),
-      0 0 40px var(--glow),
-      0 0 60px var(--glow),
-      inset 0 0 30px rgba(0, 0, 0, 0.3);
-
-    &::after {
-      opacity: 0.4;
-    }
-  }
 }
 
-@keyframes neonPulse {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.8; }
-}
+// ----- Slots ------------------------------------------------
 
-// ===========================================
-// 5. HOLOGRAPHIC CARD - Rainbow shimmer effect
-// ===========================================
-.holoCard {
-  @extend .cardBase;
-  background: linear-gradient(145deg, $evo-slate-800, $evo-slate-900);
-  border: 1px solid $evo-slate-600;
-  padding: $card-padding;
-  transition: all $transition-normal;
-  box-shadow: $shadow-xl;
+.media {
+  display: block;
   overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      125deg,
-      transparent 0%,
-      rgba($evo-cyan-400, 0.3) 15%,
-      rgba($evo-violet-400, 0.3) 30%,
-      rgba($evo-rose-400, 0.3) 45%,
-      rgba($evo-amber-400, 0.3) 60%,
-      rgba($evo-emerald-400, 0.3) 75%,
-      transparent 100%
-    );
-    background-size: 200% 200%;
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity $transition-normal;
-    animation: holoShift 3s ease-in-out infinite;
-    pointer-events: none;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent
-    );
-    transform: skewX(-25deg);
-    transition: left 0.5s ease;
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-8px) rotateX(5deg) rotateY(-5deg);
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 
-      $shadow-2xl,
-      0 0 30px rgba($evo-cyan-400, 0.3),
-      0 0 60px rgba($evo-violet-400, 0.2);
-
-    &::before {
-      opacity: 1;
-    }
-
-    &::after {
-      left: 150%;
-    }
-  }
+  background-color: $color-surface-sunken;
 }
 
-@keyframes holoShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+.mediaImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-// ===========================================
-// 6. PULSE CARD - Breathing glow animation
-// ===========================================
-.pulseCard {
-  @extend .cardBase;
-  background: linear-gradient(160deg, $evo-slate-900, $evo-slate-950);
-  border: 1px solid var(--accent);
-  padding: $card-padding;
-  transition: all $transition-normal;
-  box-shadow: $shadow-lg;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    background: linear-gradient(45deg, var(--accent), var(--accent-dark), var(--accent));
-    border-radius: inherit;
-    z-index: -1;
-    animation: borderPulse 2s ease-in-out infinite;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 30% 30%, var(--glow) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity $transition-normal;
-    animation: glowPulse 2s ease-in-out infinite;
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-8px) scale(1.02);
-
-    &::after {
-      opacity: 0.5;
-    }
-  }
-}
-
-@keyframes borderPulse {
-  0%, 100% { opacity: 0.5; filter: blur(4px); }
-  50% { opacity: 1; filter: blur(8px); }
-}
-
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.2; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.1); }
-}
-
-// ===========================================
-// 7. 3D TILT CARD - Perspective tilt on hover
-// ===========================================
-.tiltCard {
-  @extend .cardBase;
-  background: linear-gradient(145deg, $evo-slate-800, $evo-slate-900);
-  border: 1px solid $evo-slate-700;
-  padding: $card-padding;
-  transition: all $transition-fast;
-  box-shadow: $shadow-xl;
-  transform-style: preserve-3d;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      105deg,
-      transparent 40%,
-      rgba(255, 255, 255, 0.1) 45%,
-      rgba(255, 255, 255, 0.2) 50%,
-      rgba(255, 255, 255, 0.1) 55%,
-      transparent 60%
-    );
-    transform: translateX(-100%);
-    transition: transform 0.6s ease;
-    pointer-events: none;
-  }
-
-  .cardInner {
-    transform: translateZ(30px);
-    transition: transform $transition-normal;
-  }
-
-  &:hover {
-    border-color: var(--accent);
-    box-shadow: 
-      $shadow-2xl,
-      0 25px 50px -10px var(--glow);
-
-    &::before {
-      transform: translateX(100%);
-    }
-  }
-}
-
-// ===========================================
-// CARD CONTENT HELPERS
-// ===========================================
-.cardTitle {
-  font-size: $text-xl;
-  font-weight: 700;
-  color: $evo-white-100;
-  margin: 0 0 0.5rem 0;
-  line-height: 1.3;
-}
-
-.cardAccentTitle {
-  @extend .cardTitle;
-  color: var(--accent);
-  text-shadow: 0 0 20px var(--glow);
-}
-
-.cardSubtitle {
-  font-size: $text-sm;
-  color: $evo-slate-400;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.cardDescription {
-  font-size: $text-sm;
-  color: $evo-slate-300;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.cardBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.75rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--accent);
-  border-radius: $radius-full;
-  font-size: $text-xs;
-  font-weight: 600;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.cardStat {
+.header {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: $radius-md;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem 0.5rem;
+}
+
+.body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 1.25rem 1rem;
+}
+
+.footer {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid $color-border-subtle;
+}
+
+// When the card has only a body (no header/footer), pad the body
+// like a full block so content doesn't look cramped.
+.root > .body:only-child {
+  padding: 1.25rem;
+}
+
+// ----- Typography -------------------------------------------
+
+.title {
+  margin: 0;
   font-size: $text-lg;
   font-weight: 700;
-  color: $evo-white-100;
+  line-height: 1.3;
+  color: $color-text-primary;
 }
 
-.cardButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 0.875rem 1.5rem;
-  background: var(--accent);
-  border: none;
-  border-radius: $radius-md;
+.description {
+  margin: 0;
   font-size: $text-sm;
-  font-weight: 600;
-  color: $evo-slate-900;
-  cursor: pointer;
-  transition: all $transition-fast;
-  box-shadow: 0 4px 15px var(--glow);
+  line-height: 1.55;
+  color: $color-text-secondary;
+}
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--glow-strong);
-  }
+// ----- Motion preferences -----------------------------------
 
-  &:active {
-    transform: translateY(0);
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .interactive {
+    transition: none;
+
+    &:hover:not(:disabled) {
+      transform: none;
+    }
   }
 }

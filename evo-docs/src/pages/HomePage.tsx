@@ -27,7 +27,7 @@ import {
   AlertPreview,
   ModalPreview,
   TooltipPreview,
-  ToastPreview,
+  NotificationPreview,
   RichTextAreaPreview,
   ImageCropperPreview,
   CommandPalettePreview,
@@ -92,7 +92,7 @@ const groups: Group[] = [
       { name: 'Alert',   path: '/components/alert',   Preview: AlertPreview },
       { name: 'Modal',   path: '/components/modal',   Preview: ModalPreview },
       { name: 'Tooltip', path: '/components/tooltip', Preview: TooltipPreview },
-      { name: 'Toast',   path: '/components/toast',   Preview: ToastPreview },
+      { name: 'Notification', path: '/components/notification', Preview: NotificationPreview },
     ],
   },
   {
