@@ -29,6 +29,7 @@ const CATALOGUE: { group: string; items: { name: string; path: string }[] }[] = 
     items: [
       { name: 'EvoButton',     path: '/components/button'      },
       { name: 'EvoInput',      path: '/components/input'       },
+      { name: 'EvoAutoComplete', path: '/components/autocomplete' },
       { name: 'EvoCheckbox',   path: '/components/checkbox'    },
       { name: 'EvoRadio',      path: '/components/radio'       },
       { name: 'EvoSelect',     path: '/components/select'      },

@@ -120,6 +120,7 @@ editorRef.current?.clear()`} />
           { prop: '⌘U / Ctrl+U', type: 'shortcut', description: 'Underline the selection.' },
           { prop: '⌘Z / Ctrl+Z', type: 'shortcut', description: 'Undo (browser-native).' },
           { prop: '⇧⌘Z / Ctrl+Y', type: 'shortcut', description: 'Redo (browser-native).' },
+          { prop: 'Enter', type: 'shortcut', description: 'Inside a code block or blockquote, exits to a new plain paragraph instead of extending the block. Shift+Enter inserts a line break within it.' },
           { prop: 'Paste image', type: 'shortcut', description: 'Pasting an image from the clipboard inserts it inline.' },
           { prop: 'Drop file', type: 'shortcut', description: 'Dropping an image file onto the editor inserts it inline.' },
         ]} />

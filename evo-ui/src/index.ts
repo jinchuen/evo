@@ -39,6 +39,7 @@ export * from './Input/Input';
 export * from './RichTextArea/RichTextArea';
 export * from './Select/Select';
 export * from './TreeSelect/TreeSelect';
+export * from './AutoComplete/AutoComplete';
 export * from './Checkbox/Checkbox';
 export * from './Radio/Radio';
 export * from './Toggle/Toggle';

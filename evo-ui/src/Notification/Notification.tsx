@@ -28,9 +28,12 @@ import styles from '../css/notification.module.scss';
 //     `maxVisible` toasts collapse into a "+N more" pill.
 //   • inbox/bell/panel shape borrowed from MagicBell + Knock —
 //     read/unread, mark-all-read, empty/loading/error slots.
-//   • Animations are hand-rolled (zero deps): CSS transitions
-//     for enter/exit, FLIP for reorder, and a single global
-//     opt-out via `prefers-reduced-motion`.
+//   • Animations are hand-rolled (zero deps): CSS keyframes for
+//     enter/exit and a CSS transition on the stacking transform
+//     for reorder; one global opt-out via `prefers-reduced-motion`.
+//   • Evo-specific extras: `groupKey` coalesces repeat toasts into
+//     a single counted card; `toast.progress()` drives a
+//     determinate progress bar to a success/error end state.
 // ============================================================
 
 // ─── Types ───────────────────────────────────────────────────
@@ -61,12 +64,44 @@ export interface EvoToastOptions {
   onAutoClose?: (id: string) => void;
   className?: string;
   inbox?: boolean | Partial<EvoInboxItemInput>;
+  /**
+   * Coalescing key. Toasts pushed with the same `groupKey` while an earlier
+   * one is still on screen fold into it — the card refreshes in place and
+   * shows an incremented count badge instead of stacking a duplicate.
+   * Ignored when an explicit `id` is supplied (id matching takes priority).
+   */
+  groupKey?: string;
+  /**
+   * Determinate progress, 0–1. When set, the toast renders a progress bar.
+   * Values outside the range are clamped. Usually driven via
+   * `evoNotify.toast.progress()`, but valid on any toast.
+   */
+  progress?: number;
 }
 
 export interface EvoPromiseMessages<T> {
   loading: ReactNode | EvoToastOptions;
   success: ReactNode | ((value: T) => ReactNode | EvoToastOptions);
   error: ReactNode | ((err: unknown) => ReactNode | EvoToastOptions);
+}
+
+/**
+ * Handle returned by `evoNotify.toast.progress()`. Drives a determinate
+ * progress bar and resolves the toast to a success or error end state.
+ */
+export interface EvoToastProgressHandle {
+  /** The underlying toast id — usable with `evoNotify.toast.dismiss`. */
+  readonly id: string;
+  /** Set the bar fill, 0–1 (values outside the range are clamped). */
+  setProgress: (value: number) => void;
+  /** Patch any toast option (title, description, severity, …). */
+  update: (options: EvoToastOptions) => void;
+  /** Resolve as success: bar fills to 100%, the toast then auto-dismisses. */
+  done: (options?: EvoToastOptions) => void;
+  /** Resolve as error: the toast becomes dismissible and auto-dismisses. */
+  fail: (options?: EvoToastOptions) => void;
+  /** Dismiss the toast immediately. */
+  dismiss: () => void;
 }
 
 export interface EvoInboxItemInput {
@@ -103,6 +138,12 @@ interface InternalToast extends EvoToastOptions {
   severity: EvoNotificationSeverity;
   createdAt: number;
   message: ReactNode;
+  /** How many times this toast has been (re)pushed under its `groupKey`. */
+  count: number;
+  /** Bumped on every re-push / update so the row can restart its timer. */
+  restartKey: number;
+  /** True while the exit animation plays, before the store drops it. */
+  exiting?: boolean;
 }
 
 // ─── Module-level store ──────────────────────────────────────
@@ -117,6 +158,7 @@ interface ProviderConfig {
   defaultDuration: number;
   maxVisible: number;
   pauseOnFocusLoss: boolean;
+  persistErrors: boolean;
 }
 
 const DEFAULT_CONFIG: ProviderConfig = {
@@ -124,7 +166,12 @@ const DEFAULT_CONFIG: ProviderConfig = {
   defaultDuration: 4000,
   maxVisible: 3,
   pauseOnFocusLoss: true,
+  persistErrors: false,
 };
+
+// Exit-animation duration. Must stay in sync with the `evoToastExit`
+// keyframe length in notification.module.scss.
+const EXIT_MS = 180;
 
 // Stable empty references for `useSyncExternalStore` server/initial snapshots.
 // Returning a fresh array/object from getServerSnapshot triggers an infinite
@@ -147,15 +194,51 @@ class NotificationStore {
   private inboxOnChange: ((items: EvoInboxItem[]) => void) | null = null;
   private toastListeners = new Set<ToastListener>();
   private inboxListeners = new Set<InboxListener>();
+  private configListeners = new Set<() => void>();
   private config: ProviderConfig = DEFAULT_CONFIG;
   private counter = 0;
 
   setConfig(next: Partial<ProviderConfig>) {
-    this.config = { ...this.config, ...next };
+    const merged = { ...this.config, ...next };
+    const changed = (Object.keys(merged) as Array<keyof ProviderConfig>)
+      .some((k) => merged[k] !== this.config[k]);
+    if (!changed) return;
+    this.config = merged;
+    this.notifyConfig();
   }
 
   getConfig() {
     return this.config;
+  }
+
+  subscribeConfig(fn: () => void) {
+    this.configListeners.add(fn);
+    return () => {
+      this.configListeners.delete(fn);
+    };
+  }
+
+  private notifyConfig() {
+    this.configListeners.forEach((fn) => fn());
+  }
+
+  // Resolves a toast's lifetime. `persistent` wins, then an explicit
+  // `duration`, then the `persistErrors` config (errors stay until the
+  // user dismisses them), then the global default.
+  private resolveDuration(
+    options: EvoToastOptions,
+    severity: EvoNotificationSeverity,
+  ): number {
+    if (options.persistent === true) return Infinity;
+    if (options.duration != null) return options.duration;
+    if (
+      severity === 'error' &&
+      this.config.persistErrors &&
+      options.persistent !== false
+    ) {
+      return Infinity;
+    }
+    return this.config.defaultDuration;
   }
 
   bindExternalInbox(items: EvoInboxItem[] | undefined, onChange: ((items: EvoInboxItem[]) => void) | undefined) {
@@ -185,17 +268,55 @@ class NotificationStore {
   // ----- Toast methods -----
 
   pushToast(message: ReactNode, options: EvoToastOptions = {}): string {
-    const id = options.id ?? this.nextId();
     const severity = options.severity ?? 'info';
-    const duration = options.persistent
-      ? Infinity
-      : options.duration ?? this.config.defaultDuration;
+
+    // Coalescing: a toast carrying a `groupKey` (and no explicit id) folds
+    // into any still-active toast sharing that key — the card refreshes in
+    // place with an incremented count instead of stacking a duplicate.
+    if (options.groupKey != null && options.id == null) {
+      const group = this.toasts.find(
+        (t) => t.groupKey === options.groupKey && !t.exiting,
+      );
+      if (group) {
+        this.toasts = this.toasts.map((t): InternalToast =>
+          t.id === group.id
+            ? {
+                ...t,
+                ...options,
+                id: group.id,
+                severity,
+                duration: this.resolveDuration(options, severity),
+                message,
+                count: t.count + 1,
+                restartKey: t.restartKey + 1,
+              }
+            : t,
+        );
+        this.applyInboxSideEffect(group.id, message, options);
+        this.notifyToasts();
+        return group.id;
+      }
+    }
+
+    const id = options.id ?? this.nextId();
+    const duration = this.resolveDuration(options, severity);
 
     const existing = this.toasts.find((t) => t.id === id);
     if (existing) {
-      this.toasts = this.toasts.map((t) =>
+      // Re-pushing under an existing id refreshes it, restarts its timer,
+      // and revives it if it happened to be mid-exit.
+      this.toasts = this.toasts.map((t): InternalToast =>
         t.id === id
-          ? { ...t, ...options, id, severity, duration, message }
+          ? {
+              ...t,
+              ...options,
+              id,
+              severity,
+              duration,
+              message,
+              restartKey: t.restartKey + 1,
+              exiting: false,
+            }
           : t,
       );
     } else {
@@ -206,25 +327,33 @@ class NotificationStore {
         duration,
         message,
         createdAt: Date.now(),
+        count: 1,
+        restartKey: 0,
       };
       this.toasts = [...this.toasts, toast];
     }
 
-    if (options.inbox) {
-      const inboxInput: EvoInboxItemInput = {
-        id: `${id}-inbox`,
-        title: options.title ?? message,
-        description: options.description,
-        severity,
-        icon: options.icon,
-        action: options.action,
-        ...(typeof options.inbox === 'object' ? options.inbox : {}),
-      };
-      this.pushInbox(inboxInput);
-    }
-
+    this.applyInboxSideEffect(id, message, options);
     this.notifyToasts();
     return id;
+  }
+
+  private applyInboxSideEffect(
+    id: string,
+    message: ReactNode,
+    options: EvoToastOptions,
+  ) {
+    if (!options.inbox) return;
+    const inboxInput: EvoInboxItemInput = {
+      id: `${id}-inbox`,
+      title: options.title ?? message,
+      description: options.description,
+      severity: options.severity ?? 'info',
+      icon: options.icon,
+      action: options.action,
+      ...(typeof options.inbox === 'object' ? options.inbox : {}),
+    };
+    this.pushInbox(inboxInput);
   }
 
   updateToast(id: string, options: EvoToastOptions) {
@@ -237,31 +366,57 @@ class NotificationStore {
       id,
       severity: options.severity ?? prev.severity,
       message: 'title' in options && options.title != null ? options.title : prev.message,
+      // Bumped so the row resets its auto-dismiss countdown for the
+      // refreshed content (e.g. a resolved promise toast).
+      restartKey: prev.restartKey + 1,
     };
-    if (options.persistent) next.duration = Infinity;
-    else if (options.duration != null) next.duration = options.duration;
+    // Re-resolve the lifetime. Without the `persistent === false` branch a
+    // toast that was persistent (a loading/progress toast) would keep its
+    // `Infinity` duration and never auto-dismiss after resolving.
+    if (options.persistent === true) {
+      next.duration = Infinity;
+    } else if (options.duration != null) {
+      next.duration = options.duration;
+    } else if (options.persistent === false) {
+      next.duration = this.resolveDuration(
+        { ...options, persistent: false },
+        next.severity,
+      );
+    }
     this.toasts = this.toasts.map((t) => (t.id === id ? next : t));
     this.notifyToasts();
   }
 
-  dismissToast(id?: string) {
+  // Phase 1 of removal: flag the toast(s) as exiting and fire the close
+  // callback. The row plays the exit animation, then calls `removeToast`.
+  // Every removal path — close button, action, auto-close, dismissAll —
+  // funnels through here, so exit animation is always consistent.
+  dismissToast(id?: string, reason: 'dismiss' | 'auto' = 'dismiss') {
     if (id == null) {
-      this.toasts.forEach((t) => t.onDismiss?.(t.id));
-      this.toasts = [];
-    } else {
-      const target = this.toasts.find((t) => t.id === id);
-      target?.onDismiss?.(id);
-      this.toasts = this.toasts.filter((t) => t.id !== id);
+      const active = this.toasts.filter((t) => !t.exiting);
+      if (active.length === 0) return;
+      active.forEach((t) => t.onDismiss?.(t.id));
+      this.toasts = this.toasts.map((t): InternalToast =>
+        t.exiting ? t : { ...t, exiting: true },
+      );
+      this.notifyToasts();
+      return;
     }
+    const target = this.toasts.find((t) => t.id === id);
+    if (!target || target.exiting) return;
+    if (reason === 'auto') target.onAutoClose?.(id);
+    else target.onDismiss?.(id);
+    this.toasts = this.toasts.map((t): InternalToast =>
+      t.id === id ? { ...t, exiting: true } : t,
+    );
     this.notifyToasts();
   }
 
-  autoCloseToast(id: string) {
-    const target = this.toasts.find((t) => t.id === id);
-    if (!target) return;
-    target.onAutoClose?.(id);
+  // Phase 2: drop the toast once its exit animation has finished.
+  removeToast(id: string) {
+    const before = this.toasts.length;
     this.toasts = this.toasts.filter((t) => t.id !== id);
-    this.notifyToasts();
+    if (this.toasts.length !== before) this.notifyToasts();
   }
 
   getToasts() {
@@ -386,6 +541,7 @@ export interface EvoNotifyAPI {
     info: (message: ReactNode, options?: EvoToastOptions) => string;
     loading: (message: ReactNode, options?: EvoToastOptions) => string;
     promise: <T>(p: Promise<T> | (() => Promise<T>), msgs: EvoPromiseMessages<T>) => string;
+    progress: (message: ReactNode, options?: EvoToastOptions) => EvoToastProgressHandle;
     update: (id: string, options: EvoToastOptions) => void;
     dismiss: (id?: string) => void;
   };
@@ -472,6 +628,37 @@ toastApi.promise = <T,>(
   return id;
 };
 
+toastApi.progress = (message, options) => {
+  const id = store.pushToast(message, {
+    ...options,
+    severity: options?.severity ?? 'info',
+    persistent: true,
+    dismissible: options?.dismissible ?? false,
+    progress: clamp01(options?.progress ?? 0),
+  });
+  return {
+    id,
+    setProgress: (value) => store.updateToast(id, { progress: clamp01(value) }),
+    update: (opts) => store.updateToast(id, opts),
+    done: (opts) =>
+      store.updateToast(id, {
+        ...opts,
+        severity: opts?.severity ?? 'success',
+        progress: 1,
+        persistent: false,
+        dismissible: true,
+      }),
+    fail: (opts) =>
+      store.updateToast(id, {
+        ...opts,
+        severity: opts?.severity ?? 'error',
+        persistent: false,
+        dismissible: true,
+      }),
+    dismiss: () => store.dismissToast(id),
+  };
+};
+
 function isReactNode(v: unknown): boolean {
   if (v == null) return true;
   const t = typeof v;
@@ -479,6 +666,12 @@ function isReactNode(v: unknown): boolean {
   if (Array.isArray(v)) return true;
   if (t === 'object' && v !== null && '$$typeof' in (v as object)) return true;
   return false;
+}
+
+/** Clamps a number into the 0–1 range; non-numbers and NaN fall back to 0. */
+function clamp01(n: number): number {
+  if (typeof n !== 'number' || Number.isNaN(n)) return 0;
+  return n < 0 ? 0 : n > 1 ? 1 : n;
 }
 
 export const evoNotify: EvoNotifyAPI = {
@@ -523,6 +716,20 @@ function formatRelative(ts: number, now: number): string {
   return new Date(ts).toLocaleDateString();
 }
 
+// Extracts plain text from a toast for the screen-reader live region and the
+// row's `aria-label`. JSX titles/descriptions yield '' (announced silently).
+function toastText(t: InternalToast): string {
+  const parts: string[] = [];
+  const title = t.title ?? t.message;
+  if (typeof title === 'string' || typeof title === 'number') {
+    parts.push(String(title));
+  }
+  if (typeof t.description === 'string' || typeof t.description === 'number') {
+    parts.push(String(t.description));
+  }
+  return parts.join('. ');
+}
+
 function useToasts() {
   return useSyncExternalStore(
     (cb) => store.subscribeToasts(() => cb()),
@@ -539,6 +746,16 @@ function useInbox() {
   );
 }
 
+// Subscribes to provider config so the Toaster reacts to live changes of
+// `maxVisible` / `pauseOnFocusLoss` / etc. instead of reading a stale value.
+function useConfig() {
+  return useSyncExternalStore(
+    (cb) => store.subscribeConfig(cb),
+    () => store.getConfig(),
+    () => DEFAULT_CONFIG,
+  );
+}
+
 // ─── Provider ────────────────────────────────────────────────
 
 export interface EvoNotificationProviderProps {
@@ -547,6 +764,12 @@ export interface EvoNotificationProviderProps {
   maxVisible?: number;
   defaultDuration?: number;
   pauseOnFocusLoss?: boolean;
+  /**
+   * When true, `error` toasts stay until dismissed instead of auto-closing.
+   * Recommended for accessibility — errors should not vanish on a timer.
+   * A per-toast `duration` or `persistent` still overrides this.
+   */
+  persistErrors?: boolean;
   inboxItems?: EvoInboxItem[];
   onInboxChange?: (items: EvoInboxItem[]) => void;
 }
@@ -557,13 +780,14 @@ export const EvoNotificationProvider = ({
   maxVisible = 3,
   defaultDuration = 4000,
   pauseOnFocusLoss = true,
+  persistErrors = false,
   inboxItems,
   onInboxChange,
 }: EvoNotificationProviderProps) => {
   // Push config into the store on every render where it changes.
   useLayoutEffect(() => {
-    store.setConfig({ defaultAnchor, maxVisible, defaultDuration, pauseOnFocusLoss });
-  }, [defaultAnchor, maxVisible, defaultDuration, pauseOnFocusLoss]);
+    store.setConfig({ defaultAnchor, maxVisible, defaultDuration, pauseOnFocusLoss, persistErrors });
+  }, [defaultAnchor, maxVisible, defaultDuration, pauseOnFocusLoss, persistErrors]);
 
   useLayoutEffect(() => {
     store.bindExternalInbox(inboxItems, onInboxChange);
@@ -582,6 +806,9 @@ export interface EvoNotificationToasterProps {
 
 interface ToastRowProps {
   toast: InternalToast;
+  // Effective anchor for this toast (per-toast override resolved against the
+  // toaster default). Drives which way the depth offset leans.
+  anchor: EvoNotificationAnchor;
   index: number;
   total: number;
   hovered: boolean;
@@ -589,24 +816,37 @@ interface ToastRowProps {
   reducedMotion: boolean;
 }
 
-const ToastRow = ({ toast, index, total, hovered, pausedExternally, reducedMotion }: ToastRowProps) => {
-  const [exiting, setExiting] = useState(false);
+const ToastRow = ({ toast, anchor, index, total, hovered, pausedExternally, reducedMotion }: ToastRowProps) => {
   const elapsedRef = useRef(0);
   const timerStartRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
+  const restartRef = useRef(toast.restartKey);
 
+  const exiting = toast.exiting ?? false;
   const paused = hovered || pausedExternally;
   const finite = Number.isFinite(toast.duration);
 
-  const beginExit = useCallback(() => {
-    setExiting(true);
-    const remove = () => store.autoCloseToast(toast.id);
-    if (reducedMotion) remove();
-    else window.setTimeout(remove, 180);
-  }, [toast.id, reducedMotion]);
-
+  // Phase 2 of removal: once the store flags this toast `exiting`, let the
+  // CSS exit animation play, then drop it from the store. Close button,
+  // action, auto-close and dismissAll all reach this path, so every removal
+  // animates identically — and the timeout is cleaned up on unmount.
   useEffect(() => {
-    if (!finite) return;
+    if (!exiting) return;
+    const t = window.setTimeout(
+      () => store.removeToast(toast.id),
+      reducedMotion ? 0 : EXIT_MS,
+    );
+    return () => window.clearTimeout(t);
+  }, [exiting, reducedMotion, toast.id]);
+
+  // Auto-dismiss countdown. Pauses on hover / window blur, resets when the
+  // toast is re-pushed or updated (restartKey bump), and stops once exiting.
+  useEffect(() => {
+    if (restartRef.current !== toast.restartKey) {
+      restartRef.current = toast.restartKey;
+      elapsedRef.current = 0;
+    }
+    if (!finite || exiting) return;
     if (paused) {
       if (timerStartRef.current != null) {
         elapsedRef.current += Date.now() - timerStartRef.current;
@@ -621,7 +861,10 @@ const ToastRow = ({ toast, index, total, hovered, pausedExternally, reducedMotio
 
     const remaining = Math.max(0, (toast.duration as number) - elapsedRef.current);
     timerStartRef.current = Date.now();
-    timeoutRef.current = window.setTimeout(beginExit, remaining);
+    timeoutRef.current = window.setTimeout(
+      () => store.dismissToast(toast.id, 'auto'),
+      remaining,
+    );
 
     return () => {
       if (timeoutRef.current != null) {
@@ -633,7 +876,7 @@ const ToastRow = ({ toast, index, total, hovered, pausedExternally, reducedMotio
         timerStartRef.current = null;
       }
     };
-  }, [paused, finite, toast.duration, beginExit]);
+  }, [paused, finite, exiting, toast.duration, toast.restartKey, toast.id]);
 
   // Stacked appearance: items behind the front fade and scale slightly,
   // expand on hover (Sonner-style).
@@ -642,16 +885,29 @@ const ToastRow = ({ toast, index, total, hovered, pausedExternally, reducedMotio
   const baseTranslate = hovered ? depth * 8 : depth * 6;
   const baseOpacity = hovered ? 1 : Math.max(0.7, 1 - depth * 0.15);
 
+  // Older cards sit behind the newest one and peek out *away* from the
+  // anchored edge: downward (+Y) for top anchors, upward (-Y) for bottom
+  // anchors. This must agree with the per-anchor flex-direction in the SCSS —
+  // together they keep the newest toast flush against the anchored edge.
+  const offsetSign = anchor.startsWith('bottom') ? 1 : -1;
   const style: CSSProperties = {
-    transform: `translateY(${baseTranslate * (toast.anchor?.startsWith('bottom') ? -1 : 1)}px) scale(${baseScale})`,
+    transform: `translateY(${baseTranslate * offsetSign}px) scale(${baseScale})`,
     opacity: baseOpacity,
     zIndex: 1000 + index,
   };
 
-  const live: 'polite' | 'assertive' = toast.severity === 'error' ? 'assertive' : 'polite';
   const dismissible = toast.dismissible ?? true;
   const icon = toast.icon ?? ICON_GLYPHS[toast.severity];
   const titleNode = toast.title ?? toast.message;
+  const label = toastText(toast);
+  const hasProgress = typeof toast.progress === 'number';
+  const progressValue = hasProgress ? clamp01(toast.progress as number) : 0;
+
+  // When the toast has plain-text content the Toaster's persistent live
+  // region announces it, so the card itself is just a navigable `group`.
+  // A JSX-only toast (no extractable text) keeps an in-place live role as
+  // a fallback. The two paths are mutually exclusive — never double-announced.
+  const announced = label !== '';
 
   return (
     <div
@@ -663,13 +919,21 @@ const ToastRow = ({ toast, index, total, hovered, pausedExternally, reducedMotio
         toast.className,
       )}
       style={style}
-      role={toast.severity === 'error' ? 'alert' : 'status'}
-      aria-live={live}
-      aria-atomic="true"
+      role={announced ? 'group' : toast.severity === 'error' ? 'alert' : 'status'}
+      aria-label={announced ? label : undefined}
     >
       <span className={styles.toastIcon} aria-hidden="true">{icon}</span>
       <div className={styles.toastBody}>
-        {titleNode != null && <div className={styles.toastTitle}>{titleNode}</div>}
+        {titleNode != null && (
+          <div className={styles.toastTitle}>
+            {titleNode}
+            {toast.count > 1 && (
+              <span className={styles.toastCount} aria-label={`repeated ${toast.count} times`}>
+                ×{toast.count}
+              </span>
+            )}
+          </div>
+        )}
         {toast.description != null && (
           <div className={styles.toastDescription}>{toast.description}</div>
         )}
@@ -698,6 +962,20 @@ const ToastRow = ({ toast, index, total, hovered, pausedExternally, reducedMotio
           ✕
         </button>
       )}
+      {hasProgress && (
+        <div
+          className={styles.toastProgressTrack}
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={1}
+          aria-valuenow={progressValue}
+        >
+          <div
+            className={styles.toastProgressFill}
+            style={{ transform: `scaleX(${progressValue})` }}
+          />
+        </div>
+      )}
     </div>
   );
 };
@@ -707,15 +985,48 @@ const ANCHORS: EvoNotificationAnchor[] = [
   'bottom-left', 'bottom-center', 'bottom-right',
 ];
 
+// Identity of the Toaster currently allowed to render. Guards against two
+// <EvoNotificationToaster> instances each drawing (and announcing) every
+// toast — see B7.
+let activeToasterOwner: symbol | null = null;
+
 export const EvoNotificationToaster = ({ anchor, className }: EvoNotificationToasterProps) => {
   const all = useToasts();
-  const { defaultAnchor, maxVisible, pauseOnFocusLoss } = store.getConfig();
+  const { defaultAnchor, maxVisible, pauseOnFocusLoss } = useConfig();
   const fallback = anchor ?? defaultAnchor;
 
   const [hovered, setHovered] = useState<EvoNotificationAnchor | null>(null);
   const [windowFocused, setWindowFocused] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [primary, setPrimary] = useState(false);
+
+  // Persistent screen-reader live region. A polite/assertive pair lives in
+  // the portal at all times — injecting a fresh node that already carries
+  // `aria-live` is announced unreliably across screen readers (B5).
+  const [politeMsg, setPoliteMsg] = useState('');
+  const [assertiveMsg, setAssertiveMsg] = useState('');
+  const announcedRef = useRef<Set<string>>(new Set());
+
+  const ownerRef = useRef<symbol | null>(null);
+  if (!ownerRef.current) ownerRef.current = Symbol('evo-toaster');
+
+  // Claim the single render slot; later instances render nothing.
+  useEffect(() => {
+    const me = ownerRef.current!;
+    if (activeToasterOwner == null) {
+      activeToasterOwner = me;
+      setPrimary(true);
+    } else if (activeToasterOwner !== me) {
+      console.warn(
+        '[EvoNotification] More than one <EvoNotificationToaster> is mounted; ' +
+        'only the first renders. Remove the duplicate(s).',
+      );
+    }
+    return () => {
+      if (activeToasterOwner === me) activeToasterOwner = null;
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -739,11 +1050,32 @@ export const EvoNotificationToaster = ({ anchor, className }: EvoNotificationToa
     };
   }, [pauseOnFocusLoss]);
 
-  // Esc dismisses focused toast group when keyboard reaches it.
+  // Announce newly-arrived toasts through the persistent live region.
+  // Coalesced updates reuse an already-seen id, so they don't re-announce.
+  useEffect(() => {
+    const seen = announcedRef.current;
+    const live = new Set<string>();
+    for (const t of all) {
+      live.add(t.id);
+      if (seen.has(t.id) || t.exiting) continue;
+      seen.add(t.id);
+      const text = toastText(t);
+      if (!text) continue;
+      if (t.severity === 'error') setAssertiveMsg(text);
+      else setPoliteMsg(text);
+    }
+    for (const id of seen) {
+      if (!live.has(id)) seen.delete(id);
+    }
+  }, [all]);
+
+  // Esc dismisses the newest live toast in the hovered/focused group.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && hovered != null) {
-        const group = all.filter((t) => (t.anchor ?? fallback) === hovered);
+        const group = all.filter(
+          (t) => !t.exiting && (t.anchor ?? fallback) === hovered,
+        );
         if (group.length > 0) store.dismissToast(group[group.length - 1].id);
       }
     };
@@ -752,6 +1084,7 @@ export const EvoNotificationToaster = ({ anchor, className }: EvoNotificationToa
   }, [all, fallback, hovered]);
 
   if (!mounted || typeof document === 'undefined') return null;
+  if (!primary) return null;
 
   // Group by effective anchor.
   const grouped: Record<EvoNotificationAnchor, InternalToast[]> = {
@@ -765,11 +1098,20 @@ export const EvoNotificationToaster = ({ anchor, className }: EvoNotificationToa
 
   return ReactDOM.createPortal(
     <div className={cx(styles.toasterRoot, className)} aria-label="Notifications">
+      <div className={styles.srOnly} aria-live="polite" aria-atomic="true">
+        {politeMsg}
+      </div>
+      <div className={styles.srOnly} aria-live="assertive" aria-atomic="true">
+        {assertiveMsg}
+      </div>
       {ANCHORS.map((a) => {
         const group = grouped[a];
         if (group.length === 0) return null;
         const overflow = Math.max(0, group.length - maxVisible);
-        const visible = group.slice(group.length - maxVisible);
+        // Clamp the start index: a bare `group.length - maxVisible` goes
+        // negative when fewer than `maxVisible` toasts exist, and a negative
+        // slice counts from the end — dropping the oldest toasts (B1).
+        const visible = group.slice(Math.max(0, group.length - maxVisible));
         const isHovered = hovered === a;
         const pausedExt = !windowFocused;
         return (
@@ -792,6 +1134,7 @@ export const EvoNotificationToaster = ({ anchor, className }: EvoNotificationToa
               <ToastRow
                 key={t.id}
                 toast={t}
+                anchor={a}
                 index={i}
                 total={visible.length}
                 hovered={isHovered}
@@ -1044,9 +1387,13 @@ export interface EvoNotificationItemProps extends Omit<HTMLAttributes<HTMLDivEle
 
 export const EvoNotificationItem = forwardRef<HTMLDivElement, EvoNotificationItemProps>(
   function EvoNotificationItem({ item, onClick, className, ...rest }, ref) {
-    const [now, setNow] = useState(() => Date.now());
+    // Seed with the item's own timestamp (deterministic) so server and
+    // client render identical relative text; switch to the real clock once
+    // mounted. Seeding with `Date.now()` instead causes a hydration mismatch.
+    const [now, setNow] = useState(item.timestamp);
 
     useEffect(() => {
+      setNow(Date.now());
       const id = window.setInterval(() => setNow(Date.now()), 60_000);
       return () => window.clearInterval(id);
     }, []);

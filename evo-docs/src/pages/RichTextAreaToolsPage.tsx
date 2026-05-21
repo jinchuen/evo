@@ -106,6 +106,25 @@ export default function RichTextAreaToolsPage() {
         <CodeBlock code={`<EvoRichTextArea tools={[]} />`} />
       </div>
 
+      <div className="docs-section">
+        <div className="docs-section-title">Toggling block formats off</div>
+        <p className="docs-section-desc">
+          The block tools — <code>h1</code>, <code>h2</code>, <code>h3</code>,{' '}
+          <code>quote</code>, and <code>code</code> — are toggles. Click one
+          while the caret is already inside that block and it reverts to a plain
+          paragraph. Inside a code block or blockquote, pressing <code>Enter</code>{' '}
+          also drops you straight onto a new plain line below — use{' '}
+          <code>Shift+Enter</code> to add a line within the block instead.
+        </p>
+        <div className="docs-preview col">
+          <EvoRichTextArea
+            tools={['paragraph', 'h2', 'divider', 'quote', 'code']}
+            placeholder="Apply Blockquote or Inline code, then click the same tool again to toggle back to a paragraph."
+            fullWidth
+          />
+        </div>
+      </div>
+
       <EvoDivider />
 
       <div className="docs-section">
@@ -161,12 +180,12 @@ export default function RichTextAreaToolsPage() {
           { prop: "'italic'", type: 'mark', description: 'Italic text. Shortcut: ⌘I / Ctrl+I.' },
           { prop: "'underline'", type: 'mark', description: 'Underlined text. Shortcut: ⌘U / Ctrl+U.' },
           { prop: "'strike'", type: 'mark', description: 'Strikethrough text.' },
-          { prop: "'h1' | 'h2' | 'h3'", type: 'block', description: 'Convert the current block to a heading.' },
-          { prop: "'paragraph'", type: 'block', description: 'Convert the current block to a paragraph.' },
-          { prop: "'ul'", type: 'block', description: 'Bulleted list.' },
-          { prop: "'ol'", type: 'block', description: 'Numbered list.' },
-          { prop: "'quote'", type: 'block', description: 'Blockquote.' },
-          { prop: "'code'", type: 'block', description: 'Preformatted code block.' },
+          { prop: "'h1' | 'h2' | 'h3'", type: 'block', description: 'Convert the current block to a heading. Click again to toggle back to a paragraph.' },
+          { prop: "'paragraph'", type: 'block', description: 'Convert the current block to a paragraph — also clears a blockquote, code block, or heading.' },
+          { prop: "'ul'", type: 'block', description: 'Bulleted list. Click again to toggle off.' },
+          { prop: "'ol'", type: 'block', description: 'Numbered list. Click again to toggle off.' },
+          { prop: "'quote'", type: 'block', description: 'Blockquote. Enter exits to a plain paragraph (Shift+Enter for a line within); click again to toggle the current line back to a paragraph.' },
+          { prop: "'code'", type: 'block', description: 'Code block. Enter exits to a plain paragraph (Shift+Enter for a line break inside); click again to toggle the current line back to a paragraph.' },
           { prop: "'align-left' | 'align-center' | 'align-right'", type: 'block', description: 'Text alignment.' },
           { prop: "'link'", type: 'inline', description: 'Opens an inline URL prompt and wraps the selection in <a>.' },
           { prop: "'image'", type: 'inline', description: 'Opens the file picker. Paste & drop are always enabled.' },

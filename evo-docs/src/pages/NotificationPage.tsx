@@ -10,6 +10,21 @@ export default function NotificationPage() {
       }, 1400)
     })
 
+  const fakeUpload = () => {
+    const p = evoNotify.toast.progress('Uploading backup.zip…', { description: '0%' })
+    let pct = 0
+    const tick = window.setInterval(() => {
+      pct = Math.min(1, pct + 0.12)
+      if (pct >= 1) {
+        window.clearInterval(tick)
+        p.done({ title: 'Upload complete', description: 'backup.zip · 24 MB' })
+      } else {
+        p.setProgress(pct)
+        p.update({ description: `${Math.round(pct * 100)}%` })
+      }
+    }, 240)
+  }
+
   return (
     <div>
       <div className="docs-page-header">
@@ -99,6 +114,49 @@ evoNotify.toast.info('New version available')`} />
   success: (r) => \`Uploaded \${r.name}\`,
   error:   (e) => \`Upload failed: \${String(e)}\`,
 })`} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Toast — progress</div>
+        <p className="docs-section-desc">
+          For long jobs with a known percentage — uploads, exports, batch operations. Where{' '}
+          <code>promise</code> is binary (loading → done), <code>toast.progress</code> returns a
+          handle you drive yourself, then resolve with <code>done</code> or <code>fail</code>.
+        </p>
+        <div className="docs-preview">
+          <EvoButton label="Upload a file" onClick={fakeUpload} />
+        </div>
+        <CodeBlock code={`const p = evoNotify.toast.progress('Uploading backup.zip…')
+
+p.setProgress(0.4)                    // 0–1, drives the bar
+p.update({ description: '40%' })      // patch any toast option
+
+p.done({ title: 'Upload complete' })  // bar → 100%, then auto-dismiss
+// or: p.fail({ title: 'Upload failed' })`} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Toast — coalescing (groupKey)</div>
+        <p className="docs-section-desc">
+          Give repeated toasts a shared <code>groupKey</code> and they fold into one card with a
+          count badge instead of stacking duplicates. Ideal for autosave, bulk actions, or any
+          event that can fire in quick succession.
+        </p>
+        <div className="docs-preview">
+          <EvoStack direction="row" gap="0.5rem" wrap>
+            <EvoButton
+              label="Save (click me fast)"
+              onClick={() => evoNotify.toast.success('Document saved', { groupKey: 'doc-save' })}
+            />
+            <EvoButton
+              label="Without groupKey"
+              variant="outline"
+              onClick={() => evoNotify.toast.success('Document saved')}
+            />
+          </EvoStack>
+        </div>
+        <CodeBlock code={`// Spam this — one toast appears, counting up: "Document saved ×7"
+evoNotify.toast.success('Document saved', { groupKey: 'doc-save' })`} />
       </div>
 
       <div className="docs-section">
@@ -255,7 +313,8 @@ evoNotify.inbox.markAllRead()`} />
       <div className="docs-section">
         <div className="docs-section-title">Accessibility</div>
         <ul className="docs-list">
-          <li><strong>Live regions:</strong> error toasts use <code>aria-live="assertive"</code>; everything else uses <code>polite</code>.</li>
+          <li><strong>Live regions:</strong> a single persistent visually-hidden live region announces every toast — <code>assertive</code> for errors, <code>polite</code> for everything else — so screen readers never miss one.</li>
+          <li><strong>Errors that persist:</strong> set <code>persistErrors</code> on the Provider so error toasts wait for the user instead of vanishing on a timer.</li>
           <li><strong>Timers pause</strong> on hover, on focus, and when the window blurs (configurable on Provider).</li>
           <li><strong>Esc</strong> dismisses the most recent toast at the focused anchor; <strong>Esc</strong> also closes the Bell panel.</li>
           <li><strong>Tab order:</strong> close button, action button, and item rows are all keyboard-reachable with a visible focus ring.</li>
@@ -274,6 +333,7 @@ evoNotify.inbox.markAllRead()`} />
           { prop: 'toast.success / error / warning / info', type: '(ReactNode, EvoToastOptions?) => string', description: 'Severity shortcuts.' },
           { prop: 'toast.loading(msg, options?)',  type: '(ReactNode, EvoToastOptions?) => string', description: 'Persistent toast, not auto-dismissible. Pair with update().' },
           { prop: 'toast.promise(p, msgs)',        type: '(Promise<T>, EvoPromiseMessages<T>) => string', description: 'One toast walks loading → success/error.' },
+          { prop: 'toast.progress(msg, options?)', type: '(ReactNode, EvoToastOptions?) => EvoToastProgressHandle', description: 'Determinate progress toast. Returns a handle — see EvoToastProgressHandle below.' },
           { prop: 'toast.update(id, options)',     type: '(string, EvoToastOptions) => void', description: 'Update an existing toast in place.' },
           { prop: 'toast.dismiss(id?)',            type: '(string?) => void', description: 'Dismiss one toast, or all if id omitted.' },
         ]} />
@@ -295,7 +355,25 @@ evoNotify.inbox.markAllRead()`} />
           { prop: 'onDismiss',   type: '(id: string) => void', description: 'Fires when user dismisses.' },
           { prop: 'onAutoClose', type: '(id: string) => void', description: 'Fires when the timer expires.' },
           { prop: 'inbox',       type: 'boolean | Partial<EvoInboxItemInput>', description: 'Also push a copy into the notification center.' },
+          { prop: 'groupKey',    type: 'string',        description: 'Coalescing key. Repeated toasts sharing a key fold into one with a count badge. Ignored when `id` is also set.' },
+          { prop: 'progress',    type: 'number',        description: 'Determinate progress, 0–1. Renders a progress bar. Out-of-range values are clamped. Usually driven via toast.progress().' },
           { prop: 'className',   type: 'string',        description: 'Additional CSS class on the toast root.' },
+        ]} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">EvoToastProgressHandle</div>
+        <p className="docs-section-desc">
+          Returned by <code>evoNotify.toast.progress()</code> — drives the bar and resolves the
+          toast to a success or error end state.
+        </p>
+        <PropsTable props={[
+          { prop: 'id',                 type: 'string',                    description: 'The underlying toast id (usable with toast.dismiss).' },
+          { prop: 'setProgress(value)', type: '(number) => void',          description: 'Set the bar fill, 0–1. Out-of-range values are clamped.' },
+          { prop: 'update(options)',    type: '(EvoToastOptions) => void', description: 'Patch any toast option — title, description, severity, etc.' },
+          { prop: 'done(options?)',     type: '(EvoToastOptions?) => void', description: 'Resolve as success: bar fills to 100%, then the toast auto-dismisses.' },
+          { prop: 'fail(options?)',     type: '(EvoToastOptions?) => void', description: 'Resolve as error: the toast becomes dismissible and auto-dismisses.' },
+          { prop: 'dismiss()',          type: '() => void',                description: 'Dismiss the toast immediately.' },
         ]} />
       </div>
 
@@ -323,6 +401,7 @@ evoNotify.inbox.markAllRead()`} />
           { prop: 'maxVisible',       type: 'number',  default: '3',     description: 'Max toasts visible per anchor. Extras fold into "+N more".' },
           { prop: 'defaultDuration',  type: 'number',  default: '4000',  description: 'Default auto-dismiss in ms.' },
           { prop: 'pauseOnFocusLoss', type: 'boolean', default: 'true',  description: 'Pause auto-dismiss timers when the window loses focus.' },
+          { prop: 'persistErrors',    type: 'boolean', default: 'false', description: 'When true, error toasts stay until dismissed instead of auto-closing. A per-toast duration or persistent still overrides this.' },
           { prop: 'inboxItems',       type: 'EvoInboxItem[]', description: 'External-data mode: parent owns the list.' },
           { prop: 'onInboxChange',    type: '(items: EvoInboxItem[]) => void', description: 'Receives every mutation when externally controlled.' },
         ]} />

@@ -12,6 +12,7 @@ import RichTextAreaApiPage from './pages/RichTextAreaApiPage'
 import CheckboxPage from './pages/CheckboxPage'
 import RadioPage from './pages/RadioPage'
 import SelectPage from './pages/SelectPage'
+import AutoCompletePage from './pages/AutoCompletePage'
 import TreeSelectPage from './pages/TreeSelectPage'
 import TogglePage from './pages/TogglePage'
 import BadgePage from './pages/BadgePage'
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="/components/radio" element={<RadioPage />} />
             <Route path="/components/select" element={<SelectPage />} />
             <Route path="/components/tree-select" element={<TreeSelectPage />} />
+            <Route path="/components/autocomplete" element={<AutoCompletePage />} />
             <Route path="/components/toggle" element={<TogglePage />} />
             <Route path="/components/badge" element={<BadgePage />} />
             <Route path="/components/modal" element={<ModalPage />} />
