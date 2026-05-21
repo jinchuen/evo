@@ -33,6 +33,7 @@ const nav = [
       { label: 'Radio', path: '/components/radio' },
       { label: 'Select', path: '/components/select' },
       { label: 'Tree Select', path: '/components/tree-select' },
+      { label: 'AutoComplete', path: '/components/autocomplete' },
       { label: 'Toggle', path: '/components/toggle' },
       { label: 'Form', path: '/components/form' },
     ],

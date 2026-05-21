@@ -201,6 +201,179 @@ function execCommand(command: string, arg?: string) {
   }
 }
 
+// Tags that count as a block-level child — used to decide whether unwrapping a
+// block should lift its children out or wrap loose inline content in a <p>.
+const BLOCK_CHILD_TAGS = /^(?:P|DIV|H[1-6]|BLOCKQUOTE|PRE|UL|OL|LI|TABLE)$/;
+
+/**
+ * Nearest ancestor of the caret matching `selector` (a tag or comma-separated
+ * tag list), scoped to the editor. Null if the caret sits outside the editor.
+ */
+function blockAncestor(editor: HTMLElement, selector: string): HTMLElement | null {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return null;
+  const node = sel.getRangeAt(0).startContainer;
+  const start = node.nodeType === 1 ? (node as Element) : node.parentElement;
+  let match: Element | null = null;
+  try {
+    match = start?.closest(selector) ?? null;
+  } catch {
+    return null;
+  }
+  return match && editor.contains(match) && match !== editor ? (match as HTMLElement) : null;
+}
+
+/**
+ * Removes every block wrapper matching `selector` around the caret, replacing
+ * each with a plain <p> (or unwrapping it when it already holds block-level
+ * children, to avoid invalid <p> nesting).
+ *
+ * This exists because `execCommand('formatBlock', 'P')` cannot reliably *remove*
+ * a <blockquote>/<pre> — Blink nests a <p> inside it instead — so block tools
+ * could be switched on but never off, and the wrapper's CSS kept styling the
+ * content. A temporary marker node preserves the caret across the DOM moves.
+ */
+function unwrapBlocks(editor: HTMLElement, selector: string): boolean {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return false;
+  const range = sel.getRangeAt(0);
+  const startNode = range.startContainer;
+  const startEl = startNode.nodeType === 1 ? (startNode as Element) : startNode.parentElement;
+  if (!startEl) return false;
+
+  // Collect every matching wrapper between the caret and the editor root.
+  const targets: HTMLElement[] = [];
+  let cur: HTMLElement | null = null;
+  try {
+    cur = startEl.closest(selector) as HTMLElement | null;
+  } catch {
+    return false;
+  }
+  while (cur && editor.contains(cur) && cur !== editor) {
+    targets.push(cur);
+    cur = (cur.parentElement?.closest(selector) ?? null) as HTMLElement | null;
+  }
+  if (targets.length === 0) return false;
+
+  // Drop a marker at the caret so it survives the restructuring below.
+  const marker = document.createElement('span');
+  marker.setAttribute('data-evo-caret', '');
+  range.insertNode(marker);
+
+  targets.forEach((el) => {
+    const hasBlockChild = Array.from(el.children).some((c) => BLOCK_CHILD_TAGS.test(c.tagName));
+    if (hasBlockChild) {
+      el.replaceWith(...Array.from(el.childNodes));
+    } else {
+      const p = document.createElement('p');
+      while (el.firstChild) p.appendChild(el.firstChild);
+      if (!p.childNodes.length) p.appendChild(document.createElement('br'));
+      el.replaceWith(p);
+    }
+  });
+
+  // Collapse the caret back onto the marker, then remove it.
+  const placed = editor.querySelector('span[data-evo-caret]');
+  if (placed) {
+    const host = placed.parentElement;
+    const restored = document.createRange();
+    restored.setStartBefore(placed);
+    restored.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(restored);
+    placed.remove();
+    // A now-empty paragraph collapses in contentEditable — keep it caret-able.
+    if (host && !host.childNodes.length) host.appendChild(document.createElement('br'));
+  }
+  return true;
+}
+
+/**
+ * Splits a fragment into top-level block elements: loose inline runs are wrapped
+ * in <p> and <div> is normalised to <p>. Used to re-home content pulled out of a
+ * code block / blockquote when Enter exits it.
+ */
+function fragmentToBlocks(fragment: DocumentFragment): HTMLElement[] {
+  const BLOCK = /^(?:P|DIV|H[1-6]|UL|OL|PRE|BLOCKQUOTE|TABLE)$/;
+  const blocks: HTMLElement[] = [];
+  let run: Node[] = [];
+  const flush = () => {
+    if (!run.length) return;
+    const p = document.createElement('p');
+    run.forEach((n) => p.appendChild(n));
+    run = [];
+    blocks.push(p);
+  };
+  Array.from(fragment.childNodes).forEach((node) => {
+    if (node.nodeType === 1 && BLOCK.test((node as Element).tagName)) {
+      flush();
+      let el = node as HTMLElement;
+      if (el.tagName === 'DIV') {
+        const p = document.createElement('p');
+        while (el.firstChild) p.appendChild(el.firstChild);
+        el = p;
+      }
+      blocks.push(el);
+    } else {
+      run.push(node);
+    }
+  });
+  flush();
+  // Empty paragraphs collapse in contentEditable — keep each one caret-able.
+  blocks.forEach((b) => {
+    if (!b.textContent && !b.querySelector('br,img')) b.appendChild(document.createElement('br'));
+  });
+  return blocks;
+}
+
+/**
+ * If the caret sits inside a code block (<pre>) or blockquote, splits it at the
+ * caret: content from the caret onward moves into fresh paragraph(s) placed
+ * right after the block, and the caret follows. Returns true if it acted (the
+ * caller then preventDefaults).
+ *
+ * Both are single-line on plain Enter by design — Enter leaves the block instead
+ * of extending it, so the next line never inherits the block style. Shift+Enter
+ * is left to the browser as a soft line break for intentional multi-line code /
+ * multi-paragraph quotes.
+ */
+function exitBlockOnEnter(editor: HTMLElement): boolean {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return false;
+  const range = sel.getRangeAt(0);
+  if (!range.collapsed) return false; // leave range-Enter to the browser
+
+  const startNode = range.startContainer;
+  const startEl = startNode.nodeType === 1 ? (startNode as Element) : startNode.parentElement;
+  const block = (startEl?.closest('pre,blockquote') ?? null) as HTMLElement | null;
+  if (!block || !editor.contains(block) || block === editor) return false;
+
+  // Pull everything from the caret to the end of the block into sibling blocks.
+  const tail = document.createRange();
+  tail.setStart(range.startContainer, range.startOffset);
+  tail.setEnd(block, block.childNodes.length);
+  const blocks = fragmentToBlocks(tail.extractContents());
+  if (blocks.length === 0) {
+    const empty = document.createElement('p');
+    empty.appendChild(document.createElement('br'));
+    blocks.push(empty);
+  }
+
+  let anchor: Element = block;
+  blocks.forEach((b) => {
+    anchor.after(b);
+    anchor = b;
+  });
+  if (!block.firstChild) block.remove(); // caret was at the very start — no empty block
+
+  const caret = document.createRange();
+  caret.setStart(blocks[0], 0);
+  caret.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(caret);
+  return true;
+}
+
 // ----------------------------------------------------------------------------
 // Component
 // ----------------------------------------------------------------------------
@@ -263,12 +436,24 @@ export const EvoRichTextArea = forwardRef<EvoRichTextHandle, EvoRichTextAreaProp
 
   // ---- Refresh active states for toolbar ----
   const refreshActiveStates = useCallback(() => {
+    const editor = editorRef.current;
     const next: Record<string, boolean> = {};
     Object.entries(BUILTINS).forEach(([key, desc]) => {
       try {
         if (desc.command === 'formatBlock') {
-          const block = document.queryCommandValue('formatBlock');
-          next[key] = typeof block === 'string' && block.toLowerCase() === (desc.arg ?? '').toLowerCase();
+          // DOM-based detection: `formatBlock` can leave a <blockquote>/<pre>
+          // wrapper that `queryCommandValue` doesn't report, which would desync
+          // the toolbar highlight from what a click actually does.
+          if (!editor) {
+            next[key] = false;
+          } else if ((desc.arg ?? '').toUpperCase() === 'P') {
+            // "Paragraph" is active only when no stronger block wraps the caret.
+            next[key] =
+              !!blockAncestor(editor, 'P,DIV') &&
+              !blockAncestor(editor, 'BLOCKQUOTE,PRE,H1,H2,H3,H4,H5,H6');
+          } else {
+            next[key] = !!blockAncestor(editor, desc.arg ?? '');
+          }
         } else {
           next[key] = document.queryCommandState(desc.query ?? desc.command);
         }
@@ -343,10 +528,26 @@ export const EvoRichTextArea = forwardRef<EvoRichTextHandle, EvoRichTextAreaProp
 
   // ---- Toolbar actions ----
   const runBuiltin = useCallback((key: Exclude<EvoRichTextBuiltInTool, 'divider' | 'image' | 'link'>) => {
-    editorRef.current?.focus();
+    const editor = editorRef.current;
+    editor?.focus();
     const desc = BUILTINS[key];
     if (!desc) return;
-    execCommand(desc.command, desc.arg);
+    if (desc.command === 'formatBlock' && editor) {
+      // `formatBlock` can *apply* a block but cannot *remove* one — re-clicking
+      // an active block tool must toggle it off, and `formatBlock('P')` would
+      // only nest a <p> inside the surviving <blockquote>/<pre>. So toggle off
+      // by unwrapping the block in the DOM; when switching to a different block
+      // first strip whatever wrapper is there, since a stale one would survive.
+      const target = desc.arg ?? '';
+      if (target.toUpperCase() !== 'P' && blockAncestor(editor, target)) {
+        unwrapBlocks(editor, target);
+      } else {
+        unwrapBlocks(editor, 'BLOCKQUOTE,PRE,H1,H2,H3,H4,H5,H6');
+        execCommand('formatBlock', target);
+      }
+    } else {
+      execCommand(desc.command, desc.arg);
+    }
     emitChange();
   }, [emitChange]);
 
@@ -385,13 +586,25 @@ export const EvoRichTextArea = forwardRef<EvoRichTextHandle, EvoRichTextAreaProp
   }, [emitChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Plain Enter inside a code block or blockquote exits to a fresh paragraph —
+    // both are single-line on Enter by design, so the next line never inherits
+    // the block style. Shift+Enter is left to the browser as a soft line break.
+    if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      const editor = editorRef.current;
+      if (editor && exitBlockOnEnter(editor)) {
+        e.preventDefault();
+        emitChange();
+        return;
+      }
+    }
+
     const meta = e.metaKey || e.ctrlKey;
     if (!meta) return;
     const k = e.key.toLowerCase();
     if (k === 'b') { e.preventDefault(); runBuiltin('bold'); }
     else if (k === 'i') { e.preventDefault(); runBuiltin('italic'); }
     else if (k === 'u') { e.preventDefault(); runBuiltin('underline'); }
-  }, [runBuiltin]);
+  }, [runBuiltin, emitChange]);
 
   const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLDivElement>) => {
     const items = e.clipboardData?.items;

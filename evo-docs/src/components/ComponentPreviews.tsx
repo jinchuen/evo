@@ -5,6 +5,7 @@ import {
   EvoCheckbox,
   EvoRadio,
   EvoSelect,
+  EvoAutoComplete,
   EvoToggle,
   EvoBadge,
   EvoAlert,
@@ -88,6 +89,18 @@ export const TreeSelectPreview = () => (
     <span>Select node…</span>
     <span style={{ marginLeft: 'auto', opacity: 0.6 }}>▾</span>
   </div>
+)
+
+export const AutoCompletePreview = () => (
+  <EvoAutoComplete
+    size="sm"
+    placeholder="Search fruit…"
+    options={[
+      { value: 'apple', label: 'Apple' },
+      { value: 'banana', label: 'Banana' },
+      { value: 'cherry', label: 'Cherry' },
+    ]}
+  />
 )
 
 export const TogglePreview = () => {
