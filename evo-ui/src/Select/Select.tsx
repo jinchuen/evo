@@ -9,7 +9,7 @@ export interface SelectOption {
   disabled?: boolean;
 }
 
-export interface EvoSelectProps {
+interface EvoSelectBaseProps {
   label?: string;
   options: SelectOption[];
   placeholder?: string;
@@ -17,9 +17,6 @@ export interface EvoSelectProps {
   error?: string;
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
-  value?: string;
-  defaultValue?: string;
-  onChange?: (value: string) => void;
   disabled?: boolean;
   searchable?: boolean;
   clearable?: boolean;
@@ -27,6 +24,28 @@ export interface EvoSelectProps {
   name?: string;
   className?: string;
 }
+
+export interface EvoSelectSingleProps extends EvoSelectBaseProps {
+  multiple?: false;
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+}
+
+export interface EvoSelectMultipleProps extends EvoSelectBaseProps {
+  multiple: true;
+  value?: string[];
+  defaultValue?: string[];
+  onChange?: (value: string[]) => void;
+  /** How the trigger displays selected items. Defaults to 'chips'. */
+  multipleDisplay?: 'chips' | 'count';
+  /** Maximum number of options that can be selected at once. */
+  maxSelections?: number;
+  /** Show Select-all / Clear-all buttons at the top of the menu. */
+  showSelectAll?: boolean;
+}
+
+export type EvoSelectProps = EvoSelectSingleProps | EvoSelectMultipleProps;
 
 const ChevronIcon = () => (
   <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
@@ -53,31 +72,45 @@ const SearchIcon = () => (
   </svg>
 );
 
-export const EvoSelect = ({
-  label,
-  options,
-  placeholder = 'Select an option',
-  helperText,
-  error,
-  size = 'md',
-  fullWidth = false,
-  value: controlledValue,
-  defaultValue = '',
-  onChange,
-  disabled = false,
-  searchable = false,
-  clearable = false,
-  id,
-  name,
-  className = '',
-}: EvoSelectProps) => {
+export const EvoSelect = (props: EvoSelectProps) => {
+  const {
+    label,
+    options,
+    placeholder = 'Select an option',
+    helperText,
+    error,
+    size = 'md',
+    fullWidth = false,
+    disabled = false,
+    searchable = false,
+    clearable = false,
+    id,
+    name,
+    className = '',
+  } = props;
+
+  const isMultiple = props.multiple === true;
+  const multipleDisplay = isMultiple ? (props.multipleDisplay ?? 'chips') : 'chips';
+  const maxSelections = isMultiple ? props.maxSelections : undefined;
+  const showSelectAll = isMultiple ? (props.showSelectAll ?? false) : false;
+
   const reactId = useId();
   const selectId = id ?? `evo-select-${reactId}`;
   const listId = `${selectId}-listbox`;
 
+  const controlledValue = props.value as string | string[] | undefined;
+  const defaultValue = props.defaultValue as string | string[] | undefined;
+
   const isControlled = controlledValue !== undefined;
-  const [internalValue, setInternalValue] = useState(defaultValue);
-  const value = isControlled ? controlledValue : internalValue;
+  const initial: string | string[] = isMultiple
+    ? (Array.isArray(defaultValue) ? defaultValue : [])
+    : (typeof defaultValue === 'string' ? defaultValue : '');
+  const [internalValue, setInternalValue] = useState<string | string[]>(initial);
+  const value = isControlled ? controlledValue! : internalValue;
+
+  const selectedValues: string[] = isMultiple
+    ? (Array.isArray(value) ? value : [])
+    : (typeof value === 'string' && value ? [value] : []);
 
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
@@ -92,12 +125,38 @@ export const EvoSelect = ({
     ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
     : options;
 
-  const selectedOption = options.find(o => o.value === value);
+  const selectedOption = !isMultiple
+    ? options.find(o => o.value === value)
+    : undefined;
 
-  const setValue = useCallback((next: string) => {
+  const selectedOptions = isMultiple
+    ? options.filter(o => selectedValues.includes(o.value))
+    : [];
+
+  const atMax = isMultiple && maxSelections !== undefined && selectedValues.length >= maxSelections;
+
+  const emit = useCallback((next: string | string[]) => {
     if (!isControlled) setInternalValue(next);
-    onChange?.(next);
-  }, [isControlled, onChange]);
+    if (isMultiple) {
+      (props.onChange as ((v: string[]) => void) | undefined)?.(next as string[]);
+    } else {
+      (props.onChange as ((v: string) => void) | undefined)?.(next as string);
+    }
+  }, [isControlled, isMultiple, props.onChange]);
+
+  const toggleValue = useCallback((v: string) => {
+    if (isMultiple) {
+      const current = Array.isArray(value) ? value : [];
+      if (current.includes(v)) {
+        emit(current.filter(x => x !== v));
+      } else {
+        if (maxSelections !== undefined && current.length >= maxSelections) return;
+        emit([...current, v]);
+      }
+    } else {
+      emit(v);
+    }
+  }, [emit, isMultiple, maxSelections, value]);
 
   useEffect(() => {
     if (!open) return;
@@ -113,8 +172,8 @@ export const EvoSelect = ({
 
   useEffect(() => {
     if (open) {
-      const sel = filtered.findIndex(o => o.value === value);
-      setActiveIdx(sel >= 0 ? sel : filtered.findIndex(o => !o.disabled));
+      const firstSelectedIdx = filtered.findIndex(o => selectedValues.includes(o.value));
+      setActiveIdx(firstSelectedIdx >= 0 ? firstSelectedIdx : filtered.findIndex(o => !o.disabled));
       if (searchable) {
         const t = setTimeout(() => searchRef.current?.focus(), 30);
         return () => clearTimeout(t);
@@ -168,9 +227,13 @@ export const EvoSelect = ({
       e.preventDefault();
       const opt = filtered[activeIdx];
       if (opt && !opt.disabled) {
-        setValue(opt.value);
-        setOpen(false);
-        triggerRef.current?.focus();
+        const isSelected = selectedValues.includes(opt.value);
+        if (!isSelected && atMax) return;
+        toggleValue(opt.value);
+        if (!isMultiple) {
+          setOpen(false);
+          triggerRef.current?.focus();
+        }
       }
     } else if (e.key === 'Home') {
       e.preventDefault();
@@ -188,14 +251,92 @@ export const EvoSelect = ({
 
   const handleSelect = (opt: SelectOption) => {
     if (opt.disabled) return;
-    setValue(opt.value);
-    setOpen(false);
-    triggerRef.current?.focus();
+    const isSelected = selectedValues.includes(opt.value);
+    if (!isSelected && atMax) return;
+    toggleValue(opt.value);
+    if (!isMultiple) {
+      setOpen(false);
+      triggerRef.current?.focus();
+    }
   };
 
-  const handleClear = (e: React.MouseEvent) => {
+  const handleClearAll = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setValue('');
+    if (isMultiple) emit([]);
+    else emit('');
+  };
+
+  const handleRemoveChip = (e: React.MouseEvent, v: string) => {
+    e.stopPropagation();
+    if (!isMultiple) return;
+    const current = Array.isArray(value) ? value : [];
+    emit(current.filter(x => x !== v));
+  };
+
+  const handleSelectAll = () => {
+    if (!isMultiple) return;
+    const selectable = filtered.filter(o => !o.disabled).map(o => o.value);
+    const merged = Array.from(new Set([...(Array.isArray(value) ? value : []), ...selectable]));
+    const limited = maxSelections !== undefined ? merged.slice(0, maxSelections) : merged;
+    emit(limited);
+  };
+
+  const hasSelection = isMultiple ? selectedValues.length > 0 : !!value;
+
+  const renderTriggerContent = () => {
+    if (!hasSelection) {
+      return (
+        <span className={styles.triggerPlaceholder}>
+          <span className={styles.triggerText}>{placeholder}</span>
+        </span>
+      );
+    }
+
+    if (!isMultiple) {
+      return (
+        <span className={styles.triggerValue}>
+          {selectedOption?.icon && (
+            <span className={styles.triggerIcon}>{selectedOption.icon}</span>
+          )}
+          <span className={styles.triggerText}>{selectedOption?.label}</span>
+        </span>
+      );
+    }
+
+    if (multipleDisplay === 'count') {
+      const first = selectedOptions[0]?.label ?? '';
+      const more = selectedOptions.length - 1;
+      return (
+        <span className={styles.triggerValue}>
+          <span className={styles.triggerText}>
+            {first}{more > 0 && <span className={styles.countMore}>, +{more} more</span>}
+          </span>
+        </span>
+      );
+    }
+
+    return (
+      <span className={styles.chipRow}>
+        {selectedOptions.map(opt => (
+          <span key={opt.value} className={styles.chip}>
+            {opt.icon && <span className={styles.chipIcon}>{opt.icon}</span>}
+            <span className={styles.chipLabel}>{opt.label}</span>
+            {!disabled && (
+              <span
+                role="button"
+                tabIndex={-1}
+                aria-label={`Remove ${opt.label}`}
+                className={styles.chipRemove}
+                onClick={(e) => handleRemoveChip(e, opt.value)}
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                <ClearIcon />
+              </span>
+            )}
+          </span>
+        ))}
+      </span>
+    );
   };
 
   return (
@@ -224,33 +365,28 @@ export const EvoSelect = ({
           aria-expanded={open}
           aria-controls={listId}
           aria-invalid={!!error}
+          aria-multiselectable={isMultiple || undefined}
           disabled={disabled}
           className={[
             styles.trigger,
             styles[size],
             open ? styles.open : '',
             error ? styles.hasError : '',
+            isMultiple && multipleDisplay === 'chips' && selectedValues.length > 0 ? styles.triggerChips : '',
           ].filter(Boolean).join(' ')}
           onClick={() => !disabled && setOpen(o => !o)}
           onKeyDown={handleKeyDown}
         >
-          <span className={selectedOption ? styles.triggerValue : styles.triggerPlaceholder}>
-            {selectedOption?.icon && (
-              <span className={styles.triggerIcon}>{selectedOption.icon}</span>
-            )}
-            <span className={styles.triggerText}>
-              {selectedOption?.label ?? placeholder}
-            </span>
-          </span>
+          {renderTriggerContent()}
 
           <span className={styles.triggerActions}>
-            {clearable && value && !disabled && (
+            {clearable && hasSelection && !disabled && (
               <span
                 role="button"
                 tabIndex={-1}
                 aria-label="Clear selection"
                 className={styles.clearBtn}
-                onClick={handleClear}
+                onClick={handleClearAll}
                 onMouseDown={(e) => e.preventDefault()}
               >
                 <ClearIcon />
@@ -268,6 +404,7 @@ export const EvoSelect = ({
             role="listbox"
             id={listId}
             aria-labelledby={selectId}
+            aria-multiselectable={isMultiple || undefined}
             aria-activedescendant={activeIdx >= 0 ? `${selectId}-opt-${activeIdx}` : undefined}
           >
             {searchable && (
@@ -285,30 +422,66 @@ export const EvoSelect = ({
               </div>
             )}
 
+            {isMultiple && showSelectAll && filtered.length > 0 && (
+              <div className={styles.bulkRow}>
+                <button
+                  type="button"
+                  className={styles.bulkBtn}
+                  onClick={handleSelectAll}
+                  disabled={maxSelections !== undefined && selectedValues.length >= maxSelections}
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  className={styles.bulkBtn}
+                  onClick={() => emit([])}
+                  disabled={selectedValues.length === 0}
+                >
+                  Clear all
+                </button>
+                {maxSelections !== undefined && (
+                  <span className={styles.bulkCount}>
+                    {selectedValues.length} / {maxSelections}
+                  </span>
+                )}
+              </div>
+            )}
+
             <div className={styles.list} ref={listRef} role="presentation">
               {filtered.length === 0 ? (
                 <div className={styles.empty}>No results</div>
               ) : (
                 filtered.map((opt, idx) => {
-                  const isSelected = opt.value === value;
+                  const isSelected = selectedValues.includes(opt.value);
                   const isActive = idx === activeIdx;
+                  const reachedMax = !isSelected && atMax;
+                  const rowDisabled = opt.disabled || reachedMax;
                   return (
                     <div
                       key={opt.value}
                       id={`${selectId}-opt-${idx}`}
                       role="option"
                       aria-selected={isSelected}
-                      aria-disabled={opt.disabled}
+                      aria-disabled={rowDisabled}
                       data-idx={idx}
                       className={[
                         styles.option,
                         isSelected ? styles.optionSelected : '',
                         isActive ? styles.optionActive : '',
-                        opt.disabled ? styles.optionDisabled : '',
+                        rowDisabled ? styles.optionDisabled : '',
                       ].filter(Boolean).join(' ')}
-                      onClick={() => handleSelect(opt)}
-                      onMouseEnter={() => !opt.disabled && setActiveIdx(idx)}
+                      onClick={() => !rowDisabled && handleSelect(opt)}
+                      onMouseEnter={() => !rowDisabled && setActiveIdx(idx)}
                     >
+                      {isMultiple && (
+                        <span
+                          className={[styles.checkbox, isSelected ? styles.checkboxChecked : ''].filter(Boolean).join(' ')}
+                          aria-hidden="true"
+                        >
+                          {isSelected && <CheckIcon />}
+                        </span>
+                      )}
                       {opt.icon && <span className={styles.optionIcon}>{opt.icon}</span>}
                       <span className={styles.optionLabel}>
                         <span className={styles.optionTitle}>{opt.label}</span>
@@ -316,9 +489,11 @@ export const EvoSelect = ({
                           <span className={styles.optionDesc}>{opt.description}</span>
                         )}
                       </span>
-                      <span className={styles.check} aria-hidden>
-                        {isSelected && <CheckIcon />}
-                      </span>
+                      {!isMultiple && (
+                        <span className={styles.check} aria-hidden>
+                          {isSelected && <CheckIcon />}
+                        </span>
+                      )}
                     </div>
                   );
                 })
@@ -327,7 +502,10 @@ export const EvoSelect = ({
           </div>
         )}
 
-        {name && <input type="hidden" name={name} value={value} />}
+        {name && !isMultiple && <input type="hidden" name={name} value={value as string} />}
+        {name && isMultiple && selectedValues.map(v => (
+          <input key={v} type="hidden" name={name} value={v} />
+        ))}
       </div>
 
       {error && <p className={styles.errorText}>{error}</p>}

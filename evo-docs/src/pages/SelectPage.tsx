@@ -45,6 +45,10 @@ export default function SelectPage() {
   const [plan, setPlan] = useState('pro')
   const [search, setSearch] = useState('')
   const [clearable, setClearable] = useState('uk')
+  const [multiChips, setMultiChips] = useState<string[]>(['us', 'jp'])
+  const [multiCount, setMultiCount] = useState<string[]>(['us', 'uk', 'ca'])
+  const [multiCapped, setMultiCapped] = useState<string[]>([])
+  const [multiBulk, setMultiBulk] = useState<string[]>([])
 
   return (
     <div>
@@ -170,6 +174,109 @@ export default function SelectPage() {
       </div>
 
       <div className="docs-section">
+        <div className="docs-section-title">Multiple — chips</div>
+        <p className="docs-section-desc">
+          Pass <code>multiple</code> to let the user pick several options. The trigger
+          shows each selection as a chip with its own remove button. <code>value</code>{' '}
+          and <code>onChange</code> become <code>string[]</code>. The menu stays open
+          after each click so multiple picks feel natural.
+        </p>
+        <div className="docs-preview col">
+          <EvoSelect
+            multiple
+            label="Countries"
+            options={countries}
+            placeholder="Pick one or more"
+            value={multiChips}
+            onChange={setMultiChips}
+            searchable
+            helperText={`Selected: ${multiChips.length || 'none'}`}
+          />
+        </div>
+        <CodeBlock code={`const [values, setValues] = useState<string[]>([])
+
+<EvoSelect
+  multiple
+  label="Countries"
+  options={countries}
+  value={values}
+  onChange={setValues}
+  searchable
+/>`} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Multiple — count summary</div>
+        <p className="docs-section-desc">
+          For dense forms, <code>multipleDisplay="count"</code> condenses the
+          trigger to the first label plus a <code>+N more</code> hint, so it
+          stays the same height regardless of how much is selected.
+        </p>
+        <div className="docs-preview col">
+          <EvoSelect
+            multiple
+            multipleDisplay="count"
+            label="Countries"
+            options={countries}
+            value={multiCount}
+            onChange={setMultiCount}
+            clearable
+          />
+        </div>
+        <CodeBlock code={`<EvoSelect
+  multiple
+  multipleDisplay="count"
+  label="Countries"
+  options={countries}
+  value={values}
+  onChange={setValues}
+  clearable
+/>`} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Multiple — capped + Select all</div>
+        <p className="docs-section-desc">
+          Combine <code>maxSelections</code> with <code>showSelectAll</code> to
+          let users either bulk-pick or stop at a hard limit. Once the limit is
+          hit, remaining options become non-selectable until the user removes
+          one.
+        </p>
+        <div className="docs-preview col">
+          <EvoSelect
+            multiple
+            showSelectAll
+            maxSelections={3}
+            label="Pick up to 3"
+            options={countries}
+            value={multiCapped}
+            onChange={setMultiCapped}
+            searchable
+            helperText="Maximum of three selections."
+          />
+          <EvoSelect
+            multiple
+            multipleDisplay="count"
+            showSelectAll
+            label="Choose any"
+            options={basicCountries}
+            value={multiBulk}
+            onChange={setMultiBulk}
+          />
+        </div>
+        <CodeBlock code={`<EvoSelect
+  multiple
+  showSelectAll
+  maxSelections={3}
+  label="Pick up to 3"
+  options={countries}
+  value={values}
+  onChange={setValues}
+  searchable
+/>`} />
+      </div>
+
+      <div className="docs-section">
         <div className="docs-section-title">Disabled Options & Error</div>
         <div className="docs-preview col">
           <EvoSelect
@@ -242,7 +349,7 @@ export default function SelectPage() {
           <p className="docs-kbd-list">
             <strong>↑ / ↓</strong> — Move the active option<br />
             <strong>Home / End</strong> — Jump to first / last<br />
-            <strong>Enter / Space</strong> — Open or select<br />
+            <strong>Enter / Space</strong> — Open, or select (in multi mode: toggle without closing)<br />
             <strong>Esc</strong> — Close menu<br />
             <strong>Tab</strong> — Close menu and move focus
           </p>
@@ -255,9 +362,13 @@ export default function SelectPage() {
         <div className="docs-section-title">Props</div>
         <PropsTable props={[
           { prop: 'options', type: 'SelectOption[]', required: true, description: 'Array of { value, label, description?, icon?, disabled? }.' },
-          { prop: 'value', type: 'string', description: 'Controlled value.' },
-          { prop: 'defaultValue', type: 'string', default: "''", description: 'Initial uncontrolled value.' },
-          { prop: 'onChange', type: '(value: string) => void', description: 'Called with the new value when a selection is made.' },
+          { prop: 'multiple', type: 'boolean', default: 'false', description: 'Enable multi-select. value/defaultValue/onChange switch to string[] when true.' },
+          { prop: 'value', type: 'string | string[]', description: 'Controlled value. string in single mode, string[] in multi mode.' },
+          { prop: 'defaultValue', type: 'string | string[]', default: "'' / []", description: 'Initial uncontrolled value. Type follows multiple.' },
+          { prop: 'onChange', type: '(value: string) => void | (value: string[]) => void', description: 'Called with the new value. Receives a string[] when multiple is true.' },
+          { prop: 'multipleDisplay', type: "'chips' | 'count'", default: "'chips'", description: 'Multi-select only. How selected items render in the trigger.' },
+          { prop: 'maxSelections', type: 'number', description: 'Multi-select only. Caps the number of selectable options.' },
+          { prop: 'showSelectAll', type: 'boolean', default: 'false', description: 'Multi-select only. Shows Select-all / Clear-all buttons at the top of the menu.' },
           { prop: 'label', type: 'string', description: 'Label above the select.' },
           { prop: 'placeholder', type: 'string', default: "'Select an option'", description: 'Shown when no option is selected.' },
           { prop: 'helperText', type: 'string', description: 'Helper text below the select.' },
