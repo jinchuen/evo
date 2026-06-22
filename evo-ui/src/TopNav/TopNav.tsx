@@ -32,6 +32,14 @@ export interface EvoTopNavProps
   onOpenChange?: (open: boolean) => void;
   /** Width in px below which Menu collapses into the drawer. @default 768 */
   collapseBelow?: number;
+  /** Staggered mount animation for the bar's contents. @default 'none' */
+  entrance?: 'none' | 'rise' | 'fade';
+  /** Pin the bar with position: sticky; top: 0. @default false */
+  sticky?: boolean;
+  /** On-scroll treatment of a sticky bar. @default 'none' */
+  scrollBehavior?: 'none' | 'elevate' | 'shrink' | 'hide';
+  /** Render a thin scroll-progress accent line along the bottom edge. @default false */
+  showProgress?: boolean;
   className?: string;
 }
 
@@ -158,6 +166,52 @@ const useHoverCapable = () =>
 
 const usePrefersReducedMotion = () =>
   useMediaQuery('(prefers-reduced-motion: reduce)');
+
+function useScrollState(
+  enabled: boolean,
+  behavior: 'none' | 'elevate' | 'shrink' | 'hide',
+  wantProgress: boolean,
+) {
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const lastY = useRef(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !enabled) {
+      setScrolled(false);
+      setHidden(false);
+      setProgress(0);
+      return;
+    }
+    let raf = 0;
+    const read = () => {
+      raf = 0;
+      const doc = document.documentElement;
+      const y = window.scrollY || doc.scrollTop || 0;
+      setScrolled(y > 8);
+      setHidden(behavior === 'hide' ? y > lastY.current && y > 64 : false);
+      if (wantProgress) {
+        const max = doc.scrollHeight - doc.clientHeight || 1;
+        setProgress(Math.min(1, Math.max(0, y / max)));
+      }
+      lastY.current = y;
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(read);
+    };
+    read();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [enabled, behavior, wantProgress]);
+
+  return { scrolled, hidden, progress };
+}
 
 function getFocusable(root: HTMLElement | null) {
   if (!root) return [] as HTMLElement[];
@@ -812,7 +866,12 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
       defaultOpen = false,
       onOpenChange,
       collapseBelow = 768,
+      entrance = 'none',
+      sticky = false,
+      scrollBehavior = 'none',
+      showProgress = false,
       className,
+      style,
       ...rest
     },
     ref,
@@ -825,6 +884,12 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
 
     const isCollapsed = useIsCollapsed(collapseBelow);
     const reducedMotion = usePrefersReducedMotion();
+    const scrollEnabled = scrollBehavior !== 'none' || showProgress;
+    const { scrolled, hidden, progress } = useScrollState(scrollEnabled, scrollBehavior, showProgress);
+    const animateEntrance = entrance !== 'none' && !reducedMotion;
+    const mergedStyle: React.CSSProperties = showProgress
+      ? ({ ...style, ['--evo-topnav-progress' as string]: progress } as React.CSSProperties)
+      : (style as React.CSSProperties);
 
     const [toggleCount, setToggleCount] = useState(0);
     const registerToggle = useCallback(() => {
@@ -944,15 +1009,24 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
           ref={ref}
           className={cn(
             styles.topNav,
+            sticky && styles.topNavSticky,
             drawerActive && styles.topNavDrawerOpen,
             reducedMotion && styles.topNavReducedMotion,
             className,
           )}
+          style={mergedStyle}
           data-collapsed={isCollapsed || undefined}
           data-drawer-open={drawerActive || undefined}
+          data-entrance={animateEntrance ? entrance : undefined}
+          data-scroll={scrollBehavior !== 'none' ? scrollBehavior : undefined}
+          data-scrolled={scrolled || undefined}
+          data-hidden={hidden || undefined}
           {...rest}
         >
           <div className={styles.topNavInner}>{children}</div>
+          {showProgress && (
+            <span className={styles.topNavProgress} aria-hidden="true" />
+          )}
           {drawerActive && (
             <div
               className={styles.topNavBackdrop}
