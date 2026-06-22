@@ -25,8 +25,10 @@
   --docs-accent-dim:      color-mix(in srgb, var(--evo-color-primary) 12%, transparent);
   --docs-code-bg:         var(--evo-color-surface-sunken);
   --docs-code-text:       var(--evo-color-text-secondary);
-  --docs-sidebar-width:   260px;
+  --docs-sidebar-width:   264px;
   --docs-topbar-height:   56px;
+  --docs-nav-gutter:      0.7rem;
+  --docs-focus-ring:      color-mix(in srgb, var(--evo-color-primary) 40%, transparent);
 }
 
 html, body {
@@ -72,42 +74,297 @@ p { margin: 0; }
   top: 0;
   left: 0;
   bottom: 0;
-  overflow-y: auto;
+  overflow: hidden;
   z-index: 100;
   display: flex;
   flex-direction: column;
-  transition: transform 220ms ease, background-color 200ms ease, border-color 200ms ease;
+  transition: transform 220ms ease, width 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 200ms ease, border-color 200ms ease;
 }
 
-.docs-sidebar::-webkit-scrollbar { width: 4px; }
-.docs-sidebar::-webkit-scrollbar-track { background: transparent; }
-.docs-sidebar::-webkit-scrollbar-thumb { background: var(--docs-border); border-radius: 2px; }
-
 .docs-sidebar-logo {
-  padding: 1.4rem 1.25rem 1.1rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--docs-sidebar-border);
-  margin-bottom: 0.5rem;
+  gap: 0.55rem;
+  padding: 1.05rem 1rem 0.85rem;
   flex-shrink: 0;
 }
 
+.docs-logo-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--evo-color-primary-fg);
+  background: linear-gradient(140deg,
+    var(--docs-accent),
+    color-mix(in srgb, var(--docs-accent) 55%, var(--evo-color-info)));
+  box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--docs-accent) 65%, transparent);
+}
+
 .docs-logo-text {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 700;
-  color: var(--docs-accent);
+  color: var(--docs-text);
   letter-spacing: -0.02em;
 }
 
 .docs-logo-version {
-  font-size: 0.68rem;
+  margin-left: auto;
+  font-size: 0.66rem;
   background: var(--docs-accent-dim);
   color: var(--docs-accent);
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
+  padding: 0.12rem 0.42rem;
+  border-radius: 999px;
   font-weight: 600;
   border: 1px solid color-mix(in srgb, var(--docs-accent) 20%, transparent);
+}
+
+/* ─── Sidebar search / filter ────────────────────────────────────── */
+
+.docs-sidebar-search {
+  flex-shrink: 0;
+  padding: 0 0.85rem 0.8rem;
+  margin-bottom: 0.3rem;
+  border-bottom: 1px solid var(--docs-border-subtle);
+}
+
+.docs-search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.docs-search-field > svg {
+  position: absolute;
+  left: 0.6rem;
+  color: var(--docs-text-muted);
+  pointer-events: none;
+}
+
+.docs-search-input {
+  width: 100%;
+  min-height: 2.25rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: var(--docs-text);
+  padding: 0.4rem 1.9rem 0.4rem 1.95rem;
+  background: var(--docs-code-bg);
+  border: 1px solid var(--docs-border);
+  border-radius: 9px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.docs-search-input::placeholder { color: var(--docs-text-muted); }
+
+.docs-search-input:focus {
+  outline: none;
+  background: var(--docs-card-bg);
+  border-color: var(--docs-accent);
+  box-shadow: 0 0 0 3px var(--docs-focus-ring);
+}
+
+.docs-search-clear {
+  position: absolute;
+  right: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  color: var(--docs-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.docs-search-clear:hover {
+  color: var(--docs-text);
+  background: var(--docs-card-hover);
+}
+
+.docs-search-clear:focus-visible {
+  outline: 2px solid var(--docs-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Sidebar nav (scroll area + sliding active rail) ─────────────── */
+
+.docs-sidebar-nav {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.15rem var(--docs-nav-gutter) 1.75rem;
+  /* Keep keyboard-focused rows clear of the edge-fade mask below. */
+  scroll-padding-block: 16px 20px;
+  /* Soft fade at the top/bottom edges so a long list dissolves cleanly. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 18px), transparent 100%);
+}
+
+.docs-sidebar-nav::-webkit-scrollbar { width: 5px; }
+.docs-sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.docs-sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--docs-border);
+  border-radius: 999px;
+}
+.docs-sidebar-nav:hover::-webkit-scrollbar-thumb { background: var(--evo-color-border-strong); }
+
+.docs-nav-rail {
+  position: absolute;
+  left: calc(var(--docs-nav-gutter) - 1px);
+  top: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--docs-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    height 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 160ms ease;
+}
+
+.docs-nav-rail[data-visible='true'] {
+  opacity: 1;
+}
+
+.docs-nav-empty {
+  padding: 1.25rem 0.85rem;
+  color: var(--docs-text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* ─── Collapse (icon-rail) + footer ──────────────────────────────── */
+
+/* Override the shared width var on the root so the sidebar AND main column
+ * morph together when collapsed. */
+.docs-layout[data-collapsed='true'] {
+  --docs-sidebar-width: 76px;
+}
+
+.docs-layout[data-collapsed='true'] .docs-sidebar-search {
+  display: none;
+}
+
+/* The accent rail is left-pinned, so hide it in the centered rail — the active
+ * soft-pill already marks the current row. */
+.docs-layout[data-collapsed='true'] .docs-nav-rail {
+  display: none;
+}
+
+.docs-layout[data-collapsed='true'] .docs-sidebar-logo {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.docs-layout[data-collapsed='true'] .docs-logo-text,
+.docs-layout[data-collapsed='true'] .docs-logo-version {
+  display: none;
+}
+
+.docs-sidebar-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.85rem;
+  border-top: 1px solid var(--docs-border-subtle);
+}
+
+.docs-sidebar-link,
+.docs-collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  color: var(--docs-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.docs-sidebar-link:hover,
+.docs-collapse-btn:hover {
+  color: var(--docs-text);
+  background: var(--docs-card-hover);
+}
+
+.docs-sidebar-link:focus-visible,
+.docs-collapse-btn:focus-visible {
+  outline: 2px solid var(--docs-accent);
+  outline-offset: 2px;
+}
+
+/* Collapse toggle sits at the trailing edge; the chevron flips when collapsed. */
+.docs-collapse-btn { margin-left: auto; }
+.docs-collapse-btn svg { transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1); }
+.docs-collapse-btn[data-collapsed='true'] svg { transform: rotate(180deg); }
+
+/* Collapsed: footer stacks vertically, toggle re-centers. */
+.docs-layout[data-collapsed='true'] .docs-sidebar-footer {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.docs-layout[data-collapsed='true'] .docs-collapse-btn { margin-left: 0; }
+
+/* "New" pill on recently-added components. */
+.docs-nav-new {
+  flex-shrink: 0;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--evo-color-primary-hover);
+  background: var(--docs-accent-dim);
+  border-radius: 999px;
+}
+
+/* Staggered entrance for each nav group on first load. Targets EvoNav's
+ * structural <li> groups (not its hashed module classes) so it stays
+ * resilient. Disabled under reduced-motion below. */
+.docs-sidebar-nav[data-initial='true'] nav > ul > li {
+  animation: docsNavGroupIn 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(1) { animation-delay: 20ms; }
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(2) { animation-delay: 55ms; }
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(3) { animation-delay: 90ms; }
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(4) { animation-delay: 125ms; }
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(5) { animation-delay: 160ms; }
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(6) { animation-delay: 195ms; }
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(7) { animation-delay: 230ms; }
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(8) { animation-delay: 265ms; }
+.docs-sidebar-nav[data-initial='true'] nav > ul > li:nth-child(9) { animation-delay: 300ms; }
+
+@keyframes docsNavGroupIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-nav-rail,
+  .docs-sidebar,
+  .docs-main,
+  .docs-collapse-btn svg { transition: none; }
+  /* Match the gated selector's specificity so the stagger is truly disabled. */
+  .docs-sidebar-nav[data-initial='true'] nav > ul > li,
+  .docs-sidebar-nav nav > ul > li { animation: none; }
 }
 
 /* ─── Top bar (theme toggle + mobile menu) ───────────────────────── */
@@ -166,6 +423,7 @@ p { margin: 0; }
   display: flex;
   flex-direction: column;
   min-width: 0;
+  transition: margin-left 240ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .docs-main-inner {
@@ -875,6 +1133,34 @@ p { margin: 0; }
   .docs-preview {
     padding: 1.25rem;
   }
+
+  /* EvoNav runs in desktop mode here (breakpoint=1), so its own mobile
+   * touch-target bump never applies — restore >= 44px targets in the docs. */
+  .docs-mobile-menu-btn { width: 2.75rem; height: 2.75rem; }
+  .docs-search-input {
+    min-height: 2.75rem;
+    font-size: 16px;          /* >= 16px stops iOS Safari auto-zoom on focus */
+    padding-right: 2.75rem;   /* room for the enlarged clear hit-area */
+  }
+  /* 44px tap area without an opaque box over typed text: the button is a
+   * transparent 2.75rem target; the visible hover pill lives on the glyph. */
+  .docs-search-clear {
+    width: 2.75rem;
+    height: 2.75rem;
+    background: transparent;
+  }
+  .docs-search-clear:hover { background: transparent; }
+  .docs-search-clear svg {
+    padding: 0.3rem;
+    border-radius: 6px;
+    box-sizing: content-box;
+  }
+  .docs-search-clear:hover svg { background: var(--docs-card-hover); }
+  .docs-sidebar-nav nav button,
+  .docs-sidebar-nav nav a { min-height: 2.75rem; }
+
+  /* Collapse-to-rail is a desktop affordance — hide the toggle in the drawer. */
+  .docs-collapse-btn { display: none; }
 }
 
 .docs-sidebar-scrim {

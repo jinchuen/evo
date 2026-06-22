@@ -56,7 +56,7 @@
   color: $color-text-secondary;
   background: transparent;
   border: none;
-  border-radius: $radius-sm;
+  border-radius: $evo-border-radius;
   cursor: pointer;
   text-align: left;
   text-decoration: none;
@@ -70,6 +70,11 @@
   &:hover {
     background-color: $color-surface-hover;
     color: $color-text-primary;
+
+    .navIcon {
+      color: $color-text-primary;
+      transform: translateX(1px);
+    }
   }
 
   &:focus-visible {
@@ -80,16 +85,10 @@
   &.active {
     background-color: $evo-primary-soft;
     color: $evo-primary-color;
+    font-weight: 600;
 
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 25%;
-      bottom: 25%;
-      width: 2px;
-      border-radius: $radius-full;
-      background: $evo-primary-color;
+    .navIcon {
+      color: $evo-primary-color;
     }
   }
 
@@ -121,6 +120,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  clip-path: inset(0 0 0 0);
+  transition:
+    opacity 200ms ease,
+    transform 220ms ease,
+    clip-path 260ms ease;
+}
+
+// When the rail expands, labels reveal top-to-bottom (per-row delay) and
+// left-to-right (clip-path sweep). Only opacity/transform/clip-path transition,
+// so the delay is invisible in the steady expanded state.
+@for $i from 1 through 12 {
+  .navList .navLi:nth-child(#{$i}) .navLabel {
+    transition-delay: #{($i - 1) * 14}ms;
+  }
 }
 
 .navIcon {
@@ -132,6 +145,15 @@
   height: 1.125rem;
   font-size: 1rem;
   line-height: 1;
+  color: $color-text-muted;
+  transition:
+    color $transition-fast,
+    transform $transition-fast;
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
 }
 
 .chevron {
@@ -161,18 +183,96 @@
 
 .navGroup {
   list-style: none;
-  margin: 0.5rem 0 0;
+  margin: 0.85rem 0 0;
   padding: 0;
+
+  &:first-child {
+    margin-top: 0.25rem;
+  }
 }
 
 .navGroupLabel {
-  display: block;
+  display: flex;
+  align-items: center;
+  width: 100%;
   font-size: $text-xs;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: $color-text-muted;
-  padding: 0.5rem 0.75rem 0.25rem;
+  padding: 0.4rem 0.75rem 0.3rem;
+}
+
+.navGroupLabelText {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Collapsible group heading — same look as the static label, plus button chrome.
+.navGroupToggle {
+  background: transparent;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-text-secondary;
+  }
+
+  &:focus-visible {
+    outline: $evo-btn-outline-width solid $evo-primary-focus;
+    outline-offset: $evo-btn-outline-offset;
+  }
+
+  .chevron {
+    margin-left: 0.4rem;
+    color: $color-text-muted;
+  }
+}
+
+.navGroupCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.35rem;
+  margin-left: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: $color-text-secondary;
+  background: $color-surface-hover;
+  border-radius: $radius-full;
+}
+
+// Accordion panel — animates height via grid-template-rows (0fr <-> 1fr), no
+// JS measuring. The inner list must clip its overflow for the collapse to read.
+.navGroupPanel {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 260ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  &[data-open='false'] {
+    grid-template-rows: 0fr;
+  }
+
+  > .navList {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  // Rows inside the clipped panel draw their focus ring INSET, so the
+  // overflow:hidden needed for the height animation can't clip it.
+  .navRow:focus-visible {
+    outline-offset: -2px;
+  }
 }
 
 // ---------- Skeleton ----------
@@ -321,10 +421,65 @@
   to   { opacity: 1; }
 }
 
+// ---------- Collapsed (icon-only rail) ----------
+
+.navCollapsed {
+  .navRow,
+  .navQuickAction {
+    justify-content: center;
+    gap: 0;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .navLabel {
+    flex: 0;
+    opacity: 0;
+    transform: translateX(-4px);
+    clip-path: inset(0 100% 0 0);
+  }
+
+  // Group heading text stays in the a11y tree (it names the heading) but is
+  // visually hidden; the decorative count chip is removed entirely.
+  .navGroupLabelText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .navGroupCount {
+    display: none;
+  }
+
+  .navGroupLabel {
+    min-height: 0.5rem;
+    padding: 0.25rem 0;
+  }
+
+  // Accordion is meaningless in rail mode — force panels open.
+  .navGroupPanel {
+    grid-template-rows: 1fr;
+  }
+}
+
+// Collapsing fades labels out together — outrank the per-row expand stagger.
+.navCollapsed .navList .navLi .navLabel {
+  transition-delay: 0ms;
+}
+
 // ---------- Reduced motion ----------
 
 @media (prefers-reduced-motion: reduce) {
   .navRow,
+  .navRow .navIcon,
+  .navLabel,
+  .navGroupPanel,
+  .navGroupToggle,
   .navQuickAction,
   .chevron,
   .navTrigger,

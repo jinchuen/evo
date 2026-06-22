@@ -1,11 +1,9 @@
 import { EvoBadge, EvoStack } from '@justin_evo/evo-ui'
 
-// Evo UI is still pre-release — nothing has shipped to consumers yet, so every
-// change rolls up into a single in-progress v1.0.0 entry under a "Created"
-// section. Once the library actually publishes its first release, switch this
-// type back to the four-kind format ('Added' | 'Changed' | 'Fixed' | 'Breaking')
-// and start a new dated entry per version. See INFO.md §3 for the post-launch
-// format.
+// Evo UI is published to npm. Each release is a dated entry, newest first, using
+// the four-kind format ('Added' | 'Changed' | 'Fixed' | 'Breaking'); 'Breaking'
+// entries must also set `migration`. The big v1.0.0 entry below is the legacy
+// pre-launch rollup, retained pending the cleanup noted in CLAUDE.md §4 / §13.3.
 type ChangeKind = 'Created' | 'Added' | 'Changed' | 'Fixed' | 'Breaking'
 
 type ReleaseSection = { kind: ChangeKind; items: string[] }
@@ -27,6 +25,28 @@ const SEVERITY: Record<ChangeKind, 'success' | 'info' | 'warning' | 'danger'> = 
 }
 
 const RELEASES: Release[] = [
+  {
+    version: '1.1.0',
+    date: '2026-06-22',
+    summary:
+      'EvoNav gains collapsible groups, an icon-rail collapsed mode, group counts and row tooltips — plus a cleaner, more animated visual treatment.',
+    sections: [
+      {
+        kind: 'Added',
+        items: [
+          'EvoNav — `collapsed` prop renders an icon-only rail: labels hide with a left-to-right reveal, icons center, and each row surfaces a native tooltip from a new `tooltip` prop on EvoNav.Item / EvoNav.SubItem.',
+          'EvoNav.Group — `collapsible` turns the heading into an animated accordion (height via grid-template-rows, no JS measuring) with `defaultOpen` / `open` / `onOpenChange` for disclosure state, plus a `count` chip after the label. Non-collapsible groups render exactly as before.',
+        ],
+      },
+      {
+        kind: 'Changed',
+        items: [
+          'EvoNav visual refresh — active rows now use a clean soft-tint pill (the old hard 2px left bar is removed), row icons inherit the idle / hover / active colour and nudge 1px on hover, group labels get tighter uppercase tracking, and rows adopt the softer 8px corner radius. Token-only: light + dark both intact. The reduced-motion fallback covers the new label, accordion and icon transitions.',
+          'EvoNav.Group labels now render on a single line with an ellipsis when they overflow (previously a long label could wrap to two lines).',
+        ],
+      },
+    ],
+  },
   {
     version: '1.0.0',
     date: '2026-05-25',
@@ -75,25 +95,18 @@ export default function ChangelogPage() {
         <div className="docs-page-tag">Releases</div>
         <h1 className="docs-page-title">Changelog</h1>
         <p className="docs-page-desc">
-          Tracks every change to <strong>@justin_evo/evo-ui</strong>. Evo UI is still
-          in active pre-release development, so everything currently rolls up under
-          a single in-progress v1.0.0 entry with a <strong>Created</strong> label.
+          Tracks every change to <strong>@justin_evo/evo-ui</strong>, published to npm.
+          Each release is a dated entry, newest first, using the four-kind format
+          below.
         </p>
       </div>
 
       <div className="docs-section">
         <div className="docs-section-title">Release format</div>
         <p className="docs-page-desc">
-          <strong>Right now (pre-launch):</strong> append every new piece of work to the{' '}
-          <code>Created</code> section of the v1.0.0 entry — no new release blocks yet.
-        </p>
-        <EvoStack direction="row" gap="0.5rem" wrap>
-          <EvoBadge severity="success" variant="subtle">Created</EvoBadge>
-        </EvoStack>
-        <p className="docs-page-desc" style={{ marginTop: '1.25rem' }}>
-          <strong>After v1.0.0 publishes:</strong> finalise the entry, then prepend new
-          versions above it using these four kinds. <code>Breaking</code> entries must
-          also fill in <code>migration</code> with a short upgrade guide.
+          Each published version gets its own dated block, newest first. Use these
+          four kinds; <code>Breaking</code> entries must also fill in{' '}
+          <code>migration</code> with a short upgrade guide.
         </p>
         <EvoStack direction="row" gap="0.5rem" wrap>
           <EvoBadge severity="success" variant="subtle">Added</EvoBadge>
