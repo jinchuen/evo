@@ -1,0 +1,21 @@
+{
+  "name": "evo",
+  "owner": {
+    "name": "Justin Khor",
+    "url": "https://github.com/jinchuen"
+  },
+  "description": "Evo UI — agent skills for the @justin_evo/evo-ui React component library.",
+  "plugins": [
+    {
+      "name": "evo-ui",
+      "source": "./",
+      "description": "One exhaustive skill per Evo UI component plus a master catalogue. Teaches AI coding agents to build with @justin_evo/evo-ui using real, documented props.",
+      "version": "1.0.0",
+      "author": { "name": "Justin Khor" },
+      "homepage": "https://elevora-ui-document-3fb80.web.app",
+      "repository": "https://github.com/jinchuen/evo",
+      "license": "MIT",
+      "keywords": ["evo-ui", "react", "components", "design-system"]
+    }
+  ]
+}

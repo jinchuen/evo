@@ -107,6 +107,10 @@ most often forgotten — treat them as part of the change, not afterthoughts.
 - [ ] **Update the Overview preview if relevant.** If the visible shape of
       the component changed, also update
       `evo-docs/src/components/ComponentPreviews.tsx`.
+- [ ] **Update the agent skill.** If you added/renamed/removed a prop, variant,
+      or sub-component, mirror it in `skills/evo-<kebab-name>/SKILL.md` (props
+      table, examples, gotchas). The skill is a published contract just like the
+      docs page — a stale skill makes AI consumers hallucinate.
 - [ ] **Add a Changelog entry.** Edit `evo-docs/src/pages/ChangelogPage.tsx`
       and prepend a new entry to `RELEASES` (see section 4).
 - [ ] **Bump the version.** In `evo-ui/package.json`, follow semver:
@@ -196,6 +200,11 @@ file.
       `evo-docs/src/pages/AIPromptPage.tsx` and append to the right group
       in `CATALOGUE`. **This is the file the AI prompt reads** — skip it
       and AI tools won't know the component exists.
+- [ ] **Add an agent skill.** Create `skills/evo-<kebab-name>/SKILL.md`
+      (copy the structure of an existing skill — props table, variants,
+      sub-components, accessibility, examples, gotchas) and add a row to the
+      catalogue in `skills/evo-ui/SKILL.md`. This is the installable plugin
+      consumers use; a missing skill makes agents hallucinate the component.
 - [ ] **Add a Changelog entry** with an `Added` section.
 - [ ] **Bump the minor version** in `evo-ui/package.json`.
 - [ ] **Run the full smoke-test from section 1.**
