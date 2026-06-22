@@ -254,7 +254,7 @@ Prepend new entries to the top of the `RELEASES` array.
 ### Launched (current state)
 
 Evo UI is **live**: published to npm as `@justin_evo/evo-ui` (currently
-**1.0.1** — see section 13 for the publish workflow) and the docs are
+**1.2.0** — see section 13 for the publish workflow) and the docs are
 deployed to Firebase Hosting. The old pre-launch rule ("append everything to
 one v1.0.0 `Created` block") is **retired** — use the four-kind format below
 for every new release.
@@ -505,7 +505,7 @@ the docs site to Firebase Hosting. Both were first wired up on 2026-06-22.
 
 - Package: **`@justin_evo/evo-ui`** — a **scoped** package.
 - npm account: **`justin_evo`**, which owns the `@justin_evo` scope.
-- Latest published version: **1.0.1**.
+- Latest published version: **1.2.0**.
 
 **Steps (run from `evo-ui/`):**
 
@@ -525,9 +525,9 @@ the docs site to Firebase Hosting. Both were first wired up on 2026-06-22.
 2. **Bump the version** in `evo-ui/package.json` (semver — see section 1).
    ⚠️ **A version number can NEVER be reused.** Once
    `@justin_evo/evo-ui@X.Y.Z` has been published — *even if you later
-   unpublish it* — npm permanently burns that number. (This is why we are on
-   **1.0.1**: 1.0.0 was published, then unpublished, and is dead forever.)
-   Every publish needs a new, higher version.
+   unpublish it* — npm permanently burns that number. (1.0.0 was published,
+   then unpublished, and is dead forever — so the live line runs
+   1.0.1 → 1.0.2 → 1.1.0 → **1.2.0**.) Every publish needs a new, higher version.
 
 3. **Log in** (once per machine):
 
@@ -606,7 +606,7 @@ Hosting**.
 **Two gotchas baked into the config — do NOT undo them:**
 
 - ⚠️ **The docs depend on the *published* package, not the local folder.**
-  `evo-docs/package.json` uses `"@justin_evo/evo-ui": "^1.0.1"` (not
+  `evo-docs/package.json` uses `"@justin_evo/evo-ui": "^1.2.0"` (not
   `file:../evo-ui`) so the build is portable. After you publish a new evo-ui
   version, bump this range and run `npm install` in `evo-docs/` before
   deploying.
@@ -623,5 +623,5 @@ Section 4 has been updated to the launched, four-kind format. The one
 remaining task: the existing v1.0.0 `Created` block in
 `evo-docs/src/pages/ChangelogPage.tsx` should be finalised into proper
 `Added` sections, and the real published history recorded (1.0.0 was
-published then unpublished → dead; **1.0.1** is the live release), the next
+published then unpublished → dead; **1.2.0** is the current live release), the next
 time someone edits the changelog.
