@@ -170,6 +170,61 @@
 }
 
 // ---------------------------------------------------------------------------
+// Search trigger (EvoTopNav.Search) — presentational ⌘K affordance
+// ---------------------------------------------------------------------------
+
+.topNavSearch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2rem;
+  min-width: 12rem;
+  padding: 0 0.625rem;
+  font-family: inherit;
+  font-size: $text-sm;
+  color: $color-text-muted;
+  background-color: $color-surface-sunken;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast,
+    color $transition-fast;
+
+  &:hover {
+    background-color: $color-surface-hover;
+    color: $color-text-secondary;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
+  }
+}
+
+.topNavSearchIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.topNavSearchText {
+  flex: 1;
+  text-align: left;
+}
+
+.topNavSearchKbd {
+  flex-shrink: 0;
+  font-family: inherit;
+  font-size: $text-xs;
+  color: $color-text-muted;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: 4px;
+  padding: 0.0625rem 0.3125rem;
+}
+
+// ---------------------------------------------------------------------------
 // Toggle (hamburger) — hidden above the collapse breakpoint
 // ---------------------------------------------------------------------------
 
@@ -369,6 +424,17 @@
     backdrop-filter: blur(2px);
     z-index: 55;
     animation: topNavOverlayFadeIn 180ms ease;
+  }
+
+  .topNavSearch {
+    min-width: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    justify-content: center;
+    padding: 0;
+
+    .topNavSearchText,
+    .topNavSearchKbd { display: none; }
   }
 }
 

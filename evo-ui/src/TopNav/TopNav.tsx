@@ -82,6 +82,17 @@ export interface EvoTopNavToggleProps
   className?: string;
 }
 
+export interface EvoTopNavSearchProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+  /** Placeholder text shown inside the trigger. @default 'Search…' */
+  placeholder?: string;
+  /** Opt-in global hotkey, e.g. 'mod+k' (mod = ⌘ on macOS, Ctrl elsewhere). Default: none. */
+  shortcut?: string;
+  /** Override the kbd hint. @default platform-aware ⌘K / Ctrl K */
+  shortcutHint?: React.ReactNode;
+  className?: string;
+}
+
 export interface EvoTopNavDropdownProps {
   label: React.ReactNode;
   icon?: React.ReactNode;
@@ -373,6 +384,23 @@ const ChevronIcon = ({ open }: { open: boolean }) => (
   </svg>
 );
 
+const SearchGlyph = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.2-3.2" />
+  </svg>
+);
+
 // ============================================================================
 // EvoTopNav.Brand
 // ============================================================================
@@ -572,6 +600,69 @@ const EvoTopNavToggle = forwardRef<HTMLButtonElement, EvoTopNavToggleProps>(
         {...rest}
       >
         {icon ?? <HamburgerIcon open={ctx.drawerOpen} />}
+      </button>
+    );
+  },
+);
+
+// ============================================================================
+// EvoTopNav.Search — presentational ⌘K quick-search trigger
+// ============================================================================
+
+const EvoTopNavSearch = forwardRef<HTMLButtonElement, EvoTopNavSearchProps>(
+  function EvoTopNavSearch(
+    { placeholder = 'Search…', shortcut, shortcutHint, className, onClick, ...rest },
+    forwardedRef,
+  ) {
+    const localRef = useRef<HTMLButtonElement | null>(null);
+    const setRef = (node: HTMLButtonElement | null) => {
+      localRef.current = node;
+      if (typeof forwardedRef === 'function') forwardedRef(node);
+      else if (forwardedRef)
+        (forwardedRef as React.RefObject<HTMLButtonElement | null>).current = node;
+    };
+
+    // Platform-aware hint resolved after mount to avoid SSR hydration mismatch.
+    const [autoHint, setAutoHint] = useState<React.ReactNode>(null);
+    useEffect(() => {
+      if (shortcutHint !== undefined) return;
+      const platform =
+        (typeof navigator !== 'undefined' &&
+          (navigator.platform || navigator.userAgent)) || '';
+      setAutoHint(/Mac|iPhone|iPad|iPod/.test(platform) ? '⌘K' : 'Ctrl K');
+    }, [shortcutHint]);
+    const hint = shortcutHint !== undefined ? shortcutHint : autoHint;
+
+    // Opt-in global hotkey → dispatch a real click so onClick fires naturally.
+    useEffect(() => {
+      if (!shortcut) return;
+      const parts = shortcut.toLowerCase().split('+').map((p) => p.trim());
+      const wantMod = parts.some((p) => ['mod', 'cmd', 'meta', 'ctrl', 'control'].includes(p));
+      const key = parts[parts.length - 1];
+      const handler = (e: KeyboardEvent) => {
+        const mod = e.metaKey || e.ctrlKey;
+        if ((!wantMod || mod) && e.key.toLowerCase() === key) {
+          e.preventDefault();
+          localRef.current?.click();
+        }
+      };
+      document.addEventListener('keydown', handler);
+      return () => document.removeEventListener('keydown', handler);
+    }, [shortcut]);
+
+    return (
+      <button
+        ref={setRef}
+        type="button"
+        className={cn(styles.topNavSearch, className)}
+        onClick={onClick}
+        {...rest}
+      >
+        <span className={styles.topNavSearchIcon} aria-hidden="true">
+          <SearchGlyph />
+        </span>
+        <span className={styles.topNavSearchText}>{placeholder}</span>
+        {hint != null && <kbd className={styles.topNavSearchKbd}>{hint}</kbd>}
       </button>
     );
   },
@@ -1047,6 +1138,7 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
   Item: typeof EvoTopNavItem;
   Actions: typeof EvoTopNavActions;
   Toggle: typeof EvoTopNavToggle;
+  Search: typeof EvoTopNavSearch;
   Dropdown: typeof EvoTopNavDropdown;
   DropdownItem: typeof EvoTopNavDropdownItem;
 };
@@ -1056,6 +1148,7 @@ EvoTopNavMenu.displayName = 'EvoTopNav.Menu';
 EvoTopNavItem.displayName = 'EvoTopNav.Item';
 EvoTopNavActions.displayName = 'EvoTopNav.Actions';
 EvoTopNavToggle.displayName = 'EvoTopNav.Toggle';
+EvoTopNavSearch.displayName = 'EvoTopNav.Search';
 EvoTopNavDropdown.displayName = 'EvoTopNav.Dropdown';
 EvoTopNavDropdownItem.displayName = 'EvoTopNav.DropdownItem';
 (EvoTopNav as { displayName?: string }).displayName = 'EvoTopNav';
@@ -1065,5 +1158,6 @@ EvoTopNav.Menu = EvoTopNavMenu;
 EvoTopNav.Item = EvoTopNavItem;
 EvoTopNav.Actions = EvoTopNavActions;
 EvoTopNav.Toggle = EvoTopNavToggle;
+EvoTopNav.Search = EvoTopNavSearch;
 EvoTopNav.Dropdown = EvoTopNavDropdown;
 EvoTopNav.DropdownItem = EvoTopNavDropdownItem;
