@@ -37,7 +37,7 @@ import ThemingPage from './pages/ThemingPage'
 import ImageCropperPage from './pages/ImageCropperPage'
 import ImageCropperApiPage from './pages/ImageCropperApiPage'
 import ChangelogPage from './pages/ChangelogPage'
-import AIPromptPage from './pages/AIPromptPage'
+import SkillsPage from './pages/SkillsPage'
 import CommandPalettePage from './pages/CommandPalettePage'
 
 export default function App() {
@@ -49,7 +49,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="/changelog" element={<ChangelogPage />} />
-            <Route path="/ai" element={<AIPromptPage />} />
+            <Route path="/skills" element={<SkillsPage />} />
             <Route path="/theming" element={<ThemingPage />} />
             <Route path="/components/button" element={<ButtonPage />} />
             <Route path="/components/card" element={<CardPage />} />
