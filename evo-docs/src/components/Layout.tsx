@@ -21,7 +21,7 @@ const nav = [
   {
     group: 'For AI',
     items: [
-      { label: 'Build with AI', path: '/ai' },
+      { label: 'Skills', path: '/skills' },
     ],
   },
   {
