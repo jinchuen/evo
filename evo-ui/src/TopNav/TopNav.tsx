@@ -653,10 +653,10 @@ const EvoTopNavSearch = forwardRef<HTMLButtonElement, EvoTopNavSearchProps>(
     return (
       <button
         ref={setRef}
-        type="button"
         className={cn(styles.topNavSearch, className)}
         onClick={onClick}
         {...rest}
+        type="button"
       >
         <span className={styles.topNavSearchIcon} aria-hidden="true">
           <SearchGlyph />
