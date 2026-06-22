@@ -182,6 +182,7 @@ function useScrollState(
       setScrolled(false);
       setHidden(false);
       setProgress(0);
+      lastY.current = 0;
       return;
     }
     let raf = 0;
