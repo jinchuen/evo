@@ -502,9 +502,26 @@ export const EvoRichTextArea = forwardRef<EvoRichTextHandle, EvoRichTextAreaProp
 
   // ---- Insert image (used by paste, drop, button) ----
   const insertImageAtCaret = useCallback((src: string, alt = '') => {
-    editorRef.current?.focus();
-    const html = `<img src="${src.replace(/"/g, '&quot;')}" alt="${alt.replace(/"/g, '&quot;')}" />`;
-    execCommand('insertHTML', html);
+    const el = editorRef.current;
+    if (!el) return;
+    el.focus();
+    const safeSrc = src.replace(/"/g, '&quot;');
+    const safeAlt = alt.replace(/"/g, '&quot;');
+    // Images render display:block; inserting a bare <img> leaves the caret
+    // beside it, which paints at the image's top-right edge. Drop a trailing
+    // empty paragraph and move the caret into it, so the user lands on a clean
+    // new line *below* the image. (Marker idiom matches unwrapBlocks above.)
+    execCommand('insertHTML', `<img src="${safeSrc}" alt="${safeAlt}" /><p data-evo-caret><br></p>`);
+    const landing = el.querySelector<HTMLParagraphElement>('p[data-evo-caret]');
+    if (landing) {
+      landing.removeAttribute('data-evo-caret');
+      const sel = window.getSelection();
+      const r = document.createRange();
+      r.setStart(landing, 0);
+      r.collapse(true);
+      sel?.removeAllRanges();
+      sel?.addRange(r);
+    }
     emitChange();
   }, [emitChange]);
 
