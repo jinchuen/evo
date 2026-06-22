@@ -67,6 +67,10 @@ Props for the root `EvoTopNav` component:
 | `defaultOpen` | `boolean` | `false` | No | Uncontrolled initial open state of the drawer. |
 | `onOpenChange` | `(open: boolean) => void` | — | No | Fires when the drawer opens or closes. |
 | `collapseBelow` | `number` | `768` | No | Width in px below which Menu collapses into the drawer. |
+| `entrance` | `'none' \| 'rise' \| 'fade'` | `'none'` | No | Staggered mount animation of the bar contents (`rise` = up + fade, `fade` = opacity only). Plays once; disabled under `prefers-reduced-motion`. |
+| `sticky` | `boolean` | `false` | No | Pin the bar with `position: sticky; top: 0`. |
+| `scrollBehavior` | `'none' \| 'elevate' \| 'shrink' \| 'hide'` | `'none'` | No | On-scroll treatment: `elevate` (blur + shadow once scrolled), `shrink` (also reduces height), `hide` (auto-hide on scroll-down, reveal on scroll-up). |
+| `showProgress` | `boolean` | `false` | No | Render a thin scroll-progress accent line along the bottom edge (tracks document scroll). |
 | `className` | `string` | — | No | Extra class applied to the root `<nav>` element. |
 
 `EvoTopNavProps` extends `Omit<React.HTMLAttributes<HTMLElement>, 'onChange'>`, so all native `<nav>` attributes (e.g. `aria-label`, `id`, `style`, `data-*`) plus `ref` and `className` are forwarded to the root `<nav>` element. Always set `aria-label` when the page has more than one `<nav>`.
@@ -135,6 +139,20 @@ The hamburger button that opens/closes the drawer. Renders a `<button type="butt
 | `className` | `string` | — | No | Extra class on the button. |
 
 Extends `Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-expanded' \| 'aria-controls'>` — all native `<button>` attributes (except the two managed ARIA attributes) plus `ref` and `className` are forwarded. Must be rendered inside `<EvoTopNav>` (throws otherwise). `onClick` runs before the toggle action and can cancel it via `e.preventDefault()`.
+
+### EvoTopNav.Search
+
+A presentational quick-search trigger. Renders a `<button type="button">` with a search icon, placeholder text, and a platform-aware keyboard hint. It does NOT own a search overlay — wire `onClick` to your own launcher (e.g. [[evo-command-palette]]). Collapses to an icon-only button below `collapseBelow`.
+
+| Prop | Type | Default | Required | Description |
+| --- | --- | --- | --- | --- |
+| `placeholder` | `string` | `'Search…'` | No | Placeholder text shown inside the trigger. |
+| `shortcut` | `string` | — | No | Opt-in global hotkey, e.g. `'mod+k'` (`mod` = ⌘ on macOS, Ctrl elsewhere). When set, a document keydown listener dispatches a click on match. Default: no global listener. |
+| `shortcutHint` | `React.ReactNode` | platform-aware `⌘K` / `Ctrl K` | No | Override the keyboard hint shown on the right. |
+| `onClick` | `(e: React.MouseEvent) => void` | — | No | Fires on click and on the global hotkey (if `shortcut` set). |
+| `className` | `string` | — | No | Extra class on the button. |
+
+Extends `Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'>` — native `<button>` attributes plus `ref` and `className` are forwarded.
 
 ### EvoTopNav.Dropdown
 
@@ -289,6 +307,34 @@ function ResponsiveHeader() {
 }
 ```
 
+### Animated, sticky header with quick search
+
+```tsx
+import { useState } from 'react';
+import { EvoTopNav, EvoButton, EvoCommandPalette } from '@justin_evo/evo-ui';
+
+function Header() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <EvoTopNav aria-label="Primary" entrance="rise" sticky scrollBehavior="shrink" showProgress>
+        <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
+        <EvoTopNav.Menu>
+          <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
+          <EvoTopNav.Item href="/docs">Docs</EvoTopNav.Item>
+        </EvoTopNav.Menu>
+        <EvoTopNav.Search placeholder="Search docs…" shortcut="mod+k" onClick={() => setOpen(true)} />
+        <EvoTopNav.Actions>
+          <EvoButton label="Sign in" variant="ghost" size="sm" />
+        </EvoTopNav.Actions>
+      </EvoTopNav>
+      {/* Wire Search to your launcher */}
+      {/* <EvoCommandPalette open={open} onOpenChange={setOpen} … /> */}
+    </>
+  );
+}
+```
+
 ## Accessibility
 
 - The root renders as a semantic `<nav>` and forwards `aria-label`. Always set `aria-label` when the page has more than one `<nav>`.
@@ -311,6 +357,9 @@ function ResponsiveHeader() {
 - `EvoTopNavItemProps`, `EvoTopNavDropdownProps`, and `EvoTopNavDropdownItemProps` do NOT extend native attribute types — passing arbitrary DOM attributes (e.g. `id`, `data-*`) to those parts is not part of the typed API; spreadable native attributes are only available on the root, Brand, Menu, Actions, and Toggle.
 - Theme via `var(--evo-color-*)` / `var(--evo-spacing-*)` / `var(--evo-radius-*)` tokens; never hard-code hex colors (breaks dark mode).
 - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once globally. Use named imports from `@justin_evo/evo-ui` only — never deep paths.
+- `entrance` plays once on mount and is fully disabled under `prefers-reduced-motion` (the component drops the `data-entrance` attribute, and CSS has a media-query fallback). It animates the Brand, each Menu item, Search, and Actions.
+- `scrollBehavior` / `showProgress` only have a visible effect on a scrollable page; pair with `sticky` so the bar stays in view while you scroll. They attach one rAF-throttled `window` scroll listener, removed on unmount / when disabled.
+- `EvoTopNav.Search` is presentational — it does not render a search UI. Connect `onClick` to [[evo-command-palette]] or your own overlay. `shortcut` registers a *global* document keydown; omit it if you manage hotkeys yourself.
 
 ## Related
 
