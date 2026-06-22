@@ -242,18 +242,23 @@ component (not a small change — a structural rewrite).
 Every release entry lives in `evo-docs/src/pages/ChangelogPage.tsx`.
 Prepend new entries to the top of the `RELEASES` array.
 
-### Pre-launch (current state)
+### Launched (current state)
 
-Evo UI hasn't published its first release yet. **Do not create new release
-blocks.** Append every piece of work to the `items` array inside the
-existing v1.0.0 entry's `Created` section. Update the entry's `date` field
-to today whenever you add an item.
+Evo UI is **live**: published to npm as `@justin_evo/evo-ui` (currently
+**1.0.1** — see section 13 for the publish workflow) and the docs are
+deployed to Firebase Hosting. The old pre-launch rule ("append everything to
+one v1.0.0 `Created` block") is **retired** — use the four-kind format below
+for every new release.
 
-### After v1.0.0 ships
+> Cleanup still pending: the existing v1.0.0 `Created` block in
+> `ChangelogPage.tsx` should be finalised into proper `Added` sections (and
+> the real published versions recorded) the next time someone touches the
+> changelog.
 
-Finalise the v1.0.0 entry and switch to the four-kind format. Prepend a new
-dated release block above v1.0.0 for each version. Use these four section
-kinds in this order, **and only these**:
+### Release format (four kinds)
+
+Prepend a new dated release block to the top of the `RELEASES` array for each
+version. Use these four section kinds in this order, **and only these**:
 
 | Kind       | When to use it                                                 |
 | ---------- | -------------------------------------------------------------- |
@@ -472,3 +477,142 @@ If a release is large enough to warrant its own write-up (migration guide,
 "what's new in v2" walkthrough), add it as a new page under
 `evo-docs/src/pages/whats-new/v<version>.tsx` and link to it from the
 release entry's `migration` field.
+
+---
+
+## 13. Publishing & deployment
+
+This section documents **how Evo UI actually ships** — the library to npm and
+the docs site to Firebase Hosting. Both were first wired up on 2026-06-22.
+
+> ⚠️ Publishing to npm and deploying are **outward-facing and hard to
+> reverse**. Per **section 7**, an AI agent must have the user's explicit
+> approval in the same conversation before running `npm publish` or a deploy.
+> This section is the *how*, not a standing permission to do it unprompted.
+
+### 13.1 Publishing the library to npm
+
+**Identity (not secret — safe to record here):**
+
+- Package: **`@justin_evo/evo-ui`** — a **scoped** package.
+- npm account: **`justin_evo`**, which owns the `@justin_evo` scope.
+- Latest published version: **1.0.1**.
+
+**Steps (run from `evo-ui/`):**
+
+1. **Install deps & build** so `dist/` is fresh — the docs and consumers read
+   `dist/`, not `src/`:
+
+   ```bash
+   cd evo-ui
+   npm install
+   npm run build
+   ```
+
+   Confirm `dist/` contains `index.es.js`, `index.cjs.js`, `index.d.ts`, and
+   `evo-ui.css` — these are exactly what `main` / `module` / `types` / `style`
+   in `package.json` point to.
+
+2. **Bump the version** in `evo-ui/package.json` (semver — see section 1).
+   ⚠️ **A version number can NEVER be reused.** Once
+   `@justin_evo/evo-ui@X.Y.Z` has been published — *even if you later
+   unpublish it* — npm permanently burns that number. (This is why we are on
+   **1.0.1**: 1.0.0 was published, then unpublished, and is dead forever.)
+   Every publish needs a new, higher version.
+
+3. **Log in** (once per machine):
+
+   ```bash
+   npm login          # account: justin_evo
+   ```
+
+4. **Publish.** A scoped package's first publish (and every public publish)
+   must be explicitly public, or npm tries to make it private:
+
+   ```bash
+   npm publish --access public
+   ```
+
+5. **Handle 2FA.** The account has 2FA enabled, so a publish needs **one** of:
+
+   - A **one-time code** from the authenticator app:
+     `npm publish --access public --otp=123456`, **or**
+   - A **Granular Access Token with "Bypass two-factor authentication"
+     checked** (npmjs.com → profile → **Access Tokens** → Generate New Token →
+     **Granular**, permission **Read and write**, scope `@justin_evo`). Store
+     it once and publishes need no code:
+
+     ```bash
+     npm config set //registry.npmjs.org/:_authToken=npm_XXXXXXXX
+     ```
+
+     Treat the token like a password: give it a **short expiry**, **never
+     commit it**, and revoke it when done.
+
+6. **Verify** it went live:
+
+   ```bash
+   npm view @justin_evo/evo-ui
+   ```
+
+**How downstream consumers use the published package** (keep this working):
+
+```jsx
+// npm install @justin_evo/evo-ui
+import '@justin_evo/evo-ui/dist/evo-ui.css'   // styles + theme tokens — import once
+import { EvoButton } from '@justin_evo/evo-ui'
+```
+
+`react` / `react-dom` are **peer** dependencies (≥17) — the consuming app
+provides React. Evo UI stays **zero runtime deps** (section 7); do not add any.
+
+### 13.2 Deploying the docs to Firebase Hosting
+
+The docs (`evo-docs/`) are a **static Vite SPA**, hosted on **Firebase
+Hosting**.
+
+**Identity (not secret):**
+
+- Firebase project: **`elevora-ui-document-3fb80`**.
+- Live URL: **https://elevora-ui-document-3fb80.web.app**.
+- Deploy config lives in `evo-docs/`: `firebase.json` (serves `dist/`, SPA
+  rewrites so `BrowserRouter` deep links don't 404, long-cache headers for
+  hashed assets) and `.firebaserc` (pins the default project).
+
+**Steps (run from `evo-docs/`):**
+
+1. One-time setup: `npm install -g firebase-tools`, then `firebase login`.
+2. Build, then deploy the pre-built output:
+
+   ```bash
+   cd evo-docs
+   npm run build
+   firebase deploy --only hosting
+   ```
+
+   Firebase only uploads the already-built `dist/` — there is **no cloud
+   build**, so you must build locally first. After deploying, hard-refresh
+   (Ctrl+Shift+R) to bypass the cached old bundle.
+
+**Two gotchas baked into the config — do NOT undo them:**
+
+- ⚠️ **The docs depend on the *published* package, not the local folder.**
+  `evo-docs/package.json` uses `"@justin_evo/evo-ui": "^1.0.1"` (not
+  `file:../evo-ui`) so the build is portable. After you publish a new evo-ui
+  version, bump this range and run `npm install` in `evo-docs/` before
+  deploying.
+- ⚠️ **Single React copy.** `evo-docs/vite.config.ts` sets
+  `resolve.dedupe: ['react', 'react-dom']`. evo-ui is symlinked to
+  `../evo-ui` during local dev and carries its own nested `node_modules/react`;
+  without dedupe the build bundles **two** Reacts and the live site crashes
+  with `Cannot read properties of null (reading 'useState')` (an invalid hook
+  call). Keep the dedupe.
+
+### 13.3 Changelog cleanup still pending
+
+Section 4 has been updated to the launched, four-kind format. The one
+remaining task: the existing v1.0.0 `Created` block in
+`evo-docs/src/pages/ChangelogPage.tsx` should be finalised into proper
+`Added` sections, and the real published history recorded (1.0.0 was
+published then unpublished → dead; **1.0.1** is the live release), the next
+time someone edits the changelog.

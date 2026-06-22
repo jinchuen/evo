@@ -121,7 +121,12 @@ export default function HomePage() {
         </p>
         <EvoStack direction="row" gap="0.75rem">
           <EvoButton label="Browse Components" onClick={() => navigate('/components/button')} />
-          <EvoButton label="View on GitHub" variant="outline" severity="secondary" />
+          <EvoButton
+            label="View on GitHub"
+            variant="outline"
+            severity="secondary"
+            onClick={() => window.open('https://github.com/jinchuen/evo', '_blank', 'noopener,noreferrer')}
+          />
         </EvoStack>
       </div>
 
