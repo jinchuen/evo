@@ -181,6 +181,26 @@ export default function Layout() {
     return () => window.clearTimeout(t)
   }, [])
 
+  // Elevate the docs topbar once the main content scrolls.
+  // .docs-main has no overflow-y — the window is the real scroll container.
+  const [topbarScrolled, setTopbarScrolled] = useState(false)
+  useEffect(() => {
+    // .docs-main has no overflow-y set; the window scrolls the main content.
+    // getComputedStyle check: if the element is not itself an overflow scroll
+    // container, fall back to window so scroll events actually fire.
+    const main = document.querySelector('.docs-main')
+    const isScroller = main instanceof HTMLElement &&
+      /(auto|scroll)/.test(getComputedStyle(main).overflowY)
+    const target: HTMLElement | Window = isScroller ? (main as HTMLElement) : window
+    const read = () => {
+      const y = target instanceof Window ? window.scrollY : (target as HTMLElement).scrollTop
+      setTopbarScrolled(y > 4)
+    }
+    read()
+    target.addEventListener('scroll', read, { passive: true })
+    return () => target.removeEventListener('scroll', read)
+  }, [])
+
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
     const mql = window.matchMedia('(max-width: 900px)')
@@ -322,7 +342,7 @@ export default function Layout() {
           <span className="docs-logo-mark" aria-hidden="true">E</span>
           <span className="docs-logo-text">Evo UI</span>
           {/* Keep in sync with evo-ui/package.json version on each release. */}
-          <span className="docs-logo-version">v1.1</span>
+          <span className="docs-logo-version">v1.2</span>
         </div>
 
         <div className="docs-sidebar-search">
@@ -445,7 +465,11 @@ export default function Layout() {
       />
 
       <main className="docs-main">
-        <header className="docs-topbar">
+        <header
+          className="docs-topbar"
+          data-scrolled={topbarScrolled ? 'true' : undefined}
+          data-initial={initialLoad ? 'true' : undefined}
+        >
           <button
             type="button"
             className="docs-mobile-menu-btn"
