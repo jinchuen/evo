@@ -325,6 +325,18 @@ export default function TopNavPage() {
             </EvoTopNav.Actions>
           </EvoTopNav>
         </div>
+        <CodeBlock code={`<EvoTopNav aria-label="Primary">
+  <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
+  <EvoTopNav.Menu>
+    <EvoTopNav.Item href="/docs" active>Docs</EvoTopNav.Item>
+  </EvoTopNav.Menu>
+  <EvoTopNav.Actions>
+    <EvoBreadcrumb>
+      <EvoBreadcrumb.Item>Components</EvoBreadcrumb.Item>
+      <EvoBreadcrumb.Item current>TopNav</EvoBreadcrumb.Item>
+    </EvoBreadcrumb>
+  </EvoTopNav.Actions>
+</EvoTopNav>`} />
       </div>
 
       <EvoDivider />

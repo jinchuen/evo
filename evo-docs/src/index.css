@@ -402,6 +402,7 @@ p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   .docs-topbar[data-initial='true'] .docs-topbar-title { animation: none; }
+  .docs-topbar { transition: none; }
 }
 
 .docs-topbar-title {
