@@ -63,7 +63,7 @@ export const navIcons: Record<string, ReactNode> = {
   ),
 
   // ── For AI ──
-  '/ai': (
+  '/skills': (
     <I>
       <path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.6 10.4 11.2 6 9.6 10.4 8Z" />
       <path d="M18 14l.7 1.9 1.9.7-1.9.7L18 19.9l-.7-1.9-1.9-.7 1.9-.7Z" />
