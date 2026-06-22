@@ -52,6 +52,9 @@ export interface EvoNavProps extends Omit<HTMLAttributes<HTMLElement>, 'children
   onDrawerOpenChange?: (open: boolean) => void;
   /** Hide the built-in hamburger trigger (use when wiring a trigger yourself). */
   hideTrigger?: boolean;
+  /** Collapse to an icon-only rail: labels hide, icons center, and each row
+   *  shows a native tooltip from its `tooltip` prop. @default false */
+  collapsed?: boolean;
   /** Accessible label for the <nav> landmark. @default 'Main navigation' */
   'aria-label'?: string;
 }
@@ -60,6 +63,16 @@ export interface EvoNavGroupProps {
   label: string;
   children: ReactNode;
   className?: string;
+  /** Render the heading as a disclosure that expands/collapses the group. */
+  collapsible?: boolean;
+  /** Uncontrolled initial open state (collapsible only). @default true */
+  defaultOpen?: boolean;
+  /** Controlled open state (collapsible only). */
+  open?: boolean;
+  /** Called when the group expands or collapses. */
+  onOpenChange?: (open: boolean) => void;
+  /** Small count chip shown after the label. */
+  count?: number;
 }
 
 interface EvoNavRowProps {
@@ -70,6 +83,8 @@ interface EvoNavRowProps {
   /** Render as <a href> instead of <button>. */
   href?: string;
   onClick?: (event: ReactMouseEvent | ReactKeyboardEvent) => void;
+  /** Tooltip text shown (via native title) when the nav is collapsed to a rail. */
+  tooltip?: string;
   /** Controlled expand state (only when row has SubItem children). */
   open?: boolean;
   /** Uncontrolled initial expand state. */
@@ -106,6 +121,8 @@ interface NavRootContextValue {
   closeDrawer: () => void;
   /** Root id used by the hamburger button's aria-controls. */
   rootId: string;
+  /** Icon-only rail mode — labels hide, rows surface a native tooltip. */
+  collapsed: boolean;
 }
 
 const NavRootContext = createContext<NavRootContextValue | null>(null);
@@ -160,7 +177,7 @@ function focusableRows(root: HTMLElement | null): HTMLElement[] {
   if (!root) return [];
   return Array.from(
     root.querySelectorAll<HTMLElement>(`[${ROW_ATTR}]:not([data-disabled="true"])`),
-  ).filter((el) => el.offsetParent !== null);
+  ).filter((el) => el.offsetParent !== null && el.closest('[inert]') === null);
 }
 
 function moveFocus(root: HTMLElement | null, from: HTMLElement, delta: 1 | -1 | 'first' | 'last') {
@@ -242,6 +259,7 @@ const NavRow = forwardRef<HTMLLIElement, RowInternalProps>(function NavRow(
     active = false,
     href,
     onClick,
+    tooltip,
     open: openProp,
     defaultOpen = false,
     onOpenChange,
@@ -252,6 +270,7 @@ const NavRow = forwardRef<HTMLLIElement, RowInternalProps>(function NavRow(
   liRef,
 ) {
   const rootCtx = useContext(NavRootContext);
+  const collapsed = rootCtx?.collapsed ?? false;
   const { depth } = useContext(NavDepthContext);
   const buttonRef = useRef<HTMLButtonElement | HTMLAnchorElement>(null);
   const rowId = useId();
@@ -364,6 +383,7 @@ const NavRow = forwardRef<HTMLLIElement, RowInternalProps>(function NavRow(
     id: rowId,
     className: rowClasses,
     style: rowStyle,
+    title: collapsed && tooltip ? tooltip : undefined,
     'aria-current': active ? ('page' as const) : undefined,
     'aria-expanded': expandable ? open : undefined,
     'aria-controls': expandable ? subListId : undefined,
@@ -450,21 +470,81 @@ export const EvoNavSubItem = forwardRef<HTMLLIElement, EvoNavSubItemProps>(funct
 EvoNavSubItem.displayName = 'EvoNavSubItem';
 
 export const EvoNavGroup = forwardRef<HTMLLIElement, EvoNavGroupProps>(function EvoNavGroup(
-  { label, children, className },
+  { label, children, className, collapsible = false, defaultOpen = true, open: openProp, onOpenChange, count },
   ref,
 ) {
   const headingId = useId();
+  const panelId = `${headingId}-panel`;
+  const collapsed = useContext(NavRootContext)?.collapsed ?? false;
+  // The disclosure is interactive only when collapsible AND not in icon-rail
+  // mode. In the rail the accordion is meaningless, so we render a static
+  // heading and show the items — avoiding a focusable, label-less toggle that
+  // would silently mutate the (forced-open) state.
+  const interactive = collapsible && !collapsed;
+  const [open, setOpen] = useControllableState(
+    interactive ? openProp : true,
+    interactive ? defaultOpen : true,
+    onOpenChange,
+  );
+  const effectiveOpen = collapsed ? true : open;
+
+  // Toggle `inert` imperatively rather than through a prop: `inert` is only a
+  // managed React attribute as of React 19, but the peer range allows >=17.
+  // The DOM API works on every version and keeps the console warning-free.
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    if (effectiveOpen) el.removeAttribute('inert');
+    else el.setAttribute('inert', '');
+  }, [effectiveOpen]);
+
+  const countChip =
+    count != null ? (
+      <span className={styles.navGroupCount} aria-hidden="true">
+        {count}
+      </span>
+    ) : null;
+
+  const list = (
+    <ul role="group" aria-labelledby={headingId} className={styles.navList}>
+      {children}
+    </ul>
+  );
+
   return (
-    <li
-      ref={ref}
-      className={[styles.navGroup, className].filter(Boolean).join(' ')}
-    >
-      <div id={headingId} role="heading" aria-level={3} className={styles.navGroupLabel}>
-        {label}
-      </div>
-      <ul role="group" aria-labelledby={headingId} className={styles.navList}>
-        {children}
-      </ul>
+    <li ref={ref} className={[styles.navGroup, className].filter(Boolean).join(' ')}>
+      {interactive ? (
+        <button
+          type="button"
+          id={headingId}
+          className={[styles.navGroupLabel, styles.navGroupToggle].join(' ')}
+          aria-expanded={effectiveOpen}
+          aria-controls={panelId}
+          onClick={() => setOpen(!open)}
+        >
+          <span className={styles.navGroupLabelText}>{label}</span>
+          {countChip}
+          <ChevronIcon open={effectiveOpen} />
+        </button>
+      ) : (
+        <div id={headingId} role="heading" aria-level={3} className={styles.navGroupLabel}>
+          <span className={styles.navGroupLabelText}>{label}</span>
+          {countChip}
+        </div>
+      )}
+      {interactive ? (
+        <div
+          ref={panelRef}
+          id={panelId}
+          className={styles.navGroupPanel}
+          data-open={effectiveOpen ? 'true' : 'false'}
+        >
+          {list}
+        </div>
+      ) : (
+        list
+      )}
     </li>
   );
 });
@@ -517,6 +597,7 @@ const EvoNavRoot = forwardRef<HTMLElement, EvoNavProps>(function EvoNav(
     defaultDrawerOpen = false,
     onDrawerOpenChange,
     hideTrigger = false,
+    collapsed = false,
     className,
     'aria-label': ariaLabel = 'Main navigation',
     ...rest
@@ -560,14 +641,15 @@ const EvoNavRoot = forwardRef<HTMLElement, EvoNavProps>(function EvoNav(
   }, [isMobile, drawerOpen, closeDrawer]);
 
   const ctxValue = useMemo<NavRootContextValue>(
-    () => ({ isMobile, drawerOpen, setDrawerOpen, closeDrawer, rootId }),
-    [isMobile, drawerOpen, setDrawerOpen, closeDrawer, rootId],
+    () => ({ isMobile, drawerOpen, setDrawerOpen, closeDrawer, rootId, collapsed }),
+    [isMobile, drawerOpen, setDrawerOpen, closeDrawer, rootId, collapsed],
   );
 
   const navClasses = [
     styles.navContainer,
     isMobile ? styles.navMobile : styles.navDesktop,
     isMobile && drawerOpen ? styles.navDrawerOpen : '',
+    collapsed ? styles.navCollapsed : '',
     className,
   ]
     .filter(Boolean)

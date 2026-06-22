@@ -18,6 +18,7 @@ export default function NavPage() {
   const [active, setActive] = useState('dashboard')
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [railCollapsed, setRailCollapsed] = useState(false)
 
   return (
     <div>
@@ -72,6 +73,53 @@ export default function NavPage() {
     <EvoNav.Item active={active === 'dashboard'} onClick={() => setActive('dashboard')}>
       Dashboard
     </EvoNav.Item>
+  </EvoNav.Group>
+</EvoNav>`} />
+      </div>
+
+      {/* ── Collapsible groups & icon rail ── */}
+      <div className="docs-section">
+        <div className="docs-section-title">Collapsible Groups & Icon Rail</div>
+        <p className="docs-section-desc">
+          Add <code>collapsible</code> to a <code>EvoNav.Group</code> to turn its heading
+          into an animated accordion (with an optional <code>count</code> chip). Set{' '}
+          <code>collapsed</code> on <code>EvoNav</code> to shrink the whole nav to an
+          icon-only rail — labels hide and each row shows a native tooltip from its{' '}
+          <code>tooltip</code> prop.
+        </p>
+        <div className="docs-preview" style={{ alignItems: 'flex-start', gap: '1.5rem' }}>
+          <div style={{ width: railCollapsed ? 64 : 220, background: 'var(--docs-code-bg)', borderRadius: 8, padding: '0.5rem 0', transition: 'width 240ms ease' }}>
+            <EvoNav collapsed={railCollapsed}>
+              <EvoNav.Group label="Main" count={2} collapsible defaultOpen>
+                <EvoNav.Item icon={<span>🏠</span>} tooltip="Dashboard" active={active === 'dashboard'} onClick={() => setActive('dashboard')}>Dashboard</EvoNav.Item>
+                <EvoNav.Item icon={<span>📊</span>} tooltip="Analytics" active={active === 'analytics'} onClick={() => setActive('analytics')}>Analytics</EvoNav.Item>
+              </EvoNav.Group>
+              <EvoNav.Group label="Settings" count={2} collapsible defaultOpen>
+                <EvoNav.Item icon={<span>👤</span>} tooltip="Profile" active={active === 'profile'} onClick={() => setActive('profile')}>Profile</EvoNav.Item>
+                <EvoNav.Item icon={<span>💳</span>} tooltip="Billing" active={active === 'billing'} onClick={() => setActive('billing')}>Billing</EvoNav.Item>
+              </EvoNav.Group>
+            </EvoNav>
+          </div>
+          <button
+            onClick={() => setRailCollapsed((v) => !v)}
+            style={{
+              padding: '0.375rem 0.875rem',
+              background: 'color-mix(in srgb, var(--docs-accent) 12%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--docs-accent) 30%, transparent)',
+              borderRadius: 6,
+              color: 'var(--docs-accent)',
+              cursor: 'pointer',
+              fontSize: '0.82rem',
+              fontWeight: 500,
+            }}
+          >
+            {railCollapsed ? 'Expand' : 'Collapse'} rail
+          </button>
+        </div>
+        <CodeBlock code={`<EvoNav collapsed={collapsed}>
+  <EvoNav.Group label="Main" count={2} collapsible defaultOpen>
+    <EvoNav.Item icon={<HomeIcon />} tooltip="Dashboard" active>Dashboard</EvoNav.Item>
+    <EvoNav.Item icon={<ChartIcon />} tooltip="Analytics">Analytics</EvoNav.Item>
   </EvoNav.Group>
 </EvoNav>`} />
       </div>
@@ -303,6 +351,11 @@ const items: CommandPaletteItem[] = [
       {/* ── With Icons ── */}
       <div className="docs-section">
         <div className="docs-section-title">With Icons</div>
+        <p className="docs-section-desc">
+          Pass any node to <code>icon</code>. Icons inherit the row's colour, so they
+          shift across the idle → hover → active states automatically — the active row
+          uses a soft tinted pill, no extra markup required.
+        </p>
         <div className="docs-preview">
           <div style={{ width: 220, background: 'var(--docs-code-bg)', borderRadius: 8, padding: '0.5rem 0' }}>
             <EvoNav>
@@ -381,14 +434,21 @@ const [open, setOpen] = useState(false)
           { prop: 'EvoNav — defaultDrawerOpen', type: 'boolean', description: 'Uncontrolled initial drawer state. Default false.' },
           { prop: 'EvoNav — onDrawerOpenChange', type: '(open: boolean) => void', description: 'Called when the drawer opens or closes.' },
           { prop: 'EvoNav — hideTrigger', type: 'boolean', description: 'Hide the built-in hamburger trigger. Pair with drawerOpen / onDrawerOpenChange.' },
+          { prop: 'EvoNav — collapsed', type: 'boolean', description: 'Collapse to an icon-only rail: labels hide, icons center, and each row shows a native tooltip from its tooltip prop. Default false.' },
           { prop: 'EvoNav — aria-label', type: 'string', description: 'Accessible label for the <nav> landmark. Default "Main navigation".' },
 
           { prop: 'EvoNav.Group — label', type: 'string', required: true, description: 'Group heading text. Linked to the nested list via aria-labelledby.' },
           { prop: 'EvoNav.Group — children', type: 'ReactNode', required: true, description: 'EvoNav.Item elements.' },
+          { prop: 'EvoNav.Group — collapsible', type: 'boolean', description: 'Render the heading as a disclosure that expands/collapses the group (animated). Default false.' },
+          { prop: 'EvoNav.Group — defaultOpen', type: 'boolean', description: 'Uncontrolled initial open state (collapsible only). Default true.' },
+          { prop: 'EvoNav.Group — open', type: 'boolean', description: 'Controlled open state (collapsible only).' },
+          { prop: 'EvoNav.Group — onOpenChange', type: '(open: boolean) => void', description: 'Called when the group expands or collapses.' },
+          { prop: 'EvoNav.Group — count', type: 'number', description: 'Small count chip shown after the label.' },
 
           { prop: 'EvoNav.Item — children', type: 'ReactNode', required: true, description: 'Row label. Nested EvoNav.SubItem children turn the row into a disclosure.' },
           { prop: 'EvoNav.Item — active', type: 'boolean', description: 'Marks this row as the current page. Sets aria-current="page" and applies the active visual state.' },
           { prop: 'EvoNav.Item — icon', type: 'ReactNode', description: 'Icon rendered before the label.' },
+          { prop: 'EvoNav.Item — tooltip', type: 'string', description: 'Tooltip text shown (native title) when the nav is collapsed to a rail.' },
           { prop: 'EvoNav.Item — href', type: 'string', description: 'When set, renders as <a href> instead of <button>.' },
           { prop: 'EvoNav.Item — onClick', type: '(e) => void', description: 'Click / keyboard activate handler (Enter, Space, click).' },
           { prop: 'EvoNav.Item — open', type: 'boolean', description: 'Controlled expand state (only meaningful with SubItem children).' },
