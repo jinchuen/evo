@@ -429,6 +429,7 @@
 }
 
 .topNav[data-scrolled] {
+  background-color: $color-surface; // fallback for browsers without color-mix()
   background-color: color-mix(in srgb, $color-surface 85%, transparent);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
