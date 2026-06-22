@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@justin_evo/evo-ui": "file:../evo-ui",
+    "@justin_evo/evo-ui": "^1.0.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2"
