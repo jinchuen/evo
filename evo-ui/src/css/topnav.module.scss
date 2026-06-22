@@ -20,6 +20,16 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes topNavRise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes topNavFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 // ---------------------------------------------------------------------------
 // Root
 // ---------------------------------------------------------------------------
@@ -157,6 +167,61 @@
   gap: 0.5rem;
   margin-left: auto;
   flex-shrink: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Search trigger (EvoTopNav.Search) — presentational ⌘K affordance
+// ---------------------------------------------------------------------------
+
+.topNavSearch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2rem;
+  min-width: 12rem;
+  padding: 0 0.625rem;
+  font-family: inherit;
+  font-size: $text-sm;
+  color: $color-text-muted;
+  background-color: $color-surface-sunken;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast,
+    color $transition-fast;
+
+  &:hover {
+    background-color: $color-surface-hover;
+    color: $color-text-secondary;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
+  }
+}
+
+.topNavSearchIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.topNavSearchText {
+  flex: 1;
+  text-align: left;
+}
+
+.topNavSearchKbd {
+  flex-shrink: 0;
+  font-family: inherit;
+  font-size: $text-xs;
+  color: $color-text-muted;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: 4px;
+  padding: 0.0625rem 0.3125rem;
 }
 
 // ---------------------------------------------------------------------------
@@ -360,6 +425,17 @@
     z-index: 55;
     animation: topNavOverlayFadeIn 180ms ease;
   }
+
+  .topNavSearch {
+    min-width: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    justify-content: center;
+    padding: 0;
+
+    .topNavSearchText,
+    .topNavSearchKbd { display: none; }
+  }
 }
 
 // Above the breakpoint, drawer-specific bits never render visually.
@@ -369,6 +445,85 @@
   .topNavBackdrop {
     // no-op: structural classes shouldn't leak desktop styles
   }
+}
+
+// ---------------------------------------------------------------------------
+// Entrance animation (opt-in via `entrance` prop → data-entrance attribute)
+// ---------------------------------------------------------------------------
+
+.topNav[data-entrance='rise'] .topNavBrand,
+.topNav[data-entrance='rise'] .topNavMenu > li,
+.topNav[data-entrance='rise'] .topNavSearch,
+.topNav[data-entrance='rise'] .topNavActions {
+  animation: topNavRise 440ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.topNav[data-entrance='fade'] .topNavBrand,
+.topNav[data-entrance='fade'] .topNavMenu > li,
+.topNav[data-entrance='fade'] .topNavSearch,
+.topNav[data-entrance='fade'] .topNavActions {
+  animation: topNavFade 440ms ease both;
+}
+
+// Shared left-to-right stagger (applies to both variants).
+.topNav[data-entrance] .topNavBrand { animation-delay: 40ms; }
+.topNav[data-entrance] .topNavMenu > li:nth-child(1) { animation-delay: 110ms; }
+.topNav[data-entrance] .topNavMenu > li:nth-child(2) { animation-delay: 160ms; }
+.topNav[data-entrance] .topNavMenu > li:nth-child(3) { animation-delay: 210ms; }
+.topNav[data-entrance] .topNavMenu > li:nth-child(4) { animation-delay: 260ms; }
+.topNav[data-entrance] .topNavMenu > li:nth-child(n + 5) { animation-delay: 300ms; }
+.topNav[data-entrance] .topNavSearch { animation-delay: 320ms; }
+.topNav[data-entrance] .topNavActions { animation-delay: 360ms; }
+
+// ---------------------------------------------------------------------------
+// Sticky + scroll-aware behavior (opt-in via `sticky` / `scrollBehavior`)
+// ---------------------------------------------------------------------------
+
+.topNavSticky {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.topNav[data-scroll] {
+  transition:
+    background-color $transition-fast,
+    box-shadow $transition-fast,
+    transform 220ms ease;
+
+  .topNavInner { transition: min-height $transition-fast; }
+}
+
+.topNav[data-scrolled] {
+  background-color: $color-surface; // fallback for browsers without color-mix()
+  background-color: color-mix(in srgb, $color-surface 85%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: $shadow-md;
+}
+
+.topNav[data-scroll='shrink'][data-scrolled] .topNavInner {
+  min-height: 2.75rem;
+}
+
+.topNav[data-scroll='hide'] { will-change: transform; }
+.topNav[data-scroll='hide'][data-hidden] { transform: translateY(-100%); }
+
+// ---------------------------------------------------------------------------
+// Scroll-progress line (opt-in via `showProgress`)
+// ---------------------------------------------------------------------------
+
+.topNavProgress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: $evo-primary-color;
+  transform: scaleX(var(--evo-topnav-progress, 0));
+  transform-origin: left center;
+  pointer-events: none;
+  z-index: 31;
 }
 
 // ---------------------------------------------------------------------------
@@ -385,6 +540,16 @@
   .topNavDropdownChevron {
     transition: none;
   }
+
+  .topNavBrand,
+  .topNavMenu > li,
+  .topNavSearch,
+  .topNavActions {
+    animation: none !important;
+  }
+
+  &[data-scroll='hide'][data-hidden] { transition: none; }
+  .topNavProgress { transition: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -392,5 +557,12 @@
   .topNavDropdownContentOpen,
   .topNavBackdrop {
     animation: none;
+  }
+
+  .topNav[data-entrance] .topNavBrand,
+  .topNav[data-entrance] .topNavMenu > li,
+  .topNav[data-entrance] .topNavSearch,
+  .topNav[data-entrance] .topNavActions {
+    animation: none !important;
   }
 }

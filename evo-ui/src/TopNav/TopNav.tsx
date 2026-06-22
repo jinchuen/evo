@@ -32,6 +32,14 @@ export interface EvoTopNavProps
   onOpenChange?: (open: boolean) => void;
   /** Width in px below which Menu collapses into the drawer. @default 768 */
   collapseBelow?: number;
+  /** Staggered mount animation for the bar's contents. @default 'none' */
+  entrance?: 'none' | 'rise' | 'fade';
+  /** Pin the bar with position: sticky; top: 0. @default false */
+  sticky?: boolean;
+  /** On-scroll treatment of a sticky bar. @default 'none' */
+  scrollBehavior?: 'none' | 'elevate' | 'shrink' | 'hide';
+  /** Render a thin scroll-progress accent line along the bottom edge. @default false */
+  showProgress?: boolean;
   className?: string;
 }
 
@@ -71,6 +79,17 @@ export interface EvoTopNavToggleProps
     'aria-expanded' | 'aria-controls'
   > {
   icon?: React.ReactNode;
+  className?: string;
+}
+
+export interface EvoTopNavSearchProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+  /** Placeholder text shown inside the trigger. @default 'Search…' */
+  placeholder?: string;
+  /** Opt-in global hotkey, e.g. 'mod+k' (mod = ⌘ on macOS, Ctrl elsewhere). Default: none. */
+  shortcut?: string;
+  /** Override the kbd hint. @default platform-aware ⌘K / Ctrl K */
+  shortcutHint?: React.ReactNode;
   className?: string;
 }
 
@@ -158,6 +177,53 @@ const useHoverCapable = () =>
 
 const usePrefersReducedMotion = () =>
   useMediaQuery('(prefers-reduced-motion: reduce)');
+
+function useScrollState(
+  enabled: boolean,
+  behavior: 'none' | 'elevate' | 'shrink' | 'hide',
+  wantProgress: boolean,
+) {
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const lastY = useRef(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !enabled) {
+      setScrolled(false);
+      setHidden(false);
+      setProgress(0);
+      lastY.current = 0;
+      return;
+    }
+    let raf = 0;
+    const read = () => {
+      raf = 0;
+      const doc = document.documentElement;
+      const y = window.scrollY || doc.scrollTop || 0;
+      setScrolled(y > 8);
+      setHidden(behavior === 'hide' ? y > lastY.current && y > 64 : false);
+      if (wantProgress) {
+        const max = doc.scrollHeight - doc.clientHeight || 1;
+        setProgress(Math.min(1, Math.max(0, y / max)));
+      }
+      lastY.current = y;
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(read);
+    };
+    read();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [enabled, behavior, wantProgress]);
+
+  return { scrolled, hidden, progress };
+}
 
 function getFocusable(root: HTMLElement | null) {
   if (!root) return [] as HTMLElement[];
@@ -315,6 +381,23 @@ const ChevronIcon = ({ open }: { open: boolean }) => (
       strokeLinecap="round"
       strokeLinejoin="round"
     />
+  </svg>
+);
+
+const SearchGlyph = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.2-3.2" />
   </svg>
 );
 
@@ -517,6 +600,69 @@ const EvoTopNavToggle = forwardRef<HTMLButtonElement, EvoTopNavToggleProps>(
         {...rest}
       >
         {icon ?? <HamburgerIcon open={ctx.drawerOpen} />}
+      </button>
+    );
+  },
+);
+
+// ============================================================================
+// EvoTopNav.Search — presentational ⌘K quick-search trigger
+// ============================================================================
+
+const EvoTopNavSearch = forwardRef<HTMLButtonElement, EvoTopNavSearchProps>(
+  function EvoTopNavSearch(
+    { placeholder = 'Search…', shortcut, shortcutHint, className, onClick, ...rest },
+    forwardedRef,
+  ) {
+    const localRef = useRef<HTMLButtonElement | null>(null);
+    const setRef = (node: HTMLButtonElement | null) => {
+      localRef.current = node;
+      if (typeof forwardedRef === 'function') forwardedRef(node);
+      else if (forwardedRef)
+        (forwardedRef as React.RefObject<HTMLButtonElement | null>).current = node;
+    };
+
+    // Platform-aware hint resolved after mount to avoid SSR hydration mismatch.
+    const [autoHint, setAutoHint] = useState<React.ReactNode>(null);
+    useEffect(() => {
+      if (shortcutHint !== undefined) return;
+      const platform =
+        (typeof navigator !== 'undefined' &&
+          (navigator.platform || navigator.userAgent)) || '';
+      setAutoHint(/Mac|iPhone|iPad|iPod/.test(platform) ? '⌘K' : 'Ctrl K');
+    }, [shortcutHint]);
+    const hint = shortcutHint !== undefined ? shortcutHint : autoHint;
+
+    // Opt-in global hotkey → dispatch a real click so onClick fires naturally.
+    useEffect(() => {
+      if (!shortcut) return;
+      const parts = shortcut.toLowerCase().split('+').map((p) => p.trim());
+      const wantMod = parts.some((p) => ['mod', 'cmd', 'meta', 'ctrl', 'control'].includes(p));
+      const key = parts[parts.length - 1];
+      const handler = (e: KeyboardEvent) => {
+        const mod = e.metaKey || e.ctrlKey;
+        if ((!wantMod || mod) && e.key.toLowerCase() === key) {
+          e.preventDefault();
+          localRef.current?.click();
+        }
+      };
+      document.addEventListener('keydown', handler);
+      return () => document.removeEventListener('keydown', handler);
+    }, [shortcut]);
+
+    return (
+      <button
+        ref={setRef}
+        className={cn(styles.topNavSearch, className)}
+        onClick={onClick}
+        {...rest}
+        type="button"
+      >
+        <span className={styles.topNavSearchIcon} aria-hidden="true">
+          <SearchGlyph />
+        </span>
+        <span className={styles.topNavSearchText}>{placeholder}</span>
+        {hint != null && <kbd className={styles.topNavSearchKbd}>{hint}</kbd>}
       </button>
     );
   },
@@ -812,7 +958,12 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
       defaultOpen = false,
       onOpenChange,
       collapseBelow = 768,
+      entrance = 'none',
+      sticky = false,
+      scrollBehavior = 'none',
+      showProgress = false,
       className,
+      style,
       ...rest
     },
     ref,
@@ -825,6 +976,12 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
 
     const isCollapsed = useIsCollapsed(collapseBelow);
     const reducedMotion = usePrefersReducedMotion();
+    const scrollEnabled = scrollBehavior !== 'none' || showProgress;
+    const { scrolled, hidden, progress } = useScrollState(scrollEnabled, scrollBehavior, showProgress);
+    const animateEntrance = entrance !== 'none' && !reducedMotion;
+    const mergedStyle: React.CSSProperties = showProgress
+      ? ({ ...style, ['--evo-topnav-progress' as string]: progress } as React.CSSProperties)
+      : (style as React.CSSProperties);
 
     const [toggleCount, setToggleCount] = useState(0);
     const registerToggle = useCallback(() => {
@@ -944,15 +1101,24 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
           ref={ref}
           className={cn(
             styles.topNav,
+            sticky && styles.topNavSticky,
             drawerActive && styles.topNavDrawerOpen,
             reducedMotion && styles.topNavReducedMotion,
             className,
           )}
+          style={mergedStyle}
           data-collapsed={isCollapsed || undefined}
           data-drawer-open={drawerActive || undefined}
+          data-entrance={animateEntrance ? entrance : undefined}
+          data-scroll={scrollBehavior !== 'none' ? scrollBehavior : undefined}
+          data-scrolled={scrolled || undefined}
+          data-hidden={hidden || undefined}
           {...rest}
         >
           <div className={styles.topNavInner}>{children}</div>
+          {showProgress && (
+            <span className={styles.topNavProgress} aria-hidden="true" />
+          )}
           {drawerActive && (
             <div
               className={styles.topNavBackdrop}
@@ -972,6 +1138,7 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
   Item: typeof EvoTopNavItem;
   Actions: typeof EvoTopNavActions;
   Toggle: typeof EvoTopNavToggle;
+  Search: typeof EvoTopNavSearch;
   Dropdown: typeof EvoTopNavDropdown;
   DropdownItem: typeof EvoTopNavDropdownItem;
 };
@@ -981,6 +1148,7 @@ EvoTopNavMenu.displayName = 'EvoTopNav.Menu';
 EvoTopNavItem.displayName = 'EvoTopNav.Item';
 EvoTopNavActions.displayName = 'EvoTopNav.Actions';
 EvoTopNavToggle.displayName = 'EvoTopNav.Toggle';
+EvoTopNavSearch.displayName = 'EvoTopNav.Search';
 EvoTopNavDropdown.displayName = 'EvoTopNav.Dropdown';
 EvoTopNavDropdownItem.displayName = 'EvoTopNav.DropdownItem';
 (EvoTopNav as { displayName?: string }).displayName = 'EvoTopNav';
@@ -990,5 +1158,6 @@ EvoTopNav.Menu = EvoTopNavMenu;
 EvoTopNav.Item = EvoTopNavItem;
 EvoTopNav.Actions = EvoTopNavActions;
 EvoTopNav.Toggle = EvoTopNavToggle;
+EvoTopNav.Search = EvoTopNavSearch;
 EvoTopNav.Dropdown = EvoTopNavDropdown;
 EvoTopNav.DropdownItem = EvoTopNavDropdownItem;

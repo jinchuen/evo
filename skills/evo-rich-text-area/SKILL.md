@@ -258,6 +258,7 @@ function Editor() {
 ## Gotchas
 
 - The forwarded `ref` is an `EvoRichTextHandle` imperative object, NOT a DOM element ref. Type your ref as `useRef<EvoRichTextHandle | null>(null)`.
+- Inserting an image (button, drag-drop, paste, or the `insertImage` handle) drops the caret onto a fresh empty paragraph **below** the image, so typing continues on a new line rather than beside the block-level image.
 - Value is HTML, not Markdown. `onChange` emits the raw `innerHTML`; `getText()` returns plain text. Sanitize on the server before persisting/rendering untrusted HTML.
 - Controlled mode: when `value` is set, also provide `onChange`, or edits won't persist. External `value` changes are synced into the DOM only when they differ from the last emitted HTML (to avoid caret jumps during typing).
 - Paste & drop image insertion is ALWAYS enabled, even if `'image'` is not in `tools` — the `'image'` key only adds the file-picker button. Pasted plain text is inserted as plain text (foreign styles stripped).

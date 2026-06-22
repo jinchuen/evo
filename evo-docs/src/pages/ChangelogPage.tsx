@@ -26,6 +26,29 @@ const SEVERITY: Record<ChangeKind, 'success' | 'info' | 'warning' | 'danger'> = 
 
 const RELEASES: Release[] = [
   {
+    version: '1.2.0',
+    date: '2026-06-22',
+    summary:
+      'EvoTopNav gains an opt-in entrance animation, sticky scroll-aware behavior, a scroll-progress line, and a new Search (⌘K) part — plus image-caret and checkbox-tick fixes.',
+    sections: [
+      {
+        kind: 'Added',
+        items: [
+          'EvoTopNav — `entrance` prop (`none` | `rise` | `fade`) staggers the brand, menu items, search and actions up on mount; plays once and is disabled under `prefers-reduced-motion`.',
+          'EvoTopNav — `sticky`, `scrollBehavior` (`none` | `elevate` | `shrink` | `hide`) and `showProgress` props add a pinned, scroll-aware bar with an optional reading-progress line, driven by one rAF-throttled scroll listener (zero new deps).',
+          'EvoTopNav.Search — a new presentational quick-search trigger sub-component with a platform-aware ⌘K / Ctrl K hint and an opt-in global `shortcut` hotkey; collapses to icon-only on mobile. Wire its `onClick` to EvoCommandPalette.',
+        ],
+      },
+      {
+        kind: 'Fixed',
+        items: [
+          'EvoRichTextArea — inserting an image (button, drag-drop, paste, or the `insertImage` handle) now lands the caret on a fresh paragraph below the image instead of beside the block-level image, where the caret painted at its top-right edge.',
+          'EvoCheckbox — the checked tick is now transform-centered in the box (it used hardcoded pixel offsets and could sit off-center); the scale-in animation now grows from the center. CSS-only.',
+        ],
+      },
+    ],
+  },
+  {
     version: '1.1.0',
     date: '2026-06-22',
     summary:
