@@ -5,11 +5,36 @@ node_modules/
 dist/
 build/
 
-# Environment secrets (API keys, passwords)
+# ── Secrets & credentials (NEVER commit — this repo is PUBLIC) ──
 .env
-.env.local
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa*
+secrets.json
+credentials.json
+*.secret
+
+# npm / registry auth — can contain a publish _authToken
+.npmrc
+
+# Firebase — KEEP firebase.json & .firebaserc (config, not secret),
+# but ignore deploy cache, debug logs, runtime config and admin/service keys
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+.runtimeconfig.json
+*firebase-adminsdk*.json
+*-service-account*.json
+serviceAccount*.json
 
 # Logs and system files
 *.log
+npm-debug.log*
 .DS_Store
 Thumbs.db
