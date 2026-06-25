@@ -6,7 +6,7 @@ Evo UI ships 30+ accessible, themeable React components — with built-in light 
 dark mode, full TypeScript types, `forwardRef` + native attribute pass-through,
 and **zero runtime dependencies**.
 
-- 📚 **Documentation:** https://elevora-ui-document-3fb80.web.app
+- 📚 **Documentation:** https://docs.elevora.com.my
 - 💻 **GitHub:** https://github.com/jinchuen/evo
 - 📦 **npm:** https://www.npmjs.com/package/@justin_evo/evo-ui
 
@@ -47,7 +47,7 @@ export default function App() {
 ## Components
 
 Full props, variants, and live examples for every component live in the
-[documentation](https://elevora-ui-document-3fb80.web.app).
+[documentation](https://docs.elevora.com.my).
 
 | Category               | Components                                                                                                  |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -63,7 +63,7 @@ Full props, variants, and live examples for every component live in the
 ## Documentation
 
 Browse the full component catalogue, prop tables, and copy-paste examples at
-**https://elevora-ui-document-3fb80.web.app**.
+**https://docs.elevora.com.my**.
 
 ## License
 

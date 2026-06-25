@@ -159,7 +159,7 @@ export default function SkillsPage() {
     const origin =
       typeof window !== 'undefined' && window.location?.origin
         ? window.location.origin
-        : 'https://elevora-ui-document-3fb80.web.app'
+        : 'https://docs.elevora.com.my'
     return buildPrompt(origin)
   }, [])
 

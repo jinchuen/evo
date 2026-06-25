@@ -3,7 +3,7 @@
 A high-performance, enterprise-grade React UI component library — published as
 [`@justin_evo/evo-ui`](https://www.npmjs.com/package/@justin_evo/evo-ui).
 
-- 📚 **Documentation:** https://elevora-ui-document-3fb80.web.app
+- 📚 **Documentation:** https://docs.elevora.com.my
 - 💻 **GitHub:** https://github.com/jinchuen/evo
 - 📦 **npm:** https://www.npmjs.com/package/@justin_evo/evo-ui
 
@@ -32,7 +32,7 @@ export default function App() {
 ```
 
 Browse every component, full prop tables, and live examples in the
-**[documentation site](https://elevora-ui-document-3fb80.web.app)**.
+**[documentation site](https://docs.elevora.com.my)**.
 
 ## Build with AI — the Evo UI skills plugin
 
