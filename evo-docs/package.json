@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "start": "serve dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@justin_evo/evo-ui": "^1.2.0",
+    "serve": "^14.2.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2"

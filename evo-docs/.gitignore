@@ -17,12 +17,8 @@ dist-ssr
 .env.*
 !.env.example
 
-# Firebase — keep firebase.json & .firebaserc; ignore cache, logs, admin keys
-.firebase/
-firebase-debug.log*
-.runtimeconfig.json
-*firebase-adminsdk*.json
-serviceAccount*.json
+# Railway — keep railway.json; ignore the CLI's local state/cache
+.railway/
 
 # Editor directories and files
 .vscode/*

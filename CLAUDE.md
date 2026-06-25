@@ -255,7 +255,7 @@ Prepend new entries to the top of the `RELEASES` array.
 
 Evo UI is **live**: published to npm as `@justin_evo/evo-ui` (currently
 **1.2.0** — see section 13 for the publish workflow) and the docs are
-deployed to Firebase Hosting. The old pre-launch rule ("append everything to
+deployed to Railway. The old pre-launch rule ("append everything to
 one v1.0.0 `Created` block") is **retired** — use the four-kind format below
 for every new release.
 
@@ -492,7 +492,8 @@ release entry's `migration` field.
 ## 13. Publishing & deployment
 
 This section documents **how Evo UI actually ships** — the library to npm and
-the docs site to Firebase Hosting. Both were first wired up on 2026-06-22.
+the docs site to Railway. The npm pipeline was first wired up on 2026-06-22;
+the docs hosting was migrated off Firebase Hosting onto Railway on 2026-06-25.
 
 > ⚠️ Publishing to npm and deploying are **outward-facing and hard to
 > reverse**. Per **section 7**, an AI agent must have the user's explicit
@@ -575,33 +576,52 @@ import { EvoButton } from '@justin_evo/evo-ui'
 `react` / `react-dom` are **peer** dependencies (≥17) — the consuming app
 provides React. Evo UI stays **zero runtime deps** (section 7); do not add any.
 
-### 13.2 Deploying the docs to Firebase Hosting
+### 13.2 Deploying the docs to Railway
 
-The docs (`evo-docs/`) are a **static Vite SPA**, hosted on **Firebase
-Hosting**.
+The docs (`evo-docs/`) are a **static Vite SPA**. Railway has **no static
+"hosting" product** like Firebase — it runs your app as a container — so the
+build output in `dist/` is served by [`serve`](https://www.npmjs.com/package/serve),
+a tiny static file server, on the `$PORT` Railway injects. (Migrated off
+Firebase Hosting on 2026-06-25.)
 
 **Identity (not secret):**
 
-- Firebase project: **`elevora-ui-document-3fb80`**.
-- Live URL: **https://elevora-ui-document-3fb80.web.app**.
-- Deploy config lives in `evo-docs/`: `firebase.json` (serves `dist/`, SPA
-  rewrites so `BrowserRouter` deep links don't 404, long-cache headers for
-  hashed assets) and `.firebaserc` (pins the default project).
+- Railway service: the `evo-docs/` directory, deployed as a **single service**
+  (set the service's **Root Directory** to `evo-docs` in the Railway dashboard
+  so it builds only the docs, not the whole monorepo).
+- Live URL: **assigned by Railway on first deploy** — generate one under the
+  service's **Settings → Networking → Public Networking** (a free
+  `*.up.railway.app` domain, or attach a custom domain). Record the final URL
+  here and in `README.md` once it exists.
+- Deploy config lives in `evo-docs/`:
+  - `railway.json` — pins the **Nixpacks** builder, `npm run build` as the
+    build command, and `npm run start` as the start command.
+  - `package.json` — `"start": "serve dist"` serves the built SPA; `serve` is a
+    **runtime `dependency`** (not `devDependency`) so it survives Railway's
+    production prune. `serve` auto-binds the `$PORT` env var Railway sets.
+  - `public/serve.json` — Vite copies it to `dist/serve.json`, where `serve`
+    reads it automatically. It reproduces the old `firebase.json` behaviour:
+    a `**` → `/index.html` **rewrite** (so `BrowserRouter` deep links don't
+    404) and a long **`Cache-Control: ...immutable`** header on `assets/**`.
+    Note: `serve.json` rejects unknown keys — do **not** add a `$schema`
+    field, it fails config validation.
 
-**Steps (run from `evo-docs/`):**
+**Steps:**
 
-1. One-time setup: `npm install -g firebase-tools`, then `firebase login`.
-2. Build, then deploy the pre-built output:
+1. One-time setup: `npm install -g @railway/cli`, then `railway login`. In the
+   Railway dashboard, create a project, add a service from this repo, and set
+   its **Root Directory** to `evo-docs`.
+2. Railway builds in the cloud — every push to the connected branch triggers a
+   build (`npm run build`) and redeploy (`npm run start`) automatically. Unlike
+   Firebase, there is **no local build-then-upload step**; you just push.
+3. To deploy manually from your machine instead, run from `evo-docs/`:
 
    ```bash
    cd evo-docs
-   npm run build
-   firebase deploy --only hosting
+   railway up
    ```
 
-   Firebase only uploads the already-built `dist/` — there is **no cloud
-   build**, so you must build locally first. After deploying, hard-refresh
-   (Ctrl+Shift+R) to bypass the cached old bundle.
+   After a deploy, hard-refresh (Ctrl+Shift+R) to bypass the cached old bundle.
 
 **Two gotchas baked into the config — do NOT undo them:**
 

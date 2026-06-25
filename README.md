@@ -99,7 +99,7 @@ This is a monorepo with two packages:
 | Folder            | What it is                                                                          |
 | ----------------- | ----------------------------------------------------------------------------------- |
 | `evo-ui/`         | The published library (`@justin_evo/evo-ui`). Source lives in `src/`.                |
-| `evo-docs/`       | The documentation site (Vite + React), deployed to Firebase Hosting.                 |
+| `evo-docs/`       | The documentation site (Vite + React), deployed to Railway.                          |
 | `skills/`         | Agent skills — one exhaustive guide per component + a master catalogue (see below).  |
 | `.claude-plugin/` | Plugin + marketplace manifests that make `skills/` installable as a Claude Code plugin. |
 
