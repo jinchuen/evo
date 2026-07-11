@@ -7,6 +7,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import ReactDOM from 'react-dom';
+import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
 import styles from '../css/autocomplete.module.scss';
 
 /* =====================================================================
@@ -361,6 +363,15 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const anchorRef = useRef<HTMLDivElement>(null);
+
+    const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
+      open,
+      anchorRef,
+      placement: 'bottom',
+      offset: 6,
+      matchAnchorWidth: true,
+    });
 
     /* Merge the forwarded ref with our internal one. */
     const setInputRef = useCallback(
@@ -416,7 +427,8 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
     useEffect(() => {
       if (!open) return;
       const handler = (e: MouseEvent) => {
-        if (!wrapperRef.current?.contains(e.target as Node)) closeMenu();
+        const t = e.target as Node;
+        if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) closeMenu();
       };
       document.addEventListener('mousedown', handler);
       return () => document.removeEventListener('mousedown', handler);
@@ -678,6 +690,7 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
 
         <div className={styles.acWrapper}>
           <div
+            ref={anchorRef}
             className={[
               styles.inputWrapper,
               sizeClass,
@@ -736,9 +749,12 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
             </span>
           </div>
 
-          {open && (
+          {open && typeof document !== 'undefined' && ReactDOM.createPortal(
             <div
+              ref={floatingRef}
               className={styles.menu}
+              data-placement={placement}
+              style={floatingStyles}
               role="listbox"
               id={listId}
               aria-label={label ?? 'Suggestions'}
@@ -786,7 +802,8 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
               ) : (
                 <div className={styles.empty}>{emptyMessage}</div>
               )}
-            </div>
+            </div>,
+            document.body,
           )}
 
           {name && <input type="hidden" name={name} value={value ?? ''} />}

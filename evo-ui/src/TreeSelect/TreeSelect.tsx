@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
+import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
 import styles from '../css/treeselect.module.scss';
 
 /* ---------------- Types ---------------- */
@@ -288,6 +290,14 @@ export const EvoTreeSelect = ({
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
+    open,
+    anchorRef: triggerRef,
+    placement: 'bottom',
+    offset: 6,
+    matchAnchorWidth: true,
+  });
+
   /* -------- Filter (search) -------- */
   const filterResult = useMemo(() => {
     if (!searchable || !query.trim()) return null;
@@ -473,7 +483,8 @@ export const EvoTreeSelect = ({
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (!wrapperRef.current?.contains(e.target as Node)) {
+      const t = e.target as Node;
+      if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) {
         setOpen(false);
         setQuery('');
       }
@@ -769,8 +780,13 @@ export const EvoTreeSelect = ({
           </span>
         </button>
 
-        {open && (
-          <div className={styles.menu}>
+        {open && typeof document !== 'undefined' && ReactDOM.createPortal(
+          <div
+            ref={floatingRef}
+            className={styles.menu}
+            data-placement={placement}
+            style={floatingStyles}
+          >
             {searchable && (
               <div className={styles.searchRow}>
                 <span className={styles.searchIconWrap}><SearchIcon /></span>
@@ -812,7 +828,8 @@ export const EvoTreeSelect = ({
                 >Clear all</button>
               </div>
             )}
-          </div>
+          </div>,
+          document.body,
         )}
 
         {name && <input type="hidden" name={name} value={hiddenInputValue} />}
