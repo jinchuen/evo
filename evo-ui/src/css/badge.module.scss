@@ -80,3 +80,78 @@
   gap: 0.375rem;
   align-items: center;
 }
+
+/* ===================================================================
+ * detail popover (hover / focus / tap) — positioned by useAnchoredPosition
+ * =================================================================== */
+.interactive {
+  cursor: default;
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.detailPopover {
+  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+  max-width: 18rem;
+  padding: 0.625rem 0.75rem;
+  background: $color-surface-elevated;
+  color: $color-text-primary;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-lg;
+  font-family: $font-sans;
+  font-size: $text-xs;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: normal;
+  animation: badgeDetailIn 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes badgeDetailIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detailPopover { animation: none; }
+}
+
+.detailPopover[data-placement='top']    { transform-origin: bottom center; }
+.detailPopover[data-placement='bottom'] { transform-origin: top center; }
+.detailPopover[data-placement='left']   { transform-origin: center right; }
+.detailPopover[data-placement='right']  { transform-origin: center left; }
+
+.detailArrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+
+  .detailPopover[data-placement='bottom'] & {
+    bottom: 100%;
+    transform: translateX(-50%);
+    border-bottom-color: $color-surface-elevated;
+    border-top: none;
+  }
+  .detailPopover[data-placement='top'] & {
+    top: 100%;
+    transform: translateX(-50%);
+    border-top-color: $color-surface-elevated;
+    border-bottom: none;
+  }
+  .detailPopover[data-placement='right'] & {
+    right: 100%;
+    transform: translateY(-50%);
+    border-right-color: $color-surface-elevated;
+    border-left: none;
+  }
+  .detailPopover[data-placement='left'] & {
+    left: 100%;
+    transform: translateY(-50%);
+    border-left-color: $color-surface-elevated;
+    border-right: none;
+  }
+}
