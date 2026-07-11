@@ -1,0 +1,163 @@
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, RefObject } from 'react';
+
+/**
+ * Shared viewport-aware positioning for Evo's floating layers (menus, popovers,
+ * tooltips). Zero-dependency by policy (CLAUDE.md §7) — a hand-rolled subset of
+ * Floating UI's flip()/shift(): measure the anchor + floating element, flip to the
+ * roomier side on the main axis, clamp on the cross axis, reposition on scroll/resize.
+ *
+ * Callers render the floating element through `createPortal(…, document.body)` with
+ * `position: fixed` (via `floatingStyles`) so it escapes `overflow:hidden`/scroll-clip
+ * ancestors — the root cause shared by issues #10 and #11.
+ */
+
+// SSR-safe: useLayoutEffect warns on the server; fall back to useEffect there.
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+export type AnchorSide = 'top' | 'bottom' | 'left' | 'right';
+
+export interface UseAnchoredPositionOptions<T extends HTMLElement = HTMLElement> {
+  /** Measure/position only while true. */
+  open: boolean;
+  /** The element the floating layer is anchored to. */
+  anchorRef: RefObject<T | null>;
+  /** Preferred side; flips to the opposite side when it lacks room. Default 'bottom'. */
+  placement?: AnchorSide;
+  /** Gap between anchor and floating element, px. Default 6. */
+  offset?: number;
+  /** Minimum gap kept from the viewport edge, px. Default 8. */
+  viewportPadding?: number;
+  /** Set the floating element's width to the anchor's width. Default false. */
+  matchAnchorWidth?: boolean;
+}
+
+export interface AnchoredPosition {
+  /** Attach to the floating element (always a <div>). */
+  floatingRef: RefObject<HTMLDivElement | null>;
+  /** Spread onto the floating element: position/top/left/(width)/visibility. */
+  floatingStyles: CSSProperties;
+  /** Cross-axis offset for an optional arrow (ignored by callers without one). */
+  arrowStyles: CSSProperties;
+  /** The side chosen after collision detection. */
+  placement: AnchorSide;
+  /** False until the first measurement completes (used to avoid a position flash). */
+  ready: boolean;
+}
+
+const isVertical = (s: AnchorSide) => s === 'top' || s === 'bottom';
+
+const ARROW_INSET = 12; // keep the arrow this far from the floating element's corners
+
+export function useAnchoredPosition<T extends HTMLElement = HTMLElement>({
+  open,
+  anchorRef,
+  placement = 'bottom',
+  offset = 6,
+  viewportPadding = 8,
+  matchAnchorWidth = false,
+}: UseAnchoredPositionOptions<T>): AnchoredPosition {
+  const floatingRef = useRef<HTMLDivElement | null>(null);
+  const [pos, setPos] = useState<{
+    top: number;
+    left: number;
+    width: number | undefined;
+    arrow: number;
+    placement: AnchorSide;
+    ready: boolean;
+  }>({ top: 0, left: 0, width: undefined, arrow: 0, placement, ready: false });
+
+  const compute = useCallback(() => {
+    const anchor = anchorRef.current;
+    const floating = floatingRef.current;
+    if (!anchor || !floating) return;
+
+    const a = anchor.getBoundingClientRect();
+    const f = floating.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const pad = viewportPadding;
+
+    // --- main-axis flip: keep the preferred side unless the opposite has more room ---
+    let side = placement;
+    if (isVertical(placement)) {
+      const below = vh - a.bottom - offset;
+      const above = a.top - offset;
+      if (placement === 'bottom' && f.height > below && above > below) side = 'top';
+      if (placement === 'top' && f.height > above && below > above) side = 'bottom';
+    } else {
+      const right = vw - a.right - offset;
+      const left = a.left - offset;
+      if (placement === 'right' && f.width > right && left > right) side = 'left';
+      if (placement === 'left' && f.width > left && right > left) side = 'right';
+    }
+
+    // --- main-axis coordinate ---
+    let top = 0;
+    let left = 0;
+    if (side === 'bottom') top = a.bottom + offset;
+    else if (side === 'top') top = a.top - f.height - offset;
+    else if (side === 'right') left = a.right + offset;
+    else left = a.left - f.width - offset;
+
+    // --- cross-axis: align leading edges, then clamp inside the viewport ---
+    if (isVertical(side)) {
+      left = Math.min(Math.max(a.left, pad), Math.max(pad, vw - f.width - pad));
+    } else {
+      top = Math.min(Math.max(a.top, pad), Math.max(pad, vh - f.height - pad));
+    }
+
+    // --- arrow: point at the anchor's center, clamped within the floating box ---
+    const arrow = isVertical(side)
+      ? Math.min(Math.max(a.left + a.width / 2 - left, ARROW_INSET), f.width - ARROW_INSET)
+      : Math.min(Math.max(a.top + a.height / 2 - top, ARROW_INSET), f.height - ARROW_INSET);
+
+    setPos({
+      top: Math.round(top),
+      left: Math.round(left),
+      width: matchAnchorWidth ? Math.round(a.width) : undefined,
+      arrow: Math.round(arrow),
+      placement: side,
+      ready: true,
+    });
+  }, [anchorRef, placement, offset, viewportPadding, matchAnchorWidth]);
+
+  useIsomorphicLayoutEffect(() => {
+    if (!open) {
+      setPos((p) => (p.ready ? { ...p, ready: false } : p));
+      return;
+    }
+    compute();
+
+    let raf = 0;
+    const onMove = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(compute);
+    };
+    // capture:true so nested scroll containers (not just window) trigger a reposition.
+    window.addEventListener('scroll', onMove, true);
+    window.addEventListener('resize', onMove);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onMove, true);
+      window.removeEventListener('resize', onMove);
+    };
+  }, [open, compute]);
+
+  const floatingStyles: CSSProperties = {
+    position: 'fixed',
+    top: pos.top,
+    left: pos.left,
+    ...(pos.width !== undefined ? { width: pos.width } : null),
+    // Measure before revealing: hidden elements still report layout via
+    // getBoundingClientRect (display:none would not), so this avoids a flash at 0,0.
+    visibility: pos.ready ? undefined : 'hidden',
+  };
+
+  const arrowStyles: CSSProperties = isVertical(pos.placement)
+    ? { left: pos.arrow }
+    : { top: pos.arrow };
+
+  return { floatingRef, floatingStyles, arrowStyles, placement: pos.placement, ready: pos.ready };
+}
