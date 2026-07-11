@@ -79,6 +79,10 @@ export function useAnchoredPosition<T extends HTMLElement = HTMLElement>({
     const vh = window.innerHeight;
     const pad = viewportPadding;
 
+    // When matching the anchor's width, use it for all width-dependent math — the
+    // element will be resized to it, so the measured natural width is about to be stale.
+    const fWidth = matchAnchorWidth ? a.width : f.width;
+
     // --- main-axis flip: keep the preferred side unless the opposite has more room ---
     let side = placement;
     if (isVertical(placement)) {
@@ -89,8 +93,8 @@ export function useAnchoredPosition<T extends HTMLElement = HTMLElement>({
     } else {
       const right = vw - a.right - offset;
       const left = a.left - offset;
-      if (placement === 'right' && f.width > right && left > right) side = 'left';
-      if (placement === 'left' && f.width > left && right > left) side = 'right';
+      if (placement === 'right' && fWidth > right && left > right) side = 'left';
+      if (placement === 'left' && fWidth > left && right > left) side = 'right';
     }
 
     // --- main-axis coordinate ---
@@ -99,28 +103,39 @@ export function useAnchoredPosition<T extends HTMLElement = HTMLElement>({
     if (side === 'bottom') top = a.bottom + offset;
     else if (side === 'top') top = a.top - f.height - offset;
     else if (side === 'right') left = a.right + offset;
-    else left = a.left - f.width - offset;
+    else left = a.left - fWidth - offset;
 
     // --- cross-axis: align leading edges, then clamp inside the viewport ---
     if (isVertical(side)) {
-      left = Math.min(Math.max(a.left, pad), Math.max(pad, vw - f.width - pad));
+      left = Math.min(Math.max(a.left, pad), Math.max(pad, vw - fWidth - pad));
     } else {
       top = Math.min(Math.max(a.top, pad), Math.max(pad, vh - f.height - pad));
     }
 
     // --- arrow: point at the anchor's center, clamped within the floating box ---
     const arrow = isVertical(side)
-      ? Math.min(Math.max(a.left + a.width / 2 - left, ARROW_INSET), f.width - ARROW_INSET)
+      ? Math.min(Math.max(a.left + a.width / 2 - left, ARROW_INSET), fWidth - ARROW_INSET)
       : Math.min(Math.max(a.top + a.height / 2 - top, ARROW_INSET), f.height - ARROW_INSET);
 
-    setPos({
+    const next = {
       top: Math.round(top),
       left: Math.round(left),
       width: matchAnchorWidth ? Math.round(a.width) : undefined,
       arrow: Math.round(arrow),
       placement: side,
       ready: true,
-    });
+    };
+    // Skip the state update when a reposition tick produced identical geometry.
+    setPos((prev) =>
+      prev.ready &&
+      prev.top === next.top &&
+      prev.left === next.left &&
+      prev.width === next.width &&
+      prev.arrow === next.arrow &&
+      prev.placement === next.placement
+        ? prev
+        : next,
+    );
   }, [anchorRef, placement, offset, viewportPadding, matchAnchorWidth]);
 
   useIsomorphicLayoutEffect(() => {
