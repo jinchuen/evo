@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
+import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
 import styles from '../css/select.module.scss';
 
 export interface SelectOption {
@@ -121,6 +123,14 @@ export const EvoSelect = (props: EvoSelectProps) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
+    open,
+    anchorRef: triggerRef,
+    placement: 'bottom',
+    offset: 6,
+    matchAnchorWidth: true,
+  });
+
   const filtered = searchable && query
     ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
     : options;
@@ -161,7 +171,10 @@ export const EvoSelect = (props: EvoSelectProps) => {
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (!wrapperRef.current?.contains(e.target as Node)) {
+      const t = e.target as Node;
+      // The menu is portaled to <body>, so it is no longer a DOM child of the
+      // wrapper — check it explicitly or clicking an option would close first.
+      if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) {
         setOpen(false);
         setQuery('');
       }
@@ -398,9 +411,12 @@ export const EvoSelect = (props: EvoSelectProps) => {
           </span>
         </button>
 
-        {open && (
+        {open && typeof document !== 'undefined' && ReactDOM.createPortal(
           <div
+            ref={floatingRef}
             className={styles.menu}
+            data-placement={placement}
+            style={floatingStyles}
             role="listbox"
             id={listId}
             aria-labelledby={selectId}
@@ -499,7 +515,8 @@ export const EvoSelect = (props: EvoSelectProps) => {
                 })
               )}
             </div>
-          </div>
+          </div>,
+          document.body,
         )}
 
         {name && !isMultiple && <input type="hidden" name={name} value={value as string} />}
