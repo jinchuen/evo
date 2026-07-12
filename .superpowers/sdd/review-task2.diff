@@ -1,0 +1,74 @@
+﻿# Review package: 7ded16c..079dc60
+
+## Commits
+079dc60 fix(Checkbox): center the checked tick via transform
+
+## Files changed
+ evo-ui/src/css/checkbox.module.scss | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+## Diff
+diff --git a/evo-ui/src/css/checkbox.module.scss b/evo-ui/src/css/checkbox.module.scss
+index e37e402..8dc42ec 100644
+--- a/evo-ui/src/css/checkbox.module.scss
++++ b/evo-ui/src/css/checkbox.module.scss
+@@ -35,21 +35,21 @@
+   width: 0;
+   height: 0;
+   pointer-events: none;
+ 
+   &:checked + .label .checkmark {
+     background-color: $evo-primary-color;
+     border-color: $evo-primary-color;
+ 
+     &::after {
+       opacity: 1;
+-      transform: rotate(45deg) scale(1);
++      transform: translate(-50%, -60%) rotate(45deg) scale(1);
+     }
+   }
+ 
+   &:indeterminate + .label .checkmark {
+     background-color: $evo-primary-color;
+     border-color: $evo-primary-color;
+ 
+     &::after {
+       content: '';
+       position: absolute;
+@@ -87,29 +87,32 @@
+   height: 1rem;
+   border: 2px solid $color-border;
+   border-radius: $radius-sm;
+   background: $color-surface;
+   transition: background-color $transition-fast, border-color $transition-fast;
+   flex-shrink: 0;
+ 
+   &::after {
+     content: '';
+     position: absolute;
+-    top: 0px;
+-    left: 3px;
++    top: 50%;
++    left: 50%;
+     width: 5px;
+-    height: 8px;
++    height: 9px;
+     border: 2px solid $evo-primary-fg;
+     border-top: none;
+     border-left: none;
+     opacity: 0;
+-    transform: rotate(45deg) scale(0.5);
++    // Centered via translate (parent's flex-centering can't reach an absolute
++    // child). -60% Y nudges the rotated "L" optically into the middle. The
++    // centering translate is folded into both states so the scale stays put.
++    transform: translate(-50%, -60%) rotate(45deg) scale(0.5);
+     transition: opacity $transition-fast, transform $transition-fast;
+   }
+ }
+ 
+ .labelText {
+   font-size: $text-sm;
+   color: $color-text-primary;
+ }
+ 
+ .helperText {

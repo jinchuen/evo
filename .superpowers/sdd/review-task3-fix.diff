@@ -1,0 +1,63 @@
+﻿# Review package (fix delta): 8d98deb..f9d2145
+
+## Commits
+f9d2145 fix(TopNav): color-mix fallback for scrolled bar; reset scroll baseline on disable
+
+## Files changed
+ evo-ui/src/TopNav/TopNav.tsx      | 1 +
+ evo-ui/src/css/topnav.module.scss | 1 +
+ 2 files changed, 2 insertions(+)
+
+## Diff
+diff --git a/evo-ui/src/TopNav/TopNav.tsx b/evo-ui/src/TopNav/TopNav.tsx
+index 72e9243..ef2d08c 100644
+--- a/evo-ui/src/TopNav/TopNav.tsx
++++ b/evo-ui/src/TopNav/TopNav.tsx
+@@ -175,20 +175,21 @@ function useScrollState(
+   const [scrolled, setScrolled] = useState(false);
+   const [hidden, setHidden] = useState(false);
+   const [progress, setProgress] = useState(0);
+   const lastY = useRef(0);
+ 
+   useEffect(() => {
+     if (typeof window === 'undefined' || !enabled) {
+       setScrolled(false);
+       setHidden(false);
+       setProgress(0);
++      lastY.current = 0;
+       return;
+     }
+     let raf = 0;
+     const read = () => {
+       raf = 0;
+       const doc = document.documentElement;
+       const y = window.scrollY || doc.scrollTop || 0;
+       setScrolled(y > 8);
+       setHidden(behavior === 'hide' ? y > lastY.current && y > 64 : false);
+       if (wantProgress) {
+diff --git a/evo-ui/src/css/topnav.module.scss b/evo-ui/src/css/topnav.module.scss
+index 9d2e53d..6a28327 100644
+--- a/evo-ui/src/css/topnav.module.scss
++++ b/evo-ui/src/css/topnav.module.scss
+@@ -422,20 +422,21 @@
+ .topNav[data-scroll] {
+   transition:
+     background-color $transition-fast,
+     box-shadow $transition-fast,
+     transform 220ms ease;
+ 
+   .topNavInner { transition: min-height $transition-fast; }
+ }
+ 
+ .topNav[data-scrolled] {
++  background-color: $color-surface; // fallback for browsers without color-mix()
+   background-color: color-mix(in srgb, $color-surface 85%, transparent);
+   -webkit-backdrop-filter: blur(10px);
+   backdrop-filter: blur(10px);
+   box-shadow: $shadow-md;
+ }
+ 
+ .topNav[data-scroll='shrink'][data-scrolled] .topNavInner {
+   min-height: 2.75rem;
+ }
+ 

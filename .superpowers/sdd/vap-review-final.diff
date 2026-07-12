@@ -1,0 +1,1724 @@
+﻿=== Branch commits (a95f0296749ef1a4fddc00748bea161bc99d1924..HEAD) ===
+2f47f6d docs(evo-ui): document viewport-aware positioning + EvoBadge detail; bump 1.3.0
+28bbaa5 feat(EvoTooltip): auto-flip via useAnchoredPosition; placement is now preferred side
+09da48e fix(EvoBadge): expose Group on the type; stop remove-click bubbling; reset open when detail removed
+0baab09 feat(EvoBadge): add hover detail popover with viewport-aware positioning (#11)
+521ed26 fix(EvoAutoComplete,EvoTreeSelect): flip menu upward near viewport bottom (#10)
+385a68e fix(EvoSelect): flip menu upward near viewport bottom via useAnchoredPosition (#10)
+1d4e9a3 fix(evo-ui): use anchor width in matchAnchorWidth math; skip no-op reposition renders
+cbaf238 feat(evo-ui): add zero-dep useAnchoredPosition hook
+56f6e04 docs(superpowers): implementation plan for viewport-aware positioning
+24b57eb docs(superpowers): spec for viewport-aware positioning (#10, #11)
+
+=== Diffstat (evo-ui, evo-docs, skills) ===
+ evo-docs/src/pages/AutoCompletePage.tsx  |  10 ++
+ evo-docs/src/pages/BadgePage.tsx         |  27 +++++
+ evo-docs/src/pages/ChangelogPage.tsx     |  26 +++++
+ evo-docs/src/pages/SelectPage.tsx        |  10 ++
+ evo-docs/src/pages/TooltipPage.tsx       |   9 ++
+ evo-docs/src/pages/TreeSelectPage.tsx    |  10 ++
+ evo-ui/package.json                      |   2 +-
+ evo-ui/src/AutoComplete/AutoComplete.tsx |  23 +++-
+ evo-ui/src/Badge/Badge.tsx               | 180 ++++++++++++++++++++++++++-----
+ evo-ui/src/Select/Select.tsx             |  23 +++-
+ evo-ui/src/Tooltip/Tooltip.tsx           |  46 +++++---
+ evo-ui/src/TreeSelect/TreeSelect.tsx     |  25 ++++-
+ evo-ui/src/css/autocomplete.module.scss  |  16 ++-
+ evo-ui/src/css/badge.module.scss         |  75 +++++++++++++
+ evo-ui/src/css/select.module.scss        |  17 ++-
+ evo-ui/src/css/tooltip.module.scss       |  48 ++-------
+ evo-ui/src/css/treeselect.module.scss    |  16 ++-
+ evo-ui/src/hooks/useAnchoredPosition.ts  | 178 ++++++++++++++++++++++++++++++
+ skills/evo-autocomplete/SKILL.md         |   1 +
+ skills/evo-badge/SKILL.md                |   8 +-
+ skills/evo-select/SKILL.md               |   1 +
+ skills/evo-tooltip/SKILL.md              |   1 +
+ skills/evo-tree-select/SKILL.md          |   1 +
+ 23 files changed, 646 insertions(+), 107 deletions(-)
+
+=== Full diff ===
+diff --git a/evo-docs/src/pages/AutoCompletePage.tsx b/evo-docs/src/pages/AutoCompletePage.tsx
+index 1d97076..034b837 100644
+--- a/evo-docs/src/pages/AutoCompletePage.tsx
++++ b/evo-docs/src/pages/AutoCompletePage.tsx
+@@ -91,20 +91,30 @@ export default function AutoCompletePage() {
+           by keyboard, and pick a suggestion. Built on the WAI-ARIA combobox
+           pattern, with two capabilities the rest of the ecosystem makes you
+           hand-build: <strong>Smart Recovery</strong> and{' '}
+           <strong>Recents memory</strong>.
+         </p>
+         <div className="docs-import-line">
+           import {'{ '}<span>EvoAutoComplete</span>{' }'} from '@justin_evo/evo-ui'
+         </div>
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Viewport-aware menu</div>
++        <p className="docs-section-desc">
++          The dropdown measures available space when it opens and flips upward when the
++          trigger sits near the bottom of the viewport. It renders in a portal, so it is
++          never clipped by <code>overflow: hidden</code> or scroll containers — including
++          inside an <code>EvoModal</code>. Fully automatic; no configuration.
++        </p>
++      </div>
++
+       <div className="docs-section">
+         <div className="docs-section-title">Why EvoAutoComplete</div>
+         <p className="docs-section-desc">
+           A plain <code>EvoSelect</code> is for short, fixed option sets. Reach
+           for <code>EvoAutoComplete</code> when the user types to narrow a long
+           (or remote) list, and you want graceful failure when the query has no
+           exact match.
+         </p>
+         <ul className="docs-list">
+           <li>
+diff --git a/evo-docs/src/pages/BadgePage.tsx b/evo-docs/src/pages/BadgePage.tsx
+index f425385..a2b923f 100644
+--- a/evo-docs/src/pages/BadgePage.tsx
++++ b/evo-docs/src/pages/BadgePage.tsx
+@@ -102,28 +102,55 @@ export default function BadgePage() {
+       variant="outline"
+       removable
+       onRemove={() => setTags((t) => t.filter((x) => x !== tag))}
+     >
+       {tag}
+     </EvoBadge>
+   ))}
+ </EvoBadge.Group>`} />
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Detail popover</div>
++        <p className="docs-section-desc">
++          Pass <code>detail</code> to reveal extra status context on hover, keyboard focus,
++          or tap. The popover uses viewport-aware positioning — it flips and shifts to stay
++          on-screen and escapes <code>overflow: hidden</code> containers. It is a
++          hover/focus-first disclosure (on touch it taps to toggle); because the badge stays
++          label-sized, use it for supplementary detail, not as a primary touch control.
++        </p>
++        <div className="docs-preview">
++          <EvoBadge severity="success" dot detail="Deployed 2 min ago · commit a1b2c3d">
++            Live
++          </EvoBadge>
++          <EvoBadge severity="warning" dot detail="3 checks pending · retry in 30s">
++            Pending
++          </EvoBadge>
++          <EvoBadge severity="danger" dot detail="Build failed: 2 tests · view logs">
++            Failed
++          </EvoBadge>
++        </div>
++        <CodeBlock code={`<EvoBadge severity="success" dot detail="Deployed 2 min ago · commit a1b2c3d">
++  Live
++</EvoBadge>`} />
++      </div>
++
+       <EvoDivider />
+ 
+       <div className="docs-section">
+         <div className="docs-section-title">Props</div>
+         <PropsTable props={[
+           { prop: 'children', type: 'ReactNode', required: true, description: 'Badge content.' },
+           { prop: 'severity', type: "'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info'", default: "'primary'", description: 'Color theme.' },
+           { prop: 'variant', type: "'solid' | 'outline' | 'subtle'", default: "'solid'", description: 'Visual style.' },
+           { prop: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Badge size.' },
+           { prop: 'dot', type: 'boolean', default: 'false', description: 'Render a dot indicator before the content.' },
+           { prop: 'removable', type: 'boolean', default: 'false', description: 'Show a remove button.' },
+           { prop: 'onRemove', type: '() => void', description: 'Called when the remove button is clicked.' },
++          { prop: 'detail', type: 'ReactNode', description: 'Rich content revealed in a popover on hover / focus / tap. Descriptive (non-interactive).' },
++          { prop: 'detailPlacement', type: "'top' | 'bottom' | 'left' | 'right'", default: "'bottom'", description: 'Preferred popover side; flips automatically when there is no room.' },
+           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
+         ]} />
+       </div>
+     </div>
+   )
+ }
+diff --git a/evo-docs/src/pages/ChangelogPage.tsx b/evo-docs/src/pages/ChangelogPage.tsx
+index 40741fd..0fba6dd 100644
+--- a/evo-docs/src/pages/ChangelogPage.tsx
++++ b/evo-docs/src/pages/ChangelogPage.tsx
+@@ -18,20 +18,46 @@ type Release = {
+ 
+ const SEVERITY: Record<ChangeKind, 'success' | 'info' | 'warning' | 'danger'> = {
+   Created:  'success',
+   Added:    'success',
+   Changed:  'info',
+   Fixed:    'warning',
+   Breaking: 'danger',
+ }
+ 
+ const RELEASES: Release[] = [
++  {
++    version: '1.3.0',
++    date: '2026-07-12',
++    summary:
++      'Viewport-aware positioning across every floating layer: dropdowns flip near the screen edge, EvoBadge gains a hover detail popover, and EvoTooltip auto-flips — all on one shared zero-dependency hook.',
++    sections: [
++      {
++        kind: 'Added',
++        items: [
++          'EvoBadge — new `detail` prop renders a rich popover on hover / focus / tap (with `detailPlacement` to set the preferred side). It uses viewport-aware positioning: flips and shifts to stay on-screen and escapes `overflow: hidden` / scroll containers. EvoBadge now also forwards `ref` and spreads standard HTML attributes.',
++        ],
++      },
++      {
++        kind: 'Fixed',
++        items: [
++          'EvoSelect, EvoAutoComplete, EvoTreeSelect — the dropdown menu no longer clips or overflows when the trigger sits near the bottom of the viewport. It now measures available space, flips upward when needed, and renders in a portal so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). (#10)',
++        ],
++      },
++      {
++        kind: 'Changed',
++        items: [
++          'EvoTooltip — `placement` is now the *preferred* side: the tooltip auto-flips to the opposite side and shifts to stay fully on-screen when the preferred side lacks room, and renders in a portal so it is never clipped. Existing `placement` values keep working unchanged when they fit.',
++        ],
++      },
++    ],
++  },
+   {
+     version: '1.2.0',
+     date: '2026-06-22',
+     summary:
+       'EvoTopNav gains an opt-in entrance animation, sticky scroll-aware behavior, a scroll-progress line, and a new Search (⌘K) part — plus image-caret and checkbox-tick fixes.',
+     sections: [
+       {
+         kind: 'Added',
+         items: [
+           'EvoTopNav — `entrance` prop (`none` | `rise` | `fade`) staggers the brand, menu items, search and actions up on mount; plays once and is disabled under `prefers-reduced-motion`.',
+diff --git a/evo-docs/src/pages/SelectPage.tsx b/evo-docs/src/pages/SelectPage.tsx
+index 479f639..1cb3232 100644
+--- a/evo-docs/src/pages/SelectPage.tsx
++++ b/evo-docs/src/pages/SelectPage.tsx
+@@ -58,20 +58,30 @@ export default function SelectPage() {
+         <p className="docs-page-desc">
+           A fully custom dropdown — keyboard-navigable, screen-reader friendly,
+           with rich options (icons + descriptions), in-menu search, clearable values,
+           smooth animations, and a polished dark-mode aesthetic.
+         </p>
+         <div className="docs-import-line">
+           import {'{ '}<span>EvoSelect</span>{' }'} from '@justin_evo/evo-ui'
+         </div>
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Viewport-aware menu</div>
++        <p className="docs-section-desc">
++          The dropdown measures available space when it opens and flips upward when the
++          trigger sits near the bottom of the viewport. It renders in a portal, so it is
++          never clipped by <code>overflow: hidden</code> or scroll containers — including
++          inside an <code>EvoModal</code>. Fully automatic; no configuration.
++        </p>
++      </div>
++
+       <div className="docs-section">
+         <div className="docs-section-title">Basic</div>
+         <div className="docs-preview col">
+           <EvoSelect
+             label="Country"
+             options={basicCountries}
+             placeholder="Select a country"
+             value={country}
+             onChange={setCountry}
+             helperText="Used for billing region"
+diff --git a/evo-docs/src/pages/TooltipPage.tsx b/evo-docs/src/pages/TooltipPage.tsx
+index 6edd25b..5380ffd 100644
+--- a/evo-docs/src/pages/TooltipPage.tsx
++++ b/evo-docs/src/pages/TooltipPage.tsx
+@@ -10,20 +10,29 @@ export default function TooltipPage() {
+         <h1 className="docs-page-title">EvoTooltip</h1>
+         <p className="docs-page-desc">
+           A floating label that appears on hover or focus. Supports four placement directions
+           and any ReactNode as content.
+         </p>
+         <div className="docs-import-line">
+           import {'{ '}<span>EvoTooltip</span>{' }'} from '@justin_evo/evo-ui'
+         </div>
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Auto-flip</div>
++        <p className="docs-section-desc">
++          <code>placement</code> is the <em>preferred</em> side. If there isn't room there,
++          the tooltip flips to the opposite side and shifts to stay fully on-screen, so it
++          never renders off the edge or clipped by a scroll container.
++        </p>
++      </div>
++
+       <div className="docs-section">
+         <div className="docs-section-title">Placements</div>
+         <div className="docs-preview center" style={{ gap: '1.5rem', paddingBlock: '3rem' }}>
+           <EvoTooltip content="Tooltip on top" placement="top">
+             <EvoButton label="Top" variant="outline" />
+           </EvoTooltip>
+           <EvoTooltip content="Tooltip on bottom" placement="bottom">
+             <EvoButton label="Bottom" variant="outline" />
+           </EvoTooltip>
+           <EvoTooltip content="Tooltip on left" placement="left">
+diff --git a/evo-docs/src/pages/TreeSelectPage.tsx b/evo-docs/src/pages/TreeSelectPage.tsx
+index e548767..27b9b70 100644
+--- a/evo-docs/src/pages/TreeSelectPage.tsx
++++ b/evo-docs/src/pages/TreeSelectPage.tsx
+@@ -132,20 +132,30 @@ export default function TreeSelectPage() {
+           Built with the W3C tree pattern in mind — expand/collapse, tri-state cascade
+           checkboxes, in-menu search that auto-expands matches, async lazy loading,
+           and chip rendering with overflow. Lightweight, fully keyboard-driven, and
+           tuned to match the rest of the Evo UI dark aesthetic.
+         </p>
+         <div className="docs-import-line">
+           import {'{ '}<span>EvoTreeSelect</span>{' }'} from '@justin_evo/evo-ui'
+         </div>
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Viewport-aware menu</div>
++        <p className="docs-section-desc">
++          The dropdown measures available space when it opens and flips upward when the
++          trigger sits near the bottom of the viewport. It renders in a portal, so it is
++          never clipped by <code>overflow: hidden</code> or scroll containers — including
++          inside an <code>EvoModal</code>. Fully automatic; no configuration.
++        </p>
++      </div>
++
+       <div className="docs-section">
+         <div className="docs-section-title">Basic (single-select)</div>
+         <div className="docs-preview col">
+           <EvoTreeSelect
+             label="Region"
+             data={regions}
+             value={single}
+             onChange={(v) => setSingle(v as string)}
+             placeholder="Choose a region"
+             defaultExpandedKeys={['eu']}
+diff --git a/evo-ui/package.json b/evo-ui/package.json
+index 7192eb0..1b7075d 100644
+--- a/evo-ui/package.json
++++ b/evo-ui/package.json
+@@ -1,13 +1,13 @@
+ {
+   "name": "@justin_evo/evo-ui",
+-  "version": "1.2.1",
++  "version": "1.3.0",
+   "main": "dist/index.cjs.js",
+   "module": "dist/index.es.js",
+   "types": "dist/index.d.ts",
+   "style": "dist/evo-ui.css",
+   "exports": {
+     ".": {
+       "types": "./dist/index.d.ts",
+       "import": "./dist/index.es.js",
+       "require": "./dist/index.cjs.js"
+     },
+diff --git a/evo-ui/src/AutoComplete/AutoComplete.tsx b/evo-ui/src/AutoComplete/AutoComplete.tsx
+index 43cb973..d53ebba 100644
+--- a/evo-ui/src/AutoComplete/AutoComplete.tsx
++++ b/evo-ui/src/AutoComplete/AutoComplete.tsx
+@@ -1,19 +1,21 @@
+ import React, {
+   forwardRef,
+   useCallback,
+   useEffect,
+   useId,
+   useMemo,
+   useRef,
+   useState,
+ } from 'react';
++import ReactDOM from 'react-dom';
++import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
+ import styles from '../css/autocomplete.module.scss';
+ 
+ /* =====================================================================
+  * EvoAutoComplete — editable combobox with list autocomplete.
+  *
+  * Research / design decisions (see CLAUDE.md §2 "research"):
+  *  - MUI Autocomplete  → got the controlled `value` + `inputValue` split
+  *    right; we keep it. Got bundle size wrong; we stay zero-runtime CSS.
+  *  - Downshift / Headless UI → got strict WAI-ARIA combobox right
+  *    (aria-activedescendant, focus stays on the input); we follow it.
+@@ -354,20 +356,29 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+     );
+ 
+     /* ---- open / active descendant ---- */
+     const [open, setOpen] = useState(false);
+     const [activeIdx, setActiveIdx] = useState(0);
+ 
+     const wrapperRef = useRef<HTMLDivElement>(null);
+     const inputRef = useRef<HTMLInputElement>(null);
+     const listRef = useRef<HTMLDivElement>(null);
+     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
++    const anchorRef = useRef<HTMLDivElement>(null);
++
++    const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
++      open,
++      anchorRef,
++      placement: 'bottom',
++      offset: 6,
++      matchAnchorWidth: true,
++    });
+ 
+     /* Merge the forwarded ref with our internal one. */
+     const setInputRef = useCallback(
+       (node: HTMLInputElement | null) => {
+         inputRef.current = node;
+         if (typeof ref === 'function') ref(node);
+         else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
+       },
+       [ref],
+     );
+@@ -409,21 +420,22 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+       return findNearest(options, trimmed);
+     }, [smartRecovery, loading, belowMin, showRecents, results.length, trimmed, options]);
+ 
+     /* The keyboard-navigable set: the recovery suggestion, else the results. */
+     const navItems = recovery ? [recovery.option] : results;
+ 
+     /* ---- close on outside click ---- */
+     useEffect(() => {
+       if (!open) return;
+       const handler = (e: MouseEvent) => {
+-        if (!wrapperRef.current?.contains(e.target as Node)) closeMenu();
++        const t = e.target as Node;
++        if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) closeMenu();
+       };
+       document.addEventListener('mousedown', handler);
+       return () => document.removeEventListener('mousedown', handler);
+       // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [open]);
+ 
+     /* ---- keep the active row in view ---- */
+     useEffect(() => {
+       if (!open) return;
+       const el = listRef.current?.querySelector(
+@@ -671,20 +683,21 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+           .join(' ')}
+       >
+         {label && (
+           <label htmlFor={acId} className={styles.label}>
+             {label}
+           </label>
+         )}
+ 
+         <div className={styles.acWrapper}>
+           <div
++            ref={anchorRef}
+             className={[
+               styles.inputWrapper,
+               sizeClass,
+               open ? styles.open : '',
+               error ? styles.hasError : '',
+             ]
+               .filter(Boolean)
+               .join(' ')}
+           >
+             <span className={styles.searchIconWrap} aria-hidden="true">
+@@ -729,23 +742,26 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+                   className={styles.clearBtn}
+                   onClick={handleClear}
+                   onMouseDown={(e) => e.preventDefault()}
+                 >
+                   <ClearIcon />
+                 </button>
+               )}
+             </span>
+           </div>
+ 
+-          {open && (
++          {open && typeof document !== 'undefined' && ReactDOM.createPortal(
+             <div
++              ref={floatingRef}
+               className={styles.menu}
++              data-placement={placement}
++              style={floatingStyles}
+               role="listbox"
+               id={listId}
+               aria-label={label ?? 'Suggestions'}
+             >
+               {loading ? (
+                 <div className={styles.statusRow}>
+                   <SpinnerIcon />
+                   <span>Loading…</span>
+                 </div>
+               ) : belowMin ? (
+@@ -779,21 +795,22 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+                     {navItems.map((opt, idx) =>
+                       renderRow(opt, idx, showRecents ? 'recent' : 'option'),
+                     )}
+                   </div>
+                 </>
+               ) : trimmed.length === 0 ? (
+                 <div className={styles.empty}>Type to search…</div>
+               ) : (
+                 <div className={styles.empty}>{emptyMessage}</div>
+               )}
+-            </div>
++            </div>,
++            document.body,
+           )}
+ 
+           {name && <input type="hidden" name={name} value={value ?? ''} />}
+         </div>
+ 
+         {error && (
+           <p id={`${acId}-error`} className={styles.errorText}>
+             {error}
+           </p>
+         )}
+diff --git a/evo-ui/src/Badge/Badge.tsx b/evo-ui/src/Badge/Badge.tsx
+index 483bb90..908f2e3 100644
+--- a/evo-ui/src/Badge/Badge.tsx
++++ b/evo-ui/src/Badge/Badge.tsx
+@@ -1,53 +1,181 @@
+-import React from 'react';
++import React, { forwardRef, useCallback, useEffect, useId, useRef, useState } from 'react';
++import ReactDOM from 'react-dom';
+ import styles from '../css/badge.module.scss';
++import { useAnchoredPosition, type AnchorSide } from '../hooks/useAnchoredPosition';
+ 
+ type BadgeSeverity = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
+ type BadgeVariant = 'solid' | 'outline' | 'subtle';
+ type BadgeSize = 'sm' | 'md' | 'lg';
+ 
+-interface EvoBadgeProps {
++export interface EvoBadgeProps
++  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'> {
+   children: React.ReactNode;
+   severity?: BadgeSeverity;
+   variant?: BadgeVariant;
+   size?: BadgeSize;
+   dot?: boolean;
+   removable?: boolean;
+   onRemove?: () => void;
++  /** Rich content revealed in a popover on hover / focus / tap. Descriptive, non-interactive. */
++  detail?: React.ReactNode;
++  /** Preferred popover side; flips when there is no room. Default 'bottom'. */
++  detailPlacement?: AnchorSide;
+   className?: string;
+ }
+ 
+ interface EvoBadgeGroupProps {
+   children: React.ReactNode;
+   className?: string;
+ }
+ 
+ const EvoBadgeGroup = ({ children, className = '' }: EvoBadgeGroupProps) => (
+   <div className={`${styles.badgeGroup} ${className}`}>{children}</div>
+ );
+ 
+-export const EvoBadge = ({
+-  children,
+-  severity = 'primary',
+-  variant = 'solid',
+-  size = 'md',
+-  dot = false,
+-  removable = false,
+-  onRemove,
+-  className = '',
+-}: EvoBadgeProps) => (
+-  <span
+-    className={[styles.badge, styles[severity], styles[variant], styles[size], className]
+-      .filter(Boolean)
+-      .join(' ')}
+-  >
+-    {dot && <span className={styles.dot} />}
+-    {children}
+-    {removable && (
+-      <button className={styles.removeBtn} onClick={onRemove} aria-label="Remove">
+-        ✕
+-      </button>
+-    )}
+-  </span>
+-);
++const OPEN_DELAY = 120;
++const CLOSE_DELAY = 140;
++
++const EvoBadgeBase = forwardRef<HTMLSpanElement, EvoBadgeProps>(function EvoBadge(
++  {
++    children,
++    severity = 'primary',
++    variant = 'solid',
++    size = 'md',
++    dot = false,
++    removable = false,
++    onRemove,
++    detail,
++    detailPlacement = 'bottom',
++    className = '',
++    ...rest
++  },
++  ref,
++) {
++  const hasDetail = detail != null;
++
++  // Merge the forwarded ref with our internal anchor ref (needed for positioning).
++  const anchorRef = useRef<HTMLSpanElement | null>(null);
++  const setRef = useCallback(
++    (node: HTMLSpanElement | null) => {
++      anchorRef.current = node;
++      if (typeof ref === 'function') ref(node);
++      else if (ref) (ref as React.MutableRefObject<HTMLSpanElement | null>).current = node;
++    },
++    [ref],
++  );
++
++  const [open, setOpen] = useState(false);
++  const popoverId = useId();
++  const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
++  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
++
++  const clearTimers = useCallback(() => {
++    if (openTimer.current) { clearTimeout(openTimer.current); openTimer.current = null; }
++    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
++  }, []);
++
++  // Hover-intent: small open/close delays prevent flicker across a row of badges, and
++  // the close delay bridges the gap from the badge onto the popover.
++  const scheduleOpen = useCallback(() => {
++    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
++    if (open || openTimer.current) return;
++    openTimer.current = setTimeout(() => { setOpen(true); openTimer.current = null; }, OPEN_DELAY);
++  }, [open]);
++
++  const scheduleClose = useCallback(() => {
++    if (openTimer.current) { clearTimeout(openTimer.current); openTimer.current = null; }
++    if (!open || closeTimer.current) return;
++    closeTimer.current = setTimeout(() => { setOpen(false); closeTimer.current = null; }, CLOSE_DELAY);
++  }, [open]);
++
++  const cancelClose = useCallback(() => {
++    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
++  }, []);
++
++  useEffect(() => clearTimers, [clearTimers]);
++
++  // If `detail` is removed while the popover is open, close it so it can't
++  // auto-reappear from stale state when `detail` returns.
++  useEffect(() => {
++    if (!hasDetail) setOpen(false);
++  }, [hasDetail]);
++
++  const { floatingRef, floatingStyles, arrowStyles, placement } = useAnchoredPosition({
++    open: open && hasDetail,
++    anchorRef,
++    placement: detailPlacement,
++    offset: 8,
++  });
++
++  const badgeClass = [
++    styles.badge,
++    styles[severity],
++    styles[variant],
++    styles[size],
++    hasDetail ? styles.interactive : '',
++    className,
++  ]
++    .filter(Boolean)
++    .join(' ');
++
++  // Typed as HTMLAttributes so both branches JSX-spread cleanly (a `null` fallback
++  // is not a valid spread type). Empty object when there is no detail popover.
++  const interactiveProps: React.HTMLAttributes<HTMLSpanElement> = hasDetail
++    ? {
++        tabIndex: 0,
++        'aria-describedby': open ? popoverId : undefined,
++        onMouseEnter: scheduleOpen,
++        onMouseLeave: scheduleClose,
++        onFocus: () => { clearTimers(); setOpen(true); },
++        onBlur: () => { clearTimers(); setOpen(false); },
++        onClick: () => { clearTimers(); setOpen((o) => !o); }, // touch / tap toggle
++        onKeyDown: (e) => {
++          if (e.key === 'Escape' && open) { clearTimers(); setOpen(false); }
++        },
++      }
++    : {};
++
++  return (
++    <>
++      <span ref={setRef} className={badgeClass} {...rest} {...interactiveProps}>
++        {dot && <span className={styles.dot} />}
++        {children}
++        {removable && (
++          <button
++            type="button"
++            className={styles.removeBtn}
++            onClick={(e) => { e.stopPropagation(); onRemove?.(); }}
++            aria-label="Remove"
++          >
++            ✕
++          </button>
++        )}
++      </span>
++
++      {hasDetail && open && typeof document !== 'undefined' &&
++        ReactDOM.createPortal(
++          <div
++            ref={floatingRef}
++            id={popoverId}
++            role="tooltip"
++            className={styles.detailPopover}
++            data-placement={placement}
++            style={floatingStyles}
++            onMouseEnter={cancelClose}
++            onMouseLeave={scheduleClose}
++          >
++            {detail}
++            <span className={styles.detailArrow} data-placement={placement} style={arrowStyles} />
++          </div>,
++          document.body,
++        )}
++    </>
++  );
++});
++
++EvoBadgeBase.displayName = 'EvoBadge';
++
++type EvoBadgeComponent = typeof EvoBadgeBase & { Group: typeof EvoBadgeGroup };
+ 
++export const EvoBadge = EvoBadgeBase as EvoBadgeComponent;
+ EvoBadge.Group = EvoBadgeGroup;
+diff --git a/evo-ui/src/Select/Select.tsx b/evo-ui/src/Select/Select.tsx
+index f1b7b49..e9adebc 100644
+--- a/evo-ui/src/Select/Select.tsx
++++ b/evo-ui/src/Select/Select.tsx
+@@ -1,11 +1,13 @@
+ import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
++import ReactDOM from 'react-dom';
++import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
+ import styles from '../css/select.module.scss';
+ 
+ export interface SelectOption {
+   value: string;
+   label: string;
+   description?: string;
+   icon?: React.ReactNode;
+   disabled?: boolean;
+ }
+ 
+@@ -114,20 +116,28 @@ export const EvoSelect = (props: EvoSelectProps) => {
+ 
+   const [open, setOpen] = useState(false);
+   const [activeIdx, setActiveIdx] = useState(-1);
+   const [query, setQuery] = useState('');
+ 
+   const wrapperRef = useRef<HTMLDivElement>(null);
+   const triggerRef = useRef<HTMLButtonElement>(null);
+   const searchRef = useRef<HTMLInputElement>(null);
+   const listRef = useRef<HTMLDivElement>(null);
+ 
++  const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
++    open,
++    anchorRef: triggerRef,
++    placement: 'bottom',
++    offset: 6,
++    matchAnchorWidth: true,
++  });
++
+   const filtered = searchable && query
+     ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
+     : options;
+ 
+   const selectedOption = !isMultiple
+     ? options.find(o => o.value === value)
+     : undefined;
+ 
+   const selectedOptions = isMultiple
+     ? options.filter(o => selectedValues.includes(o.value))
+@@ -154,21 +164,24 @@ export const EvoSelect = (props: EvoSelectProps) => {
+         emit([...current, v]);
+       }
+     } else {
+       emit(v);
+     }
+   }, [emit, isMultiple, maxSelections, value]);
+ 
+   useEffect(() => {
+     if (!open) return;
+     const handler = (e: MouseEvent) => {
+-      if (!wrapperRef.current?.contains(e.target as Node)) {
++      const t = e.target as Node;
++      // The menu is portaled to <body>, so it is no longer a DOM child of the
++      // wrapper — check it explicitly or clicking an option would close first.
++      if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) {
+         setOpen(false);
+         setQuery('');
+       }
+     };
+     document.addEventListener('mousedown', handler);
+     return () => document.removeEventListener('mousedown', handler);
+   }, [open]);
+ 
+   useEffect(() => {
+     if (open) {
+@@ -391,23 +404,26 @@ export const EvoSelect = (props: EvoSelectProps) => {
+               >
+                 <ClearIcon />
+               </span>
+             )}
+             <span className={[styles.chevron, open ? styles.chevronOpen : ''].filter(Boolean).join(' ')}>
+               <ChevronIcon />
+             </span>
+           </span>
+         </button>
+ 
+-        {open && (
++        {open && typeof document !== 'undefined' && ReactDOM.createPortal(
+           <div
++            ref={floatingRef}
+             className={styles.menu}
++            data-placement={placement}
++            style={floatingStyles}
+             role="listbox"
+             id={listId}
+             aria-labelledby={selectId}
+             aria-multiselectable={isMultiple || undefined}
+             aria-activedescendant={activeIdx >= 0 ? `${selectId}-opt-${activeIdx}` : undefined}
+           >
+             {searchable && (
+               <div className={styles.searchRow}>
+                 <span className={styles.searchIconWrap}><SearchIcon /></span>
+                 <input
+@@ -492,21 +508,22 @@ export const EvoSelect = (props: EvoSelectProps) => {
+                       {!isMultiple && (
+                         <span className={styles.check} aria-hidden>
+                           {isSelected && <CheckIcon />}
+                         </span>
+                       )}
+                     </div>
+                   );
+                 })
+               )}
+             </div>
+-          </div>
++          </div>,
++          document.body,
+         )}
+ 
+         {name && !isMultiple && <input type="hidden" name={name} value={value as string} />}
+         {name && isMultiple && selectedValues.map(v => (
+           <input key={v} type="hidden" name={name} value={v} />
+         ))}
+       </div>
+ 
+       {error && <p className={styles.errorText}>{error}</p>}
+       {!error && helperText && <p className={styles.helperText}>{helperText}</p>}
+diff --git a/evo-ui/src/Tooltip/Tooltip.tsx b/evo-ui/src/Tooltip/Tooltip.tsx
+index bc4bcb5..7df1575 100644
+--- a/evo-ui/src/Tooltip/Tooltip.tsx
++++ b/evo-ui/src/Tooltip/Tooltip.tsx
+@@ -1,38 +1,58 @@
+-import React, { useState } from 'react';
++import React, { useRef, useState } from 'react';
++import ReactDOM from 'react-dom';
+ import styles from '../css/tooltip.module.scss';
++import { useAnchoredPosition, type AnchorSide } from '../hooks/useAnchoredPosition';
+ 
+-type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
++type TooltipPlacement = AnchorSide;
+ 
+ interface EvoTooltipProps {
+   content: React.ReactNode;
+   children: React.ReactNode;
++  /** Preferred side; flips automatically when there is no room. Default 'top'. */
+   placement?: TooltipPlacement;
+   className?: string;
+ }
+ 
+ export const EvoTooltip = ({
+   content,
+   children,
+   placement = 'top',
+   className = '',
+ }: EvoTooltipProps) => {
+-  const [visible, setVisible] = useState(false);
++  const [open, setOpen] = useState(false);
++  const anchorRef = useRef<HTMLSpanElement>(null);
++
++  const { floatingRef, floatingStyles, arrowStyles, placement: side } = useAnchoredPosition({
++    open,
++    anchorRef,
++    placement,
++    offset: 8,
++  });
+ 
+   return (
+     <span
++      ref={anchorRef}
+       className={`${styles.wrapper} ${className}`}
+-      onMouseEnter={() => setVisible(true)}
+-      onMouseLeave={() => setVisible(false)}
+-      onFocus={() => setVisible(true)}
+-      onBlur={() => setVisible(false)}
++      onMouseEnter={() => setOpen(true)}
++      onMouseLeave={() => setOpen(false)}
++      onFocus={() => setOpen(true)}
++      onBlur={() => setOpen(false)}
+     >
+       {children}
+-      {visible && (
+-        <span className={`${styles.tooltip} ${styles[placement]}`} role="tooltip">
+-          {content}
+-          <span className={styles.arrow} />
+-        </span>
+-      )}
++      {open && typeof document !== 'undefined' &&
++        ReactDOM.createPortal(
++          <div
++            ref={floatingRef}
++            className={styles.tooltip}
++            data-placement={side}
++            style={floatingStyles}
++            role="tooltip"
++          >
++            {content}
++            <span className={styles.arrow} data-placement={side} style={arrowStyles} />
++          </div>,
++          document.body,
++        )}
+     </span>
+   );
+ };
+diff --git a/evo-ui/src/TreeSelect/TreeSelect.tsx b/evo-ui/src/TreeSelect/TreeSelect.tsx
+index a6e749e..8a5d5c9 100644
+--- a/evo-ui/src/TreeSelect/TreeSelect.tsx
++++ b/evo-ui/src/TreeSelect/TreeSelect.tsx
+@@ -1,11 +1,13 @@
+ import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
++import ReactDOM from 'react-dom';
++import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
+ import styles from '../css/treeselect.module.scss';
+ 
+ /* ---------------- Types ---------------- */
+ 
+ export interface TreeNode {
+   value: string;
+   label: string;
+   description?: string;
+   icon?: React.ReactNode;
+   disabled?: boolean;
+@@ -281,20 +283,28 @@ export const EvoTreeSelect = ({
+   /* -------- Open / focus / search -------- */
+   const [open, setOpen] = useState(false);
+   const [query, setQuery] = useState('');
+   const [activeIdx, setActiveIdx] = useState(-1);
+ 
+   const wrapperRef = useRef<HTMLDivElement>(null);
+   const triggerRef = useRef<HTMLButtonElement>(null);
+   const searchRef = useRef<HTMLInputElement>(null);
+   const listRef = useRef<HTMLDivElement>(null);
+ 
++  const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
++    open,
++    anchorRef: triggerRef,
++    placement: 'bottom',
++    offset: 6,
++    matchAnchorWidth: true,
++  });
++
+   /* -------- Filter (search) -------- */
+   const filterResult = useMemo(() => {
+     if (!searchable || !query.trim()) return null;
+     return filterTree(mergedData, query, filter);
+   }, [mergedData, query, searchable, filter]);
+ 
+   /* When searching, auto-expand everything visible so matches are reachable. */
+   const effectiveExpanded = useMemo(() => {
+     if (filterResult) return filterResult.visible;
+     return expandedSet;
+@@ -466,21 +476,22 @@ export const EvoTreeSelect = ({
+   }, [
+     multiple, checkStrictly, values, rawLeafSet,
+     checkStateFor, commitMulti, commitSingle,
+     isControlled, maps.nodeByValue, onChange,
+   ]);
+ 
+   /* -------- Open / close lifecycle -------- */
+   useEffect(() => {
+     if (!open) return;
+     const handler = (e: MouseEvent) => {
+-      if (!wrapperRef.current?.contains(e.target as Node)) {
++      const t = e.target as Node;
++      if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) {
+         setOpen(false);
+         setQuery('');
+       }
+     };
+     document.addEventListener('mousedown', handler);
+     return () => document.removeEventListener('mousedown', handler);
+   }, [open]);
+ 
+   useEffect(() => {
+     if (open) {
+@@ -762,22 +773,27 @@ export const EvoTreeSelect = ({
+                 onClick={handleClear}
+                 onMouseDown={e => e.preventDefault()}
+               ><ClearIcon /></span>
+             )}
+             <span className={[styles.chevron, open ? styles.chevronOpen : ''].filter(Boolean).join(' ')}>
+               <ChevronDown />
+             </span>
+           </span>
+         </button>
+ 
+-        {open && (
+-          <div className={styles.menu}>
++        {open && typeof document !== 'undefined' && ReactDOM.createPortal(
++          <div
++            ref={floatingRef}
++            className={styles.menu}
++            data-placement={placement}
++            style={floatingStyles}
++          >
+             {searchable && (
+               <div className={styles.searchRow}>
+                 <span className={styles.searchIconWrap}><SearchIcon /></span>
+                 <input
+                   ref={searchRef}
+                   type="text"
+                   className={styles.searchInput}
+                   placeholder="Search..."
+                   value={query}
+                   onChange={e => { setQuery(e.target.value); setActiveIdx(0); }}
+@@ -805,21 +821,22 @@ export const EvoTreeSelect = ({
+             {multiple && hasValue && (
+               <div className={styles.menuFooter}>
+                 <span>{values.length} selected</span>
+                 <button
+                   type="button"
+                   className={styles.footerBtn}
+                   onClick={() => commitMulti(new Set())}
+                 >Clear all</button>
+               </div>
+             )}
+-          </div>
++          </div>,
++          document.body,
+         )}
+ 
+         {name && <input type="hidden" name={name} value={hiddenInputValue} />}
+       </div>
+ 
+       {error && <p className={styles.errorText}>{error}</p>}
+       {!error && helperText && <p className={styles.helperText}>{helperText}</p>}
+     </div>
+   );
+ };
+diff --git a/evo-ui/src/css/autocomplete.module.scss b/evo-ui/src/css/autocomplete.module.scss
+index 8328874..8c60b03 100644
+--- a/evo-ui/src/css/autocomplete.module.scss
++++ b/evo-ui/src/css/autocomplete.module.scss
+@@ -184,25 +184,21 @@
+ @media (prefers-reduced-motion: reduce) {
+   .spinner {
+     animation-duration: 2s;
+   }
+ }
+ 
+ /* =====================================================================
+  * Dropdown menu
+  * =================================================================== */
+ .menu {
+-  position: absolute;
+-  top: calc(100% + 6px);
+-  left: 0;
+-  right: 0;
+-  z-index: 100;
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+ 
+   background: $color-surface-elevated;
+   border: 1px solid $color-border;
+   border-radius: $radius-md;
+   overflow: hidden;
+ 
+   box-shadow:
+     0 16px 32px -12px rgb(0 0 0 / 0.35),
+     0 6px 12px -4px rgb(0 0 0 / 0.18);
+ 
+@@ -214,20 +210,30 @@
+   from {
+     opacity: 0;
+     transform: translateY(-6px) scale(0.97);
+   }
+   to {
+     opacity: 1;
+     transform: translateY(0) scale(1);
+   }
+ }
+ 
++.menu[data-placement='top'] {
++  transform-origin: bottom center;
++  animation-name: evoAcMenuOpenUp;
++}
++
++@keyframes evoAcMenuOpenUp {
++  from { opacity: 0; transform: translateY(6px) scale(0.97); }
++  to   { opacity: 1; transform: translateY(0) scale(1); }
++}
++
+ @media (prefers-reduced-motion: reduce) {
+   .menu {
+     animation: none;
+   }
+ }
+ 
+ /* ---------------- Section header (Recents / Smart Recovery) -------- */
+ .sectionHeader {
+   display: flex;
+   align-items: center;
+diff --git a/evo-ui/src/css/badge.module.scss b/evo-ui/src/css/badge.module.scss
+index 21e7070..0da7147 100644
+--- a/evo-ui/src/css/badge.module.scss
++++ b/evo-ui/src/css/badge.module.scss
+@@ -73,10 +73,85 @@
+ 
+   &:hover { opacity: 1; }
+ }
+ 
+ .badgeGroup {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 0.375rem;
+   align-items: center;
+ }
++
++/* ===================================================================
++ * detail popover (hover / focus / tap) — positioned by useAnchoredPosition
++ * =================================================================== */
++.interactive {
++  cursor: default;
++
++  &:focus-visible {
++    outline: 2px solid $evo-primary-color;
++    outline-offset: 2px;
++  }
++}
++
++.detailPopover {
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
++  max-width: 18rem;
++  padding: 0.625rem 0.75rem;
++  background: $color-surface-elevated;
++  color: $color-text-primary;
++  border: 1px solid $color-border;
++  border-radius: $radius-md;
++  box-shadow: $shadow-lg;
++  font-family: $font-sans;
++  font-size: $text-xs;
++  font-weight: 400;
++  line-height: 1.5;
++  white-space: normal;
++  animation: badgeDetailIn 160ms cubic-bezier(0.16, 1, 0.3, 1);
++}
++
++@keyframes badgeDetailIn {
++  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
++  to   { opacity: 1; transform: translateY(0) scale(1); }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .detailPopover { animation: none; }
++}
++
++.detailPopover[data-placement='top']    { transform-origin: bottom center; }
++.detailPopover[data-placement='bottom'] { transform-origin: top center; }
++.detailPopover[data-placement='left']   { transform-origin: center right; }
++.detailPopover[data-placement='right']  { transform-origin: center left; }
++
++.detailArrow {
++  position: absolute;
++  width: 0;
++  height: 0;
++  border: 6px solid transparent;
++
++  .detailPopover[data-placement='bottom'] & {
++    bottom: 100%;
++    transform: translateX(-50%);
++    border-bottom-color: $color-surface-elevated;
++    border-top: none;
++  }
++  .detailPopover[data-placement='top'] & {
++    top: 100%;
++    transform: translateX(-50%);
++    border-top-color: $color-surface-elevated;
++    border-bottom: none;
++  }
++  .detailPopover[data-placement='right'] & {
++    right: 100%;
++    transform: translateY(-50%);
++    border-right-color: $color-surface-elevated;
++    border-left: none;
++  }
++  .detailPopover[data-placement='left'] & {
++    left: 100%;
++    transform: translateY(-50%);
++    border-left-color: $color-surface-elevated;
++    border-right: none;
++  }
++}
+diff --git a/evo-ui/src/css/select.module.scss b/evo-ui/src/css/select.module.scss
+index d431832..2bae414 100644
+--- a/evo-ui/src/css/select.module.scss
++++ b/evo-ui/src/css/select.module.scss
+@@ -258,25 +258,21 @@
+ }
+ 
+ .trigger:hover:not(:disabled) .chevron {
+   color: $color-text-secondary;
+ }
+ 
+ /* ===================================================================
+  * Dropdown menu
+  * =================================================================== */
+ .menu {
+-  position: absolute;
+-  top: calc(100% + 6px);
+-  left: 0;
+-  right: 0;
+-  z-index: 100;
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+ 
+   background: $color-surface-elevated;
+   border: 1px solid $color-border;
+   border-radius: $radius-md;
+   overflow: hidden;
+ 
+   box-shadow:
+     0 16px 32px -12px rgb(0 0 0 / 0.35),
+     0 6px 12px -4px rgb(0 0 0 / 0.18);
+ 
+@@ -288,20 +284,31 @@
+   from {
+     opacity: 0;
+     transform: translateY(-6px) scale(0.97);
+   }
+   to {
+     opacity: 1;
+     transform: translateY(0) scale(1);
+   }
+ }
+ 
++/* Opened upward (flipped by useAnchoredPosition): grow from the bottom edge. */
++.menu[data-placement='top'] {
++  transform-origin: bottom center;
++  animation-name: menuOpenUp;
++}
++
++@keyframes menuOpenUp {
++  from { opacity: 0; transform: translateY(6px) scale(0.97); }
++  to   { opacity: 1; transform: translateY(0) scale(1); }
++}
++
+ /* ---------------- In-menu search row ---------------- */
+ .searchRow {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   padding: 0.5rem 0.75rem;
+   border-bottom: 1px solid $color-border-subtle;
+   background: $color-surface-sunken;
+ }
+ 
+diff --git a/evo-ui/src/css/tooltip.module.scss b/evo-ui/src/css/tooltip.module.scss
+index cc04bd0..5e7b204 100644
+--- a/evo-ui/src/css/tooltip.module.scss
++++ b/evo-ui/src/css/tooltip.module.scss
+@@ -6,92 +6,60 @@
+   to   { opacity: 1; transform: scale(1); }
+ }
+ 
+ .wrapper {
+   position: relative;
+   display: inline-flex;
+   align-items: center;
+ }
+ 
+ .tooltip {
+-  position: absolute;
+-  z-index: 9000;
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+   padding: 0.375rem 0.625rem;
+   background-color: $color-surface-elevated;
+   color: $color-text-primary;
+   font-size: $text-xs;
+   font-family: $font-sans;
+   border-radius: $radius-sm;
+   white-space: nowrap;
+   box-shadow: $shadow-lg;
+   border: 1px solid $color-border;
+   pointer-events: none;
+   animation: tooltipFadeIn 150ms ease;
+   line-height: 1.4;
++}
+ 
+-  &.top {
+-    bottom: calc(100% + 8px);
+-    left: 50%;
+-    transform: translateX(-50%);
+-  }
+-
+-  &.bottom {
+-    top: calc(100% + 8px);
+-    left: 50%;
+-    transform: translateX(-50%);
+-  }
+-
+-  &.left {
+-    right: calc(100% + 8px);
+-    top: 50%;
+-    transform: translateY(-50%);
+-  }
+-
+-  &.right {
+-    left: calc(100% + 8px);
+-    top: 50%;
+-    transform: translateY(-50%);
+-  }
++@media (prefers-reduced-motion: reduce) {
++  .tooltip { animation: none; }
+ }
+ 
+ .arrow {
+   position: absolute;
+   width: 0;
+   height: 0;
+   border: 5px solid transparent;
+ 
+-  .top & {
++  .tooltip[data-placement='top'] & {
+     top: 100%;
+-    left: 50%;
+     transform: translateX(-50%);
+     border-top-color: $color-surface-elevated;
+     border-bottom: none;
+-    border-top-width: 5px;
+   }
+-
+-  .bottom & {
++  .tooltip[data-placement='bottom'] & {
+     bottom: 100%;
+-    left: 50%;
+     transform: translateX(-50%);
+     border-bottom-color: $color-surface-elevated;
+     border-top: none;
+-    border-bottom-width: 5px;
+   }
+-
+-  .left & {
++  .tooltip[data-placement='left'] & {
+     left: 100%;
+-    top: 50%;
+     transform: translateY(-50%);
+     border-left-color: $color-surface-elevated;
+     border-right: none;
+-    border-left-width: 5px;
+   }
+-
+-  .right & {
++  .tooltip[data-placement='right'] & {
+     right: 100%;
+-    top: 50%;
+     transform: translateY(-50%);
+     border-right-color: $color-surface-elevated;
+     border-left: none;
+-    border-right-width: 5px;
+   }
+ }
+diff --git a/evo-ui/src/css/treeselect.module.scss b/evo-ui/src/css/treeselect.module.scss
+index 4c58b6e..9d7c552 100644
+--- a/evo-ui/src/css/treeselect.module.scss
++++ b/evo-ui/src/css/treeselect.module.scss
+@@ -234,44 +234,50 @@
+ }
+ 
+ .trigger:hover:not(:disabled) .chevron {
+   color: $color-text-secondary;
+ }
+ 
+ /* =====================================================================
+  * Popover menu
+  * ===================================================================== */
+ .menu {
+-  position: absolute;
+-  top: calc(100% + 6px);
+-  left: 0;
+-  right: 0;
+-  z-index: 100;
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+ 
+   background: $color-surface-elevated;
+   border: 1px solid $color-border;
+   border-radius: $radius-md;
+   overflow: hidden;
+ 
+   box-shadow:
+     0 16px 32px -12px rgb(0 0 0 / 0.35),
+     0 6px 12px -4px rgb(0 0 0 / 0.18);
+ 
+   transform-origin: top center;
+   animation: menuOpen 160ms cubic-bezier(0.16, 1, 0.3, 1);
+ }
+ 
+ @keyframes menuOpen {
+   from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+   to   { opacity: 1; transform: translateY(0) scale(1); }
+ }
+ 
++.menu[data-placement='top'] {
++  transform-origin: bottom center;
++  animation-name: menuOpenUp;
++}
++
++@keyframes menuOpenUp {
++  from { opacity: 0; transform: translateY(6px) scale(0.97); }
++  to   { opacity: 1; transform: translateY(0) scale(1); }
++}
++
+ /* ---------------- In-menu search row ---------------- */
+ .searchRow {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   padding: 0.5rem 0.75rem;
+   border-bottom: 1px solid $color-border-subtle;
+   background: $color-surface-sunken;
+ }
+ 
+diff --git a/evo-ui/src/hooks/useAnchoredPosition.ts b/evo-ui/src/hooks/useAnchoredPosition.ts
+new file mode 100644
+index 0000000..3c4c3da
+--- /dev/null
++++ b/evo-ui/src/hooks/useAnchoredPosition.ts
+@@ -0,0 +1,178 @@
++import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
++import type { CSSProperties, RefObject } from 'react';
++
++/**
++ * Shared viewport-aware positioning for Evo's floating layers (menus, popovers,
++ * tooltips). Zero-dependency by policy (CLAUDE.md §7) — a hand-rolled subset of
++ * Floating UI's flip()/shift(): measure the anchor + floating element, flip to the
++ * roomier side on the main axis, clamp on the cross axis, reposition on scroll/resize.
++ *
++ * Callers render the floating element through `createPortal(…, document.body)` with
++ * `position: fixed` (via `floatingStyles`) so it escapes `overflow:hidden`/scroll-clip
++ * ancestors — the root cause shared by issues #10 and #11.
++ */
++
++// SSR-safe: useLayoutEffect warns on the server; fall back to useEffect there.
++const useIsomorphicLayoutEffect =
++  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
++
++export type AnchorSide = 'top' | 'bottom' | 'left' | 'right';
++
++export interface UseAnchoredPositionOptions<T extends HTMLElement = HTMLElement> {
++  /** Measure/position only while true. */
++  open: boolean;
++  /** The element the floating layer is anchored to. */
++  anchorRef: RefObject<T | null>;
++  /** Preferred side; flips to the opposite side when it lacks room. Default 'bottom'. */
++  placement?: AnchorSide;
++  /** Gap between anchor and floating element, px. Default 6. */
++  offset?: number;
++  /** Minimum gap kept from the viewport edge, px. Default 8. */
++  viewportPadding?: number;
++  /** Set the floating element's width to the anchor's width. Default false. */
++  matchAnchorWidth?: boolean;
++}
++
++export interface AnchoredPosition {
++  /** Attach to the floating element (always a <div>). */
++  floatingRef: RefObject<HTMLDivElement | null>;
++  /** Spread onto the floating element: position/top/left/(width)/visibility. */
++  floatingStyles: CSSProperties;
++  /** Cross-axis offset for an optional arrow (ignored by callers without one). */
++  arrowStyles: CSSProperties;
++  /** The side chosen after collision detection. */
++  placement: AnchorSide;
++  /** False until the first measurement completes (used to avoid a position flash). */
++  ready: boolean;
++}
++
++const isVertical = (s: AnchorSide) => s === 'top' || s === 'bottom';
++
++const ARROW_INSET = 12; // keep the arrow this far from the floating element's corners
++
++export function useAnchoredPosition<T extends HTMLElement = HTMLElement>({
++  open,
++  anchorRef,
++  placement = 'bottom',
++  offset = 6,
++  viewportPadding = 8,
++  matchAnchorWidth = false,
++}: UseAnchoredPositionOptions<T>): AnchoredPosition {
++  const floatingRef = useRef<HTMLDivElement | null>(null);
++  const [pos, setPos] = useState<{
++    top: number;
++    left: number;
++    width: number | undefined;
++    arrow: number;
++    placement: AnchorSide;
++    ready: boolean;
++  }>({ top: 0, left: 0, width: undefined, arrow: 0, placement, ready: false });
++
++  const compute = useCallback(() => {
++    const anchor = anchorRef.current;
++    const floating = floatingRef.current;
++    if (!anchor || !floating) return;
++
++    const a = anchor.getBoundingClientRect();
++    const f = floating.getBoundingClientRect();
++    const vw = window.innerWidth;
++    const vh = window.innerHeight;
++    const pad = viewportPadding;
++
++    // When matching the anchor's width, use it for all width-dependent math — the
++    // element will be resized to it, so the measured natural width is about to be stale.
++    const fWidth = matchAnchorWidth ? a.width : f.width;
++
++    // --- main-axis flip: keep the preferred side unless the opposite has more room ---
++    let side = placement;
++    if (isVertical(placement)) {
++      const below = vh - a.bottom - offset;
++      const above = a.top - offset;
++      if (placement === 'bottom' && f.height > below && above > below) side = 'top';
++      if (placement === 'top' && f.height > above && below > above) side = 'bottom';
++    } else {
++      const right = vw - a.right - offset;
++      const left = a.left - offset;
++      if (placement === 'right' && fWidth > right && left > right) side = 'left';
++      if (placement === 'left' && fWidth > left && right > left) side = 'right';
++    }
++
++    // --- main-axis coordinate ---
++    let top = 0;
++    let left = 0;
++    if (side === 'bottom') top = a.bottom + offset;
++    else if (side === 'top') top = a.top - f.height - offset;
++    else if (side === 'right') left = a.right + offset;
++    else left = a.left - fWidth - offset;
++
++    // --- cross-axis: align leading edges, then clamp inside the viewport ---
++    if (isVertical(side)) {
++      left = Math.min(Math.max(a.left, pad), Math.max(pad, vw - fWidth - pad));
++    } else {
++      top = Math.min(Math.max(a.top, pad), Math.max(pad, vh - f.height - pad));
++    }
++
++    // --- arrow: point at the anchor's center, clamped within the floating box ---
++    const arrow = isVertical(side)
++      ? Math.min(Math.max(a.left + a.width / 2 - left, ARROW_INSET), fWidth - ARROW_INSET)
++      : Math.min(Math.max(a.top + a.height / 2 - top, ARROW_INSET), f.height - ARROW_INSET);
++
++    const next = {
++      top: Math.round(top),
++      left: Math.round(left),
++      width: matchAnchorWidth ? Math.round(a.width) : undefined,
++      arrow: Math.round(arrow),
++      placement: side,
++      ready: true,
++    };
++    // Skip the state update when a reposition tick produced identical geometry.
++    setPos((prev) =>
++      prev.ready &&
++      prev.top === next.top &&
++      prev.left === next.left &&
++      prev.width === next.width &&
++      prev.arrow === next.arrow &&
++      prev.placement === next.placement
++        ? prev
++        : next,
++    );
++  }, [anchorRef, placement, offset, viewportPadding, matchAnchorWidth]);
++
++  useIsomorphicLayoutEffect(() => {
++    if (!open) {
++      setPos((p) => (p.ready ? { ...p, ready: false } : p));
++      return;
++    }
++    compute();
++
++    let raf = 0;
++    const onMove = () => {
++      cancelAnimationFrame(raf);
++      raf = requestAnimationFrame(compute);
++    };
++    // capture:true so nested scroll containers (not just window) trigger a reposition.
++    window.addEventListener('scroll', onMove, true);
++    window.addEventListener('resize', onMove);
++    return () => {
++      cancelAnimationFrame(raf);
++      window.removeEventListener('scroll', onMove, true);
++      window.removeEventListener('resize', onMove);
++    };
++  }, [open, compute]);
++
++  const floatingStyles: CSSProperties = {
++    position: 'fixed',
++    top: pos.top,
++    left: pos.left,
++    ...(pos.width !== undefined ? { width: pos.width } : null),
++    // Measure before revealing: hidden elements still report layout via
++    // getBoundingClientRect (display:none would not), so this avoids a flash at 0,0.
++    visibility: pos.ready ? undefined : 'hidden',
++  };
++
++  const arrowStyles: CSSProperties = isVertical(pos.placement)
++    ? { left: pos.arrow }
++    : { top: pos.arrow };
++
++  return { floatingRef, floatingStyles, arrowStyles, placement: pos.placement, ready: pos.ready };
++}
+diff --git a/skills/evo-autocomplete/SKILL.md b/skills/evo-autocomplete/SKILL.md
+index 57b37ca..7d6f79a 100644
+--- a/skills/evo-autocomplete/SKILL.md
++++ b/skills/evo-autocomplete/SKILL.md
+@@ -309,20 +309,21 @@ The clear (✕) button is `type="button"`, `tabIndex={-1}`, and `aria-label="Cle
+ - **`debounce` only delays `onInputChange`.** Internal input text updates immediately; only the `onInputChange` callback is debounced. Pending debounces are flushed/cleared on unmount.
+ - **`minChars` gates results, not typing.** Until the trimmed query reaches `minChars`, the menu shows a "type N more character(s)…" hint instead of results.
+ - **`loading` shows a status row instead of results.** While `loading` is true, the menu renders a labelled spinner row and suppresses Smart Recovery.
+ - **Smart Recovery is conservative.** It only suggests when the query is at least 2 characters, there are zero results, and the nearest option is within a small edit-distance threshold (1–3 edits, ~40% of query length). It is suppressed during loading, below `minChars`, while showing recents, or on an empty query.
+ - **In-memory recents reset on reload and are keyed by `name`/`id`.** Use `evoLocalRecents(key)` for persistence; implement `RecentsStorage` yourself for server/IndexedDB backing.
+ - **Provide `name` for native form submission.** When `name` is set, a hidden `<input name=... value={value}>` is rendered so the selected value posts with the form.
+ - **Each `AutoCompleteOption.value` must be unique and stable** — it is the identity returned by `onChange` and used to match the selected option and recents.
+ - **The clear button never auto-submits.** It is `type="button"`; consistent with Evo's rule that buttons default to `type="button"`.
+ - **Theme via `var(--evo-color-*)` tokens** (and `--evo-spacing-*` / `--evo-radius-*`); never hard-code hex. Light + dark mode and >=44px mobile touch targets are built in.
+ - **Single CSS import, named imports only.** Import `@justin_evo/evo-ui/dist/evo-ui.css` once globally, and import `EvoAutoComplete` / `evoLocalRecents` from `@justin_evo/evo-ui` — never from deep paths.
++- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
+ 
+ ## Related
+ 
+ - [[evo-select]]
+ - [[evo-tree-select]]
+ - [[evo-input]]
+ - [[evo-command-palette]]
+ - [[evo-form]]
+ - [[evo-theming]]
+ - [[evo-ui]]
+diff --git a/skills/evo-badge/SKILL.md b/skills/evo-badge/SKILL.md
+index da9a667..16453fe 100644
+--- a/skills/evo-badge/SKILL.md
++++ b/skills/evo-badge/SKILL.md
+@@ -46,23 +46,25 @@ function StatusLabel() {
+ 
+ | Prop | Type | Default | Required | Description |
+ | --- | --- | --- | --- | --- |
+ | `children` | `React.ReactNode` | — | Yes | Badge content. |
+ | `severity` | `'primary' \| 'secondary' \| 'success' \| 'warning' \| 'danger' \| 'info'` | `'primary'` | No | Color theme. |
+ | `variant` | `'solid' \| 'outline' \| 'subtle'` | `'solid'` | No | Visual style. |
+ | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | No | Badge size. |
+ | `dot` | `boolean` | `false` | No | Render a dot indicator before the content. |
+ | `removable` | `boolean` | `false` | No | Show a remove (✕) button. |
+ | `onRemove` | `() => void` | — | No | Called when the remove button is clicked. |
++| `detail` | `React.ReactNode` | — | No | Rich content revealed in a popover on hover / focus / tap. Descriptive (non-interactive). |
++| `detailPlacement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom'` | No | Preferred popover side; flips automatically when there is no room. |
+ | `className` | `string` | `''` | No | Additional CSS class appended to the root `<span>`. |
+ 
+-Note: EvoBadge does NOT extend a native element attribute type and does NOT forward `ref` or spread `...rest`. Only the props listed above are accepted; `className` is the only pass-through, and it is merged onto the root `<span>`. Arbitrary HTML attributes (e.g. `id`, `title`, `data-*`, `onClick`) are not forwarded.
++Note: EvoBadge forwards `ref` to the root `<span>` and spreads standard HTML attributes (`...rest`, e.g. `id`, `title`, `data-*`, `onClick`) onto it. When `detail` is set, the badge manages its own hover/focus/tap/keydown handlers and `tabIndex`, and clicking the built-in remove button does not toggle the popover.
+ 
+ ## Sub-components
+ 
+ ### `EvoBadge.Group`
+ 
+ A presentational wrapper `<div>` that lays out multiple badges together (e.g. a row of removable tags).
+ 
+ | Prop | Type | Default | Required | Description |
+ | --- | --- | --- | --- | --- |
+ | `children` | `React.ReactNode` | — | Yes | The badges to group. |
+@@ -161,21 +163,23 @@ function Tags() {
+ 
+ ## Accessibility
+ 
+ - EvoBadge is presentational and renders a `<span>`. It carries no `role` and is not focusable on its own.
+ - When `removable` is true, the remove control renders as a native `<button>` with `aria-label="Remove"`, making it keyboard-focusable and operable (Enter/Space) and announced to screen readers. Clicking or activating it fires `onRemove`.
+ - Because the badge body is a non-interactive `<span>`, do not rely on it for click actions; provide accessible interactive controls (like the built-in remove button, or a separate [[evo-button]]) instead.
+ - Convey meaning with text, not color alone — `severity` only changes the color theme.
+ 
+ ## Gotchas
+ 
+-- No `ref` / `...rest` forwarding: only the documented props (plus `className`) are accepted. You cannot pass `id`, `title`, `data-*`, `onClick`, or other HTML attributes directly to the root — wrap the badge if you need them.
++- With `detail`, the badge is a focusable disclosure trigger (`tabIndex=0`, `aria-describedby` → popover) and toggles on tap for touch; it opens on hover/focus and closes on blur/`Escape`. The popover is portaled to `<body>` and flips/shifts to stay on-screen.
++- `detail` is intended for descriptive, non-interactive content. Do not put focusable controls (links/buttons) inside it — the popover uses `role="tooltip"`, which is not a focus container.
++- A `detail` badge stays label-sized (below the 44px touch-target guideline). It is a hover/focus-first supplementary disclosure, not a primary touch control — don't hide critical touch-only actions/info behind it.
+ - `onRemove` only fires when `removable` is true (the remove button is only rendered in that case). Setting `onRemove` without `removable` does nothing.
+ - Removing a tag is your responsibility: the component just calls `onRemove`; you must update your own state to actually drop the badge (see the tags example).
+ - `dot` renders a leading indicator element, not a standalone dot — it appears before `children`, so still provide a label.
+ - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, and `var(--evo-radius-*)` tokens; never hard-code hex colors (breaks light/dark mode).
+ - Import the CSS once globally (`@justin_evo/evo-ui/dist/evo-ui.css`); without it badges are unstyled.
+ - Named imports only from `@justin_evo/evo-ui` — never import from deep/internal paths.
+ - `EvoBadge.Group` is a static property on `EvoBadge` (use `<EvoBadge.Group>`); it is not a separate named export.
+ 
+ ## Related
+ 
+diff --git a/skills/evo-select/SKILL.md b/skills/evo-select/SKILL.md
+index dbcd93f..36b5ade 100644
+--- a/skills/evo-select/SKILL.md
++++ b/skills/evo-select/SKILL.md
+@@ -246,20 +246,21 @@ import { EvoSelect } from '@justin_evo/evo-ui';
+ - **`multiple` changes the value contract.** With `multiple`, `value`/`defaultValue` are `string[]` and `onChange` receives `string[]`. Without it they are `string`. Mixing them (e.g. passing a string to a `multiple` select) is a type error.
+ - **Controlled vs uncontrolled.** Passing `value` makes it controlled — you must update it via `onChange` or selection won't stick. Omit `value` (optionally set `defaultValue`) for uncontrolled use. Uncontrolled default is `''` (single) or `[]` (multi).
+ - **`maxSelections` only applies in multi mode.** Once the cap is reached, unselected options become non-selectable (greyed) until one is removed; the trigger and keyboard both respect this. Already-selected options can still be deselected.
+ - **`multipleDisplay`, `maxSelections`, `showSelectAll` are multi-only.** They are ignored unless `multiple` is `true`.
+ - **`searchable` filters by `label` only**, case-insensitively — not by `value` or `description`. An empty filtered list shows a "No results" row.
+ - **The trigger never auto-submits.** It is `type="button"`, so it is safe inside a `<form>`.
+ - **Form submission via `name`.** Setting `name` renders hidden `<input>`(s) so the value posts with native form submit — one hidden input per selected value in multi mode.
+ - **Theme via tokens, not hex.** Style through `var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`; never hard-code colors (it breaks dark mode).
+ - **One CSS import, named imports only.** Import `@justin_evo/evo-ui/dist/evo-ui.css` once at the app root and import `EvoSelect` from `@justin_evo/evo-ui` — never from a deep path.
+ - **No ref / rest passthrough.** Unlike most Evo inputs, EvoSelect's props are a closed set; only `className`, `id`, `name`, and `label` reach the DOM. Do not expect arbitrary native attributes or a forwarded `ref`.
++- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
+ 
+ ## Related
+ 
+ - [[evo-autocomplete]] — free-text input with filtered suggestions.
+ - [[evo-tree-select]] — selecting from a hierarchical tree.
+ - [[evo-checkbox]] — multi-choice when options are shown inline.
+ - [[evo-radio]] — single choice shown inline.
+ - [[evo-input]] — plain text input field.
+ - [[evo-form]] — composing fields, labels, and validation.
+ - [[evo-theming]] — theme tokens and light/dark mode.
+diff --git a/skills/evo-tooltip/SKILL.md b/skills/evo-tooltip/SKILL.md
+index d4c3a49..d7f3137 100644
+--- a/skills/evo-tooltip/SKILL.md
++++ b/skills/evo-tooltip/SKILL.md
+@@ -148,20 +148,21 @@ function HelpHint() {
+ ## Gotchas
+ 
+ - EvoTooltip is uncontrolled: there is no `open` prop. Visibility is managed internally via hover/focus state — you cannot force it open or closed.
+ - The component does NOT forward `ref` or spread `...rest` onto its root. Only `content`, `children`, `placement`, and `className` are accepted; other HTML attributes are ignored.
+ - `className` is appended to the outer wrapper `<span>`, not the tooltip bubble element. To style the bubble itself, target the rendered tooltip via your own CSS or theme tokens.
+ - The trigger must be keyboard-focusable for the focus/blur path to work; passing inert content makes the tooltip hover-only.
+ - Hover-only behavior is unreliable on touch screens — do not put information that must be readable on mobile exclusively inside a tooltip.
+ - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, and `var(--evo-radius-*)` tokens — never hard-coded hex — so the tooltip works in both light and dark mode.
+ - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` once at your app root, or the tooltip will be unstyled.
+ - Use named imports from `@justin_evo/evo-ui` only — never deep import paths.
++- `placement` is the *preferred* side. The tooltip auto-flips to the opposite side and shifts to stay on-screen when the preferred side lacks room; it renders in a portal so it is never clipped.
+ 
+ ## Related
+ 
+ - [[evo-button]]
+ - [[evo-badge]]
+ - [[evo-modal]]
+ - [[evo-alert]]
+ - [[evo-notification]]
+ - [[evo-theming]]
+ - [[evo-ui]]
+diff --git a/skills/evo-tree-select/SKILL.md b/skills/evo-tree-select/SKILL.md
+index ceec7d6..180fd91 100644
+--- a/skills/evo-tree-select/SKILL.md
++++ b/skills/evo-tree-select/SKILL.md
+@@ -323,20 +323,21 @@ When `searchable`, the search input auto-focuses on open and shares the same key
+ 
+ ## Gotchas
+ 
+ - The trigger button uses `type="button"`, so it never accidentally submits a surrounding `<form>`. For native form submission, pass `name` to render a hidden input (multi-select values are comma-joined into a single string).
+ - `value` typing depends on `multiple`: pass a `string` for single-select and a `string[]` for multi-select. `onChange` mirrors this — cast appropriately (e.g. `v as string` vs `v as string[]`).
+ - Cascade is on by default in multi-select: checking a parent selects all descendant leaves and `onChange` returns leaves only (`checkedStrategy: 'leaf'`). Use `checkStrictly` to disable cascade, or `checkedStrategy` to return collapsed parents (`'parent'`) or every checked node (`'all'`).
+ - `loadChildren` only fires for nodes with `isLeaf === false` (or nodes without `children` and not explicitly `isLeaf: true`), and only on their first expand — results are cached per node.
+ - This component does not forward `ref` and does not spread arbitrary native attributes; only the documented props are accepted, and `className` lands on the outer wrapper, not the trigger button.
+ - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)` tokens — never hard-coded hex, which breaks dark mode. Touch targets are sized to be ≥44px on mobile.
+ - Single, app-wide CSS import (`@justin_evo/evo-ui/dist/evo-ui.css`). Use named imports from `@justin_evo/evo-ui` only — never deep paths.
++- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
+ 
+ ## Related
+ 
+ - [[evo-select]]
+ - [[evo-autocomplete]]
+ - [[evo-checkbox]]
+ - [[evo-form]]
+ - [[evo-input]]
+ - [[evo-theming]]
+ - [[evo-ui]]

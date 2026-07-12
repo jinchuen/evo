@@ -1,0 +1,216 @@
+﻿# Review package: 94c799e..d6f0fe5
+
+## Commits
+d6f0fe5 chore: bump to 1.2.0; sync TopNav skill + changelog
+
+## Files changed
+ evo-docs/src/pages/ChangelogPage.tsx | 23 +++++++++++++++++
+ evo-ui/package.json                  |  2 +-
+ skills/evo-topnav/SKILL.md           | 49 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 73 insertions(+), 1 deletion(-)
+
+## Diff
+diff --git a/evo-docs/src/pages/ChangelogPage.tsx b/evo-docs/src/pages/ChangelogPage.tsx
+index 3e5f82f..40741fd 100644
+--- a/evo-docs/src/pages/ChangelogPage.tsx
++++ b/evo-docs/src/pages/ChangelogPage.tsx
+@@ -18,20 +18,43 @@ type Release = {
+ 
+ const SEVERITY: Record<ChangeKind, 'success' | 'info' | 'warning' | 'danger'> = {
+   Created:  'success',
+   Added:    'success',
+   Changed:  'info',
+   Fixed:    'warning',
+   Breaking: 'danger',
+ }
+ 
+ const RELEASES: Release[] = [
++  {
++    version: '1.2.0',
++    date: '2026-06-22',
++    summary:
++      'EvoTopNav gains an opt-in entrance animation, sticky scroll-aware behavior, a scroll-progress line, and a new Search (⌘K) part — plus image-caret and checkbox-tick fixes.',
++    sections: [
++      {
++        kind: 'Added',
++        items: [
++          'EvoTopNav — `entrance` prop (`none` | `rise` | `fade`) staggers the brand, menu items, search and actions up on mount; plays once and is disabled under `prefers-reduced-motion`.',
++          'EvoTopNav — `sticky`, `scrollBehavior` (`none` | `elevate` | `shrink` | `hide`) and `showProgress` props add a pinned, scroll-aware bar with an optional reading-progress line, driven by one rAF-throttled scroll listener (zero new deps).',
++          'EvoTopNav.Search — a new presentational quick-search trigger sub-component with a platform-aware ⌘K / Ctrl K hint and an opt-in global `shortcut` hotkey; collapses to icon-only on mobile. Wire its `onClick` to EvoCommandPalette.',
++        ],
++      },
++      {
++        kind: 'Fixed',
++        items: [
++          'EvoRichTextArea — inserting an image (button, drag-drop, paste, or the `insertImage` handle) now lands the caret on a fresh paragraph below the image instead of beside the block-level image, where the caret painted at its top-right edge.',
++          'EvoCheckbox — the checked tick is now transform-centered in the box (it used hardcoded pixel offsets and could sit off-center); the scale-in animation now grows from the center. CSS-only.',
++        ],
++      },
++    ],
++  },
+   {
+     version: '1.1.0',
+     date: '2026-06-22',
+     summary:
+       'EvoNav gains collapsible groups, an icon-rail collapsed mode, group counts and row tooltips — plus a cleaner, more animated visual treatment.',
+     sections: [
+       {
+         kind: 'Added',
+         items: [
+           'EvoNav — `collapsed` prop renders an icon-only rail: labels hide with a left-to-right reveal, icons center, and each row surfaces a native tooltip from a new `tooltip` prop on EvoNav.Item / EvoNav.SubItem.',
+diff --git a/evo-ui/package.json b/evo-ui/package.json
+index fc211a0..c7e6d95 100644
+--- a/evo-ui/package.json
++++ b/evo-ui/package.json
+@@ -1,13 +1,13 @@
+ {
+   "name": "@justin_evo/evo-ui",
+-  "version": "1.1.0",
++  "version": "1.2.0",
+   "main": "dist/index.cjs.js",
+   "module": "dist/index.es.js",
+   "types": "dist/index.d.ts",
+   "style": "dist/evo-ui.css",
+   "exports": {
+     ".": {
+       "types": "./dist/index.d.ts",
+       "import": "./dist/index.es.js",
+       "require": "./dist/index.cjs.js"
+     },
+diff --git a/skills/evo-topnav/SKILL.md b/skills/evo-topnav/SKILL.md
+index 4c2c216..8a3fe26 100644
+--- a/skills/evo-topnav/SKILL.md
++++ b/skills/evo-topnav/SKILL.md
+@@ -60,20 +60,24 @@ function Header() {
+ 
+ Props for the root `EvoTopNav` component:
+ 
+ | Prop | Type | Default | Required | Description |
+ | --- | --- | --- | --- | --- |
+ | `children` | `React.ReactNode` | — | Yes | Compose Brand, Menu, Item, Actions, Toggle, Dropdown, and DropdownItem sub-components. |
+ | `open` | `boolean` | — | No | Controlled open state of the mobile drawer. Pair with `onOpenChange`. |
+ | `defaultOpen` | `boolean` | `false` | No | Uncontrolled initial open state of the drawer. |
+ | `onOpenChange` | `(open: boolean) => void` | — | No | Fires when the drawer opens or closes. |
+ | `collapseBelow` | `number` | `768` | No | Width in px below which Menu collapses into the drawer. |
++| `entrance` | `'none' \| 'rise' \| 'fade'` | `'none'` | No | Staggered mount animation of the bar contents (`rise` = up + fade, `fade` = opacity only). Plays once; disabled under `prefers-reduced-motion`. |
++| `sticky` | `boolean` | `false` | No | Pin the bar with `position: sticky; top: 0`. |
++| `scrollBehavior` | `'none' \| 'elevate' \| 'shrink' \| 'hide'` | `'none'` | No | On-scroll treatment: `elevate` (blur + shadow once scrolled), `shrink` (also reduces height), `hide` (auto-hide on scroll-down, reveal on scroll-up). |
++| `showProgress` | `boolean` | `false` | No | Render a thin scroll-progress accent line along the bottom edge (tracks document scroll). |
+ | `className` | `string` | — | No | Extra class applied to the root `<nav>` element. |
+ 
+ `EvoTopNavProps` extends `Omit<React.HTMLAttributes<HTMLElement>, 'onChange'>`, so all native `<nav>` attributes (e.g. `aria-label`, `id`, `style`, `data-*`) plus `ref` and `className` are forwarded to the root `<nav>` element. Always set `aria-label` when the page has more than one `<nav>`.
+ 
+ ## Sub-components
+ 
+ ### EvoTopNav.Brand
+ 
+ Logo / brand-name slot, rendered on the left. Renders a `<div>`.
+ 
+@@ -129,20 +133,34 @@ Extends `React.HTMLAttributes<HTMLDivElement>` — all native `<div>` attributes
+ The hamburger button that opens/closes the drawer. Renders a `<button type="button">` and must be rendered inside `<EvoTopNav>`. Its presence is what opts the Menu into drawer behaviour when collapsed; without it the Menu degrades to a horizontal scroll list. It auto-wires `aria-expanded`, `aria-controls` (pointing at the Menu id), and a default `aria-label`.
+ 
+ | Prop | Type | Default | Required | Description |
+ | --- | --- | --- | --- | --- |
+ | `icon` | `React.ReactNode` | hamburger / X icon | No | Custom toggle icon. Defaults to the built-in hamburger that becomes an X when open. |
+ | `aria-label` | `string` | `"Open menu"` / `"Close menu"` | No | Accessible name; defaults based on open state. |
+ | `className` | `string` | — | No | Extra class on the button. |
+ 
+ Extends `Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-expanded' \| 'aria-controls'>` — all native `<button>` attributes (except the two managed ARIA attributes) plus `ref` and `className` are forwarded. Must be rendered inside `<EvoTopNav>` (throws otherwise). `onClick` runs before the toggle action and can cancel it via `e.preventDefault()`.
+ 
++### EvoTopNav.Search
++
++A presentational quick-search trigger. Renders a `<button type="button">` with a search icon, placeholder text, and a platform-aware keyboard hint. It does NOT own a search overlay — wire `onClick` to your own launcher (e.g. [[evo-command-palette]]). Collapses to an icon-only button below `collapseBelow`.
++
++| Prop | Type | Default | Required | Description |
++| --- | --- | --- | --- | --- |
++| `placeholder` | `string` | `'Search…'` | No | Placeholder text shown inside the trigger. |
++| `shortcut` | `string` | — | No | Opt-in global hotkey, e.g. `'mod+k'` (`mod` = ⌘ on macOS, Ctrl elsewhere). When set, a document keydown listener dispatches a click on match. Default: no global listener. |
++| `shortcutHint` | `React.ReactNode` | platform-aware `⌘K` / `Ctrl K` | No | Override the keyboard hint shown on the right. |
++| `onClick` | `(e: React.MouseEvent) => void` | — | No | Fires on click and on the global hotkey (if `shortcut` set). |
++| `className` | `string` | — | No | Extra class on the button. |
++
++Extends `Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'>` — native `<button>` attributes plus `ref` and `className` are forwarded.
++
+ ### EvoTopNav.Dropdown
+ 
+ A nav item that opens a floating panel of DropdownItems. Renders a `<li>` containing a trigger `<button type="button">` and a `<ul role="menu">`. Opens on hover (fine-pointer devices only, when `hoverable`) and on click.
+ 
+ | Prop | Type | Default | Required | Description |
+ | --- | --- | --- | --- | --- |
+ | `label` | `React.ReactNode` | — | Yes | Trigger label. |
+ | `icon` | `React.ReactNode` | — | No | Icon shown before the trigger label. |
+ | `active` | `boolean` | — | No | Marks the dropdown as the current section (sets `aria-current="page"`). |
+ | `hoverable` | `boolean` | `true` | No | Open on hover on fine-pointer devices (disabled in the drawer and on coarse pointers). |
+@@ -282,20 +300,48 @@ function ResponsiveHeader() {
+       <EvoTopNav.Actions>
+         <EvoButton label="Sign in" variant="ghost" size="sm" />
+       </EvoTopNav.Actions>
+       {/* Required to opt into the drawer; without it the Menu becomes a scroll list */}
+       <EvoTopNav.Toggle />
+     </EvoTopNav>
+   );
+ }
+ ```
+ 
++### Animated, sticky header with quick search
++
++```tsx
++import { useState } from 'react';
++import { EvoTopNav, EvoButton, EvoCommandPalette } from '@justin_evo/evo-ui';
++
++function Header() {
++  const [open, setOpen] = useState(false);
++  return (
++    <>
++      <EvoTopNav aria-label="Primary" entrance="rise" sticky scrollBehavior="shrink" showProgress>
++        <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++        <EvoTopNav.Menu>
++          <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
++          <EvoTopNav.Item href="/docs">Docs</EvoTopNav.Item>
++        </EvoTopNav.Menu>
++        <EvoTopNav.Search placeholder="Search docs…" shortcut="mod+k" onClick={() => setOpen(true)} />
++        <EvoTopNav.Actions>
++          <EvoButton label="Sign in" variant="ghost" size="sm" />
++        </EvoTopNav.Actions>
++      </EvoTopNav>
++      {/* Wire Search to your launcher */}
++      {/* <EvoCommandPalette open={open} onOpenChange={setOpen} … /> */}
++    </>
++  );
++}
++```
++
+ ## Accessibility
+ 
+ - The root renders as a semantic `<nav>` and forwards `aria-label`. Always set `aria-label` when the page has more than one `<nav>`.
+ - `active` on Item / Dropdown / DropdownItem sets `aria-current="page"`, keeping the visual highlight and the screen-reader signal in sync. Item also sets a `data-active` attribute.
+ - `EvoTopNav.Toggle` auto-wires `aria-expanded` (drawer open state) and `aria-controls` (the Menu's generated id), and gives itself a ≥44px touch target. Its default `aria-label` is "Open menu" / "Close menu".
+ - `EvoTopNav.Dropdown` trigger exposes `aria-haspopup="menu"`, `aria-expanded`, `aria-controls`, and (when `active`) `aria-current="page"`. The panel is a `<ul role="menu">` whose items carry `role="menuitem"`; when closed the panel is `aria-hidden`.
+ - Dropdown keyboard support: on the trigger, ArrowDown / Enter / Space open and focus the first item; ArrowUp opens and focuses the last item. Inside the panel, ArrowDown / ArrowUp cycle items, Home / End jump to first / last, Tab leaves and closes the panel, Escape closes and returns focus to the trigger. Clicking outside also closes desktop dropdowns.
+ - While the drawer is open: focus is trapped inside the Menu (wrapping Tab / Shift+Tab), the body is scroll-locked, Escape closes it, a backdrop click closes it, and focus is restored to the toggle on close. The Menu is `aria-hidden` while the drawer is closed.
+ - Hover-to-open is disabled automatically on coarse pointers (`(hover: hover) and (pointer: fine)` gates it), so touch devices use click-only. All animations respect `prefers-reduced-motion`.
+ 
+@@ -304,20 +350,23 @@ function ResponsiveHeader() {
+ - The mobile drawer requires `EvoTopNav.Toggle`. Without a Toggle, below `collapseBelow` the Menu does NOT hide — it degrades to a horizontal scroll list (never hidden silently).
+ - Open/close state of the drawer uses `open` (controlled) + `onOpenChange`, or `defaultOpen` (uncontrolled). There is no `visible` / `show` prop. Same pattern on `EvoTopNav.Dropdown`.
+ - `collapseBelow` defaults to `768`; the menu collapses at widths strictly below that value.
+ - Item, DropdownItem, Toggle, and Dropdown triggers are buttons that default `type="button"` — they never accidentally submit a surrounding `<form>`.
+ - `Menu`, `Toggle`, `Dropdown`, and `DropdownItem` must be rendered inside `<EvoTopNav>`; `Menu` and `Toggle` throw a descriptive error if used outside it.
+ - `asChild` requires exactly one child element (it uses `React.Children.only`); your props (className, onClick, aria-current) are merged onto that child.
+ - Item / DropdownItem with `target="_blank"` auto-apply `rel="noopener noreferrer"` unless you pass your own `rel`.
+ - `EvoTopNavItemProps`, `EvoTopNavDropdownProps`, and `EvoTopNavDropdownItemProps` do NOT extend native attribute types — passing arbitrary DOM attributes (e.g. `id`, `data-*`) to those parts is not part of the typed API; spreadable native attributes are only available on the root, Brand, Menu, Actions, and Toggle.
+ - Theme via `var(--evo-color-*)` / `var(--evo-spacing-*)` / `var(--evo-radius-*)` tokens; never hard-code hex colors (breaks dark mode).
+ - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once globally. Use named imports from `@justin_evo/evo-ui` only — never deep paths.
++- `entrance` plays once on mount and is fully disabled under `prefers-reduced-motion` (the component drops the `data-entrance` attribute, and CSS has a media-query fallback). It animates the Brand, each Menu item, Search, and Actions.
++- `scrollBehavior` / `showProgress` only have a visible effect on a scrollable page; pair with `sticky` so the bar stays in view while you scroll. They attach one rAF-throttled `window` scroll listener, removed on unmount / when disabled.
++- `EvoTopNav.Search` is presentational — it does not render a search UI. Connect `onClick` to [[evo-command-palette]] or your own overlay. `shortcut` registers a *global* document keydown; omit it if you manage hotkeys yourself.
+ 
+ ## Related
+ 
+ - [[evo-nav]] — vertical sidebar navigation.
+ - [[evo-breadcrumb]] — hierarchical location trail.
+ - [[evo-tabs]] — switch between in-page views.
+ - [[evo-command-palette]] — searchable command launcher.
+ - [[evo-button]] — buttons for the Actions slot.
+ - [[evo-badge]] — status badges for the Actions slot.
+ - [[evo-theming]] — theme tokens and light/dark mode.

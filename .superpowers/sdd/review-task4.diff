@@ -1,0 +1,315 @@
+﻿# Review package: f9d2145..2eeca0e
+
+## Commits
+2eeca0e feat(TopNav): add EvoTopNav.Search quick-search trigger part
+
+## Files changed
+ evo-ui/src/TopNav/TopNav.tsx      | 94 +++++++++++++++++++++++++++++++++++++++
+ evo-ui/src/css/topnav.module.scss | 66 +++++++++++++++++++++++++++
+ 2 files changed, 160 insertions(+)
+
+## Diff
+diff --git a/evo-ui/src/TopNav/TopNav.tsx b/evo-ui/src/TopNav/TopNav.tsx
+index ef2d08c..4fd816c 100644
+--- a/evo-ui/src/TopNav/TopNav.tsx
++++ b/evo-ui/src/TopNav/TopNav.tsx
+@@ -75,20 +75,31 @@ export interface EvoTopNavActionsProps
+ 
+ export interface EvoTopNavToggleProps
+   extends Omit<
+     React.ButtonHTMLAttributes<HTMLButtonElement>,
+     'aria-expanded' | 'aria-controls'
+   > {
+   icon?: React.ReactNode;
+   className?: string;
+ }
+ 
++export interface EvoTopNavSearchProps
++  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
++  /** Placeholder text shown inside the trigger. @default 'Search…' */
++  placeholder?: string;
++  /** Opt-in global hotkey, e.g. 'mod+k' (mod = ⌘ on macOS, Ctrl elsewhere). Default: none. */
++  shortcut?: string;
++  /** Override the kbd hint. @default platform-aware ⌘K / Ctrl K */
++  shortcutHint?: React.ReactNode;
++  className?: string;
++}
++
+ export interface EvoTopNavDropdownProps {
+   label: React.ReactNode;
+   icon?: React.ReactNode;
+   active?: boolean;
+   hoverable?: boolean;
+   open?: boolean;
+   defaultOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   children: React.ReactNode;
+   className?: string;
+@@ -366,20 +377,37 @@ const ChevronIcon = ({ open }: { open: boolean }) => (
+     <path
+       d="M3 4.5l3 3 3-3"
+       stroke="currentColor"
+       strokeWidth="1.5"
+       strokeLinecap="round"
+       strokeLinejoin="round"
+     />
+   </svg>
+ );
+ 
++const SearchGlyph = () => (
++  <svg
++    width="16"
++    height="16"
++    viewBox="0 0 24 24"
++    fill="none"
++    stroke="currentColor"
++    strokeWidth="2"
++    strokeLinecap="round"
++    strokeLinejoin="round"
++    aria-hidden="true"
++  >
++    <circle cx="11" cy="11" r="7" />
++    <path d="m20 20-3.2-3.2" />
++  </svg>
++);
++
+ // ============================================================================
+ // EvoTopNav.Brand
+ // ============================================================================
+ 
+ const EvoTopNavBrand = forwardRef<HTMLDivElement, EvoTopNavBrandProps>(
+   function EvoTopNavBrand({ children, className, ...rest }, ref) {
+     return (
+       <div
+         ref={ref}
+         className={cn(styles.topNavBrand, className)}
+@@ -570,20 +598,83 @@ const EvoTopNavToggle = forwardRef<HTMLButtonElement, EvoTopNavToggleProps>(
+         }
+         onClick={handleClick}
+         {...rest}
+       >
+         {icon ?? <HamburgerIcon open={ctx.drawerOpen} />}
+       </button>
+     );
+   },
+ );
+ 
++// ============================================================================
++// EvoTopNav.Search — presentational ⌘K quick-search trigger
++// ============================================================================
++
++const EvoTopNavSearch = forwardRef<HTMLButtonElement, EvoTopNavSearchProps>(
++  function EvoTopNavSearch(
++    { placeholder = 'Search…', shortcut, shortcutHint, className, onClick, ...rest },
++    forwardedRef,
++  ) {
++    const localRef = useRef<HTMLButtonElement | null>(null);
++    const setRef = (node: HTMLButtonElement | null) => {
++      localRef.current = node;
++      if (typeof forwardedRef === 'function') forwardedRef(node);
++      else if (forwardedRef)
++        (forwardedRef as React.RefObject<HTMLButtonElement | null>).current = node;
++    };
++
++    // Platform-aware hint resolved after mount to avoid SSR hydration mismatch.
++    const [autoHint, setAutoHint] = useState<React.ReactNode>(null);
++    useEffect(() => {
++      if (shortcutHint !== undefined) return;
++      const platform =
++        (typeof navigator !== 'undefined' &&
++          (navigator.platform || navigator.userAgent)) || '';
++      setAutoHint(/Mac|iPhone|iPad|iPod/.test(platform) ? '⌘K' : 'Ctrl K');
++    }, [shortcutHint]);
++    const hint = shortcutHint !== undefined ? shortcutHint : autoHint;
++
++    // Opt-in global hotkey → dispatch a real click so onClick fires naturally.
++    useEffect(() => {
++      if (!shortcut) return;
++      const parts = shortcut.toLowerCase().split('+').map((p) => p.trim());
++      const wantMod = parts.some((p) => ['mod', 'cmd', 'meta', 'ctrl', 'control'].includes(p));
++      const key = parts[parts.length - 1];
++      const handler = (e: KeyboardEvent) => {
++        const mod = e.metaKey || e.ctrlKey;
++        if ((!wantMod || mod) && e.key.toLowerCase() === key) {
++          e.preventDefault();
++          localRef.current?.click();
++        }
++      };
++      document.addEventListener('keydown', handler);
++      return () => document.removeEventListener('keydown', handler);
++    }, [shortcut]);
++
++    return (
++      <button
++        ref={setRef}
++        type="button"
++        className={cn(styles.topNavSearch, className)}
++        onClick={onClick}
++        {...rest}
++      >
++        <span className={styles.topNavSearchIcon} aria-hidden="true">
++          <SearchGlyph />
++        </span>
++        <span className={styles.topNavSearchText}>{placeholder}</span>
++        {hint != null && <kbd className={styles.topNavSearchKbd}>{hint}</kbd>}
++      </button>
++    );
++  },
++);
++
+ // ============================================================================
+ // EvoTopNav.Dropdown
+ // ============================================================================
+ 
+ const EvoTopNavDropdown: React.FC<EvoTopNavDropdownProps> = ({
+   label,
+   icon,
+   active,
+   hoverable = true,
+   open,
+@@ -1040,30 +1131,33 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
+     );
+   },
+ ) as React.ForwardRefExoticComponent<
+   EvoTopNavProps & React.RefAttributes<HTMLElement>
+ > & {
+   Brand: typeof EvoTopNavBrand;
+   Menu: typeof EvoTopNavMenu;
+   Item: typeof EvoTopNavItem;
+   Actions: typeof EvoTopNavActions;
+   Toggle: typeof EvoTopNavToggle;
++  Search: typeof EvoTopNavSearch;
+   Dropdown: typeof EvoTopNavDropdown;
+   DropdownItem: typeof EvoTopNavDropdownItem;
+ };
+ 
+ EvoTopNavBrand.displayName = 'EvoTopNav.Brand';
+ EvoTopNavMenu.displayName = 'EvoTopNav.Menu';
+ EvoTopNavItem.displayName = 'EvoTopNav.Item';
+ EvoTopNavActions.displayName = 'EvoTopNav.Actions';
+ EvoTopNavToggle.displayName = 'EvoTopNav.Toggle';
++EvoTopNavSearch.displayName = 'EvoTopNav.Search';
+ EvoTopNavDropdown.displayName = 'EvoTopNav.Dropdown';
+ EvoTopNavDropdownItem.displayName = 'EvoTopNav.DropdownItem';
+ (EvoTopNav as { displayName?: string }).displayName = 'EvoTopNav';
+ 
+ EvoTopNav.Brand = EvoTopNavBrand;
+ EvoTopNav.Menu = EvoTopNavMenu;
+ EvoTopNav.Item = EvoTopNavItem;
+ EvoTopNav.Actions = EvoTopNavActions;
+ EvoTopNav.Toggle = EvoTopNavToggle;
++EvoTopNav.Search = EvoTopNavSearch;
+ EvoTopNav.Dropdown = EvoTopNavDropdown;
+ EvoTopNav.DropdownItem = EvoTopNavDropdownItem;
+diff --git a/evo-ui/src/css/topnav.module.scss b/evo-ui/src/css/topnav.module.scss
+index 6a28327..97cfc6c 100644
+--- a/evo-ui/src/css/topnav.module.scss
++++ b/evo-ui/src/css/topnav.module.scss
+@@ -162,20 +162,75 @@
+ // ---------------------------------------------------------------------------
+ 
+ .topNavActions {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   margin-left: auto;
+   flex-shrink: 0;
+ }
+ 
++// ---------------------------------------------------------------------------
++// Search trigger (EvoTopNav.Search) — presentational ⌘K affordance
++// ---------------------------------------------------------------------------
++
++.topNavSearch {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.5rem;
++  height: 2rem;
++  min-width: 12rem;
++  padding: 0 0.625rem;
++  font-family: inherit;
++  font-size: $text-sm;
++  color: $color-text-muted;
++  background-color: $color-surface-sunken;
++  border: 1px solid $color-border;
++  border-radius: $radius-sm;
++  cursor: pointer;
++  transition:
++    background-color $transition-fast,
++    border-color $transition-fast,
++    color $transition-fast;
++
++  &:hover {
++    background-color: $color-surface-hover;
++    color: $color-text-secondary;
++  }
++
++  &:focus-visible {
++    outline: 2px solid $evo-primary-focus;
++    outline-offset: 2px;
++  }
++}
++
++.topNavSearchIcon {
++  display: inline-flex;
++  flex-shrink: 0;
++}
++
++.topNavSearchText {
++  flex: 1;
++  text-align: left;
++}
++
++.topNavSearchKbd {
++  flex-shrink: 0;
++  font-family: inherit;
++  font-size: $text-xs;
++  color: $color-text-muted;
++  background-color: $color-surface;
++  border: 1px solid $color-border;
++  border-radius: 4px;
++  padding: 0.0625rem 0.3125rem;
++}
++
+ // ---------------------------------------------------------------------------
+ // Toggle (hamburger) — hidden above the collapse breakpoint
+ // ---------------------------------------------------------------------------
+ 
+ .topNavToggle {
+   display: none;
+   align-items: center;
+   justify-content: center;
+   width: 2.75rem;
+   height: 2.75rem;
+@@ -363,20 +418,31 @@
+ 
+   .topNavBackdrop {
+     position: fixed;
+     inset: 0;
+     background-color: $color-backdrop;
+     -webkit-backdrop-filter: blur(2px);
+     backdrop-filter: blur(2px);
+     z-index: 55;
+     animation: topNavOverlayFadeIn 180ms ease;
+   }
++
++  .topNavSearch {
++    min-width: 0;
++    width: 2.75rem;
++    height: 2.75rem;
++    justify-content: center;
++    padding: 0;
++
++    .topNavSearchText,
++    .topNavSearchKbd { display: none; }
++  }
+ }
+ 
+ // Above the breakpoint, drawer-specific bits never render visually.
+ @media (min-width: 768px) {
+   .topNavMenuDrawer,
+   .topNavMenuDrawerClosed,
+   .topNavBackdrop {
+     // no-op: structural classes shouldn't leak desktop styles
+   }
+ }

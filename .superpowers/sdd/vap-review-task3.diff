@@ -1,0 +1,407 @@
+﻿521ed26 fix(EvoAutoComplete,EvoTreeSelect): flip menu upward near viewport bottom (#10)
+ evo-ui/src/AutoComplete/AutoComplete.tsx | 23 ++++++++++++++++++++---
+ evo-ui/src/TreeSelect/TreeSelect.tsx     | 25 +++++++++++++++++++++----
+ evo-ui/src/css/autocomplete.module.scss  | 16 +++++++++++-----
+ evo-ui/src/css/treeselect.module.scss    | 16 +++++++++++-----
+ 4 files changed, 63 insertions(+), 17 deletions(-)
+diff --git a/evo-ui/src/AutoComplete/AutoComplete.tsx b/evo-ui/src/AutoComplete/AutoComplete.tsx
+index 43cb973..d53ebba 100644
+--- a/evo-ui/src/AutoComplete/AutoComplete.tsx
++++ b/evo-ui/src/AutoComplete/AutoComplete.tsx
+@@ -1,19 +1,21 @@
+ import React, {
+   forwardRef,
+   useCallback,
+   useEffect,
+   useId,
+   useMemo,
+   useRef,
+   useState,
+ } from 'react';
++import ReactDOM from 'react-dom';
++import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
+ import styles from '../css/autocomplete.module.scss';
+ 
+ /* =====================================================================
+  * EvoAutoComplete — editable combobox with list autocomplete.
+  *
+  * Research / design decisions (see CLAUDE.md §2 "research"):
+  *  - MUI Autocomplete  → got the controlled `value` + `inputValue` split
+  *    right; we keep it. Got bundle size wrong; we stay zero-runtime CSS.
+  *  - Downshift / Headless UI → got strict WAI-ARIA combobox right
+  *    (aria-activedescendant, focus stays on the input); we follow it.
+@@ -354,20 +356,29 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+     );
+ 
+     /* ---- open / active descendant ---- */
+     const [open, setOpen] = useState(false);
+     const [activeIdx, setActiveIdx] = useState(0);
+ 
+     const wrapperRef = useRef<HTMLDivElement>(null);
+     const inputRef = useRef<HTMLInputElement>(null);
+     const listRef = useRef<HTMLDivElement>(null);
+     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
++    const anchorRef = useRef<HTMLDivElement>(null);
++
++    const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
++      open,
++      anchorRef,
++      placement: 'bottom',
++      offset: 6,
++      matchAnchorWidth: true,
++    });
+ 
+     /* Merge the forwarded ref with our internal one. */
+     const setInputRef = useCallback(
+       (node: HTMLInputElement | null) => {
+         inputRef.current = node;
+         if (typeof ref === 'function') ref(node);
+         else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
+       },
+       [ref],
+     );
+@@ -409,21 +420,22 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+       return findNearest(options, trimmed);
+     }, [smartRecovery, loading, belowMin, showRecents, results.length, trimmed, options]);
+ 
+     /* The keyboard-navigable set: the recovery suggestion, else the results. */
+     const navItems = recovery ? [recovery.option] : results;
+ 
+     /* ---- close on outside click ---- */
+     useEffect(() => {
+       if (!open) return;
+       const handler = (e: MouseEvent) => {
+-        if (!wrapperRef.current?.contains(e.target as Node)) closeMenu();
++        const t = e.target as Node;
++        if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) closeMenu();
+       };
+       document.addEventListener('mousedown', handler);
+       return () => document.removeEventListener('mousedown', handler);
+       // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [open]);
+ 
+     /* ---- keep the active row in view ---- */
+     useEffect(() => {
+       if (!open) return;
+       const el = listRef.current?.querySelector(
+@@ -671,20 +683,21 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+           .join(' ')}
+       >
+         {label && (
+           <label htmlFor={acId} className={styles.label}>
+             {label}
+           </label>
+         )}
+ 
+         <div className={styles.acWrapper}>
+           <div
++            ref={anchorRef}
+             className={[
+               styles.inputWrapper,
+               sizeClass,
+               open ? styles.open : '',
+               error ? styles.hasError : '',
+             ]
+               .filter(Boolean)
+               .join(' ')}
+           >
+             <span className={styles.searchIconWrap} aria-hidden="true">
+@@ -729,23 +742,26 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+                   className={styles.clearBtn}
+                   onClick={handleClear}
+                   onMouseDown={(e) => e.preventDefault()}
+                 >
+                   <ClearIcon />
+                 </button>
+               )}
+             </span>
+           </div>
+ 
+-          {open && (
++          {open && typeof document !== 'undefined' && ReactDOM.createPortal(
+             <div
++              ref={floatingRef}
+               className={styles.menu}
++              data-placement={placement}
++              style={floatingStyles}
+               role="listbox"
+               id={listId}
+               aria-label={label ?? 'Suggestions'}
+             >
+               {loading ? (
+                 <div className={styles.statusRow}>
+                   <SpinnerIcon />
+                   <span>Loading…</span>
+                 </div>
+               ) : belowMin ? (
+@@ -779,21 +795,22 @@ export const EvoAutoComplete = forwardRef<HTMLInputElement, EvoAutoCompleteProps
+                     {navItems.map((opt, idx) =>
+                       renderRow(opt, idx, showRecents ? 'recent' : 'option'),
+                     )}
+                   </div>
+                 </>
+               ) : trimmed.length === 0 ? (
+                 <div className={styles.empty}>Type to search…</div>
+               ) : (
+                 <div className={styles.empty}>{emptyMessage}</div>
+               )}
+-            </div>
++            </div>,
++            document.body,
+           )}
+ 
+           {name && <input type="hidden" name={name} value={value ?? ''} />}
+         </div>
+ 
+         {error && (
+           <p id={`${acId}-error`} className={styles.errorText}>
+             {error}
+           </p>
+         )}
+diff --git a/evo-ui/src/TreeSelect/TreeSelect.tsx b/evo-ui/src/TreeSelect/TreeSelect.tsx
+index a6e749e..8a5d5c9 100644
+--- a/evo-ui/src/TreeSelect/TreeSelect.tsx
++++ b/evo-ui/src/TreeSelect/TreeSelect.tsx
+@@ -1,11 +1,13 @@
+ import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
++import ReactDOM from 'react-dom';
++import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
+ import styles from '../css/treeselect.module.scss';
+ 
+ /* ---------------- Types ---------------- */
+ 
+ export interface TreeNode {
+   value: string;
+   label: string;
+   description?: string;
+   icon?: React.ReactNode;
+   disabled?: boolean;
+@@ -281,20 +283,28 @@ export const EvoTreeSelect = ({
+   /* -------- Open / focus / search -------- */
+   const [open, setOpen] = useState(false);
+   const [query, setQuery] = useState('');
+   const [activeIdx, setActiveIdx] = useState(-1);
+ 
+   const wrapperRef = useRef<HTMLDivElement>(null);
+   const triggerRef = useRef<HTMLButtonElement>(null);
+   const searchRef = useRef<HTMLInputElement>(null);
+   const listRef = useRef<HTMLDivElement>(null);
+ 
++  const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
++    open,
++    anchorRef: triggerRef,
++    placement: 'bottom',
++    offset: 6,
++    matchAnchorWidth: true,
++  });
++
+   /* -------- Filter (search) -------- */
+   const filterResult = useMemo(() => {
+     if (!searchable || !query.trim()) return null;
+     return filterTree(mergedData, query, filter);
+   }, [mergedData, query, searchable, filter]);
+ 
+   /* When searching, auto-expand everything visible so matches are reachable. */
+   const effectiveExpanded = useMemo(() => {
+     if (filterResult) return filterResult.visible;
+     return expandedSet;
+@@ -466,21 +476,22 @@ export const EvoTreeSelect = ({
+   }, [
+     multiple, checkStrictly, values, rawLeafSet,
+     checkStateFor, commitMulti, commitSingle,
+     isControlled, maps.nodeByValue, onChange,
+   ]);
+ 
+   /* -------- Open / close lifecycle -------- */
+   useEffect(() => {
+     if (!open) return;
+     const handler = (e: MouseEvent) => {
+-      if (!wrapperRef.current?.contains(e.target as Node)) {
++      const t = e.target as Node;
++      if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) {
+         setOpen(false);
+         setQuery('');
+       }
+     };
+     document.addEventListener('mousedown', handler);
+     return () => document.removeEventListener('mousedown', handler);
+   }, [open]);
+ 
+   useEffect(() => {
+     if (open) {
+@@ -762,22 +773,27 @@ export const EvoTreeSelect = ({
+                 onClick={handleClear}
+                 onMouseDown={e => e.preventDefault()}
+               ><ClearIcon /></span>
+             )}
+             <span className={[styles.chevron, open ? styles.chevronOpen : ''].filter(Boolean).join(' ')}>
+               <ChevronDown />
+             </span>
+           </span>
+         </button>
+ 
+-        {open && (
+-          <div className={styles.menu}>
++        {open && typeof document !== 'undefined' && ReactDOM.createPortal(
++          <div
++            ref={floatingRef}
++            className={styles.menu}
++            data-placement={placement}
++            style={floatingStyles}
++          >
+             {searchable && (
+               <div className={styles.searchRow}>
+                 <span className={styles.searchIconWrap}><SearchIcon /></span>
+                 <input
+                   ref={searchRef}
+                   type="text"
+                   className={styles.searchInput}
+                   placeholder="Search..."
+                   value={query}
+                   onChange={e => { setQuery(e.target.value); setActiveIdx(0); }}
+@@ -805,21 +821,22 @@ export const EvoTreeSelect = ({
+             {multiple && hasValue && (
+               <div className={styles.menuFooter}>
+                 <span>{values.length} selected</span>
+                 <button
+                   type="button"
+                   className={styles.footerBtn}
+                   onClick={() => commitMulti(new Set())}
+                 >Clear all</button>
+               </div>
+             )}
+-          </div>
++          </div>,
++          document.body,
+         )}
+ 
+         {name && <input type="hidden" name={name} value={hiddenInputValue} />}
+       </div>
+ 
+       {error && <p className={styles.errorText}>{error}</p>}
+       {!error && helperText && <p className={styles.helperText}>{helperText}</p>}
+     </div>
+   );
+ };
+diff --git a/evo-ui/src/css/autocomplete.module.scss b/evo-ui/src/css/autocomplete.module.scss
+index 8328874..8c60b03 100644
+--- a/evo-ui/src/css/autocomplete.module.scss
++++ b/evo-ui/src/css/autocomplete.module.scss
+@@ -184,25 +184,21 @@
+ @media (prefers-reduced-motion: reduce) {
+   .spinner {
+     animation-duration: 2s;
+   }
+ }
+ 
+ /* =====================================================================
+  * Dropdown menu
+  * =================================================================== */
+ .menu {
+-  position: absolute;
+-  top: calc(100% + 6px);
+-  left: 0;
+-  right: 0;
+-  z-index: 100;
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+ 
+   background: $color-surface-elevated;
+   border: 1px solid $color-border;
+   border-radius: $radius-md;
+   overflow: hidden;
+ 
+   box-shadow:
+     0 16px 32px -12px rgb(0 0 0 / 0.35),
+     0 6px 12px -4px rgb(0 0 0 / 0.18);
+ 
+@@ -214,20 +210,30 @@
+   from {
+     opacity: 0;
+     transform: translateY(-6px) scale(0.97);
+   }
+   to {
+     opacity: 1;
+     transform: translateY(0) scale(1);
+   }
+ }
+ 
++.menu[data-placement='top'] {
++  transform-origin: bottom center;
++  animation-name: evoAcMenuOpenUp;
++}
++
++@keyframes evoAcMenuOpenUp {
++  from { opacity: 0; transform: translateY(6px) scale(0.97); }
++  to   { opacity: 1; transform: translateY(0) scale(1); }
++}
++
+ @media (prefers-reduced-motion: reduce) {
+   .menu {
+     animation: none;
+   }
+ }
+ 
+ /* ---------------- Section header (Recents / Smart Recovery) -------- */
+ .sectionHeader {
+   display: flex;
+   align-items: center;
+diff --git a/evo-ui/src/css/treeselect.module.scss b/evo-ui/src/css/treeselect.module.scss
+index 4c58b6e..9d7c552 100644
+--- a/evo-ui/src/css/treeselect.module.scss
++++ b/evo-ui/src/css/treeselect.module.scss
+@@ -234,44 +234,50 @@
+ }
+ 
+ .trigger:hover:not(:disabled) .chevron {
+   color: $color-text-secondary;
+ }
+ 
+ /* =====================================================================
+  * Popover menu
+  * ===================================================================== */
+ .menu {
+-  position: absolute;
+-  top: calc(100% + 6px);
+-  left: 0;
+-  right: 0;
+-  z-index: 100;
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+ 
+   background: $color-surface-elevated;
+   border: 1px solid $color-border;
+   border-radius: $radius-md;
+   overflow: hidden;
+ 
+   box-shadow:
+     0 16px 32px -12px rgb(0 0 0 / 0.35),
+     0 6px 12px -4px rgb(0 0 0 / 0.18);
+ 
+   transform-origin: top center;
+   animation: menuOpen 160ms cubic-bezier(0.16, 1, 0.3, 1);
+ }
+ 
+ @keyframes menuOpen {
+   from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+   to   { opacity: 1; transform: translateY(0) scale(1); }
+ }
+ 
++.menu[data-placement='top'] {
++  transform-origin: bottom center;
++  animation-name: menuOpenUp;
++}
++
++@keyframes menuOpenUp {
++  from { opacity: 0; transform: translateY(6px) scale(0.97); }
++  to   { opacity: 1; transform: translateY(0) scale(1); }
++}
++
+ /* ---------------- In-menu search row ---------------- */
+ .searchRow {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   padding: 0.5rem 0.75rem;
+   border-bottom: 1px solid $color-border-subtle;
+   background: $color-surface-sunken;
+ }
+ 

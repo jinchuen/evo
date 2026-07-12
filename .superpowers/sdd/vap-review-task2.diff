@@ -1,0 +1,192 @@
+﻿385a68e fix(EvoSelect): flip menu upward near viewport bottom via useAnchoredPosition (#10)
+ evo-ui/src/Select/Select.tsx      | 23 ++++++++++++++++++++---
+ evo-ui/src/css/select.module.scss | 17 ++++++++++++-----
+ 2 files changed, 32 insertions(+), 8 deletions(-)
+diff --git a/evo-ui/src/Select/Select.tsx b/evo-ui/src/Select/Select.tsx
+index f1b7b49..e9adebc 100644
+--- a/evo-ui/src/Select/Select.tsx
++++ b/evo-ui/src/Select/Select.tsx
+@@ -1,11 +1,13 @@
+ import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
++import ReactDOM from 'react-dom';
++import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
+ import styles from '../css/select.module.scss';
+ 
+ export interface SelectOption {
+   value: string;
+   label: string;
+   description?: string;
+   icon?: React.ReactNode;
+   disabled?: boolean;
+ }
+ 
+@@ -114,20 +116,28 @@ export const EvoSelect = (props: EvoSelectProps) => {
+ 
+   const [open, setOpen] = useState(false);
+   const [activeIdx, setActiveIdx] = useState(-1);
+   const [query, setQuery] = useState('');
+ 
+   const wrapperRef = useRef<HTMLDivElement>(null);
+   const triggerRef = useRef<HTMLButtonElement>(null);
+   const searchRef = useRef<HTMLInputElement>(null);
+   const listRef = useRef<HTMLDivElement>(null);
+ 
++  const { floatingRef, floatingStyles, placement } = useAnchoredPosition({
++    open,
++    anchorRef: triggerRef,
++    placement: 'bottom',
++    offset: 6,
++    matchAnchorWidth: true,
++  });
++
+   const filtered = searchable && query
+     ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
+     : options;
+ 
+   const selectedOption = !isMultiple
+     ? options.find(o => o.value === value)
+     : undefined;
+ 
+   const selectedOptions = isMultiple
+     ? options.filter(o => selectedValues.includes(o.value))
+@@ -154,21 +164,24 @@ export const EvoSelect = (props: EvoSelectProps) => {
+         emit([...current, v]);
+       }
+     } else {
+       emit(v);
+     }
+   }, [emit, isMultiple, maxSelections, value]);
+ 
+   useEffect(() => {
+     if (!open) return;
+     const handler = (e: MouseEvent) => {
+-      if (!wrapperRef.current?.contains(e.target as Node)) {
++      const t = e.target as Node;
++      // The menu is portaled to <body>, so it is no longer a DOM child of the
++      // wrapper — check it explicitly or clicking an option would close first.
++      if (!wrapperRef.current?.contains(t) && !floatingRef.current?.contains(t)) {
+         setOpen(false);
+         setQuery('');
+       }
+     };
+     document.addEventListener('mousedown', handler);
+     return () => document.removeEventListener('mousedown', handler);
+   }, [open]);
+ 
+   useEffect(() => {
+     if (open) {
+@@ -391,23 +404,26 @@ export const EvoSelect = (props: EvoSelectProps) => {
+               >
+                 <ClearIcon />
+               </span>
+             )}
+             <span className={[styles.chevron, open ? styles.chevronOpen : ''].filter(Boolean).join(' ')}>
+               <ChevronIcon />
+             </span>
+           </span>
+         </button>
+ 
+-        {open && (
++        {open && typeof document !== 'undefined' && ReactDOM.createPortal(
+           <div
++            ref={floatingRef}
+             className={styles.menu}
++            data-placement={placement}
++            style={floatingStyles}
+             role="listbox"
+             id={listId}
+             aria-labelledby={selectId}
+             aria-multiselectable={isMultiple || undefined}
+             aria-activedescendant={activeIdx >= 0 ? `${selectId}-opt-${activeIdx}` : undefined}
+           >
+             {searchable && (
+               <div className={styles.searchRow}>
+                 <span className={styles.searchIconWrap}><SearchIcon /></span>
+                 <input
+@@ -492,21 +508,22 @@ export const EvoSelect = (props: EvoSelectProps) => {
+                       {!isMultiple && (
+                         <span className={styles.check} aria-hidden>
+                           {isSelected && <CheckIcon />}
+                         </span>
+                       )}
+                     </div>
+                   );
+                 })
+               )}
+             </div>
+-          </div>
++          </div>,
++          document.body,
+         )}
+ 
+         {name && !isMultiple && <input type="hidden" name={name} value={value as string} />}
+         {name && isMultiple && selectedValues.map(v => (
+           <input key={v} type="hidden" name={name} value={v} />
+         ))}
+       </div>
+ 
+       {error && <p className={styles.errorText}>{error}</p>}
+       {!error && helperText && <p className={styles.helperText}>{helperText}</p>}
+diff --git a/evo-ui/src/css/select.module.scss b/evo-ui/src/css/select.module.scss
+index d431832..2bae414 100644
+--- a/evo-ui/src/css/select.module.scss
++++ b/evo-ui/src/css/select.module.scss
+@@ -258,25 +258,21 @@
+ }
+ 
+ .trigger:hover:not(:disabled) .chevron {
+   color: $color-text-secondary;
+ }
+ 
+ /* ===================================================================
+  * Dropdown menu
+  * =================================================================== */
+ .menu {
+-  position: absolute;
+-  top: calc(100% + 6px);
+-  left: 0;
+-  right: 0;
+-  z-index: 100;
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+ 
+   background: $color-surface-elevated;
+   border: 1px solid $color-border;
+   border-radius: $radius-md;
+   overflow: hidden;
+ 
+   box-shadow:
+     0 16px 32px -12px rgb(0 0 0 / 0.35),
+     0 6px 12px -4px rgb(0 0 0 / 0.18);
+ 
+@@ -288,20 +284,31 @@
+   from {
+     opacity: 0;
+     transform: translateY(-6px) scale(0.97);
+   }
+   to {
+     opacity: 1;
+     transform: translateY(0) scale(1);
+   }
+ }
+ 
++/* Opened upward (flipped by useAnchoredPosition): grow from the bottom edge. */
++.menu[data-placement='top'] {
++  transform-origin: bottom center;
++  animation-name: menuOpenUp;
++}
++
++@keyframes menuOpenUp {
++  from { opacity: 0; transform: translateY(6px) scale(0.97); }
++  to   { opacity: 1; transform: translateY(0) scale(1); }
++}
++
+ /* ---------------- In-menu search row ---------------- */
+ .searchRow {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   padding: 0.5rem 0.75rem;
+   border-bottom: 1px solid $color-border-subtle;
+   background: $color-surface-sunken;
+ }
+ 

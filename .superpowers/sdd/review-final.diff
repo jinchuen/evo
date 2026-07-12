@@ -1,0 +1,1370 @@
+﻿# Final whole-branch review package: aa6f23f..d6f0fe5
+
+## Commits
+d6f0fe5 chore: bump to 1.2.0; sync TopNav skill + changelog
+94c799e docs: animate the site header (rise on load + elevate on scroll)
+f4d68f6 docs(TopNav): demo entrance, scroll, Search and breadcrumb composition
+51443b8 fix(TopNav): make EvoTopNav.Search type=button un-overridable by rest props
+2eeca0e feat(TopNav): add EvoTopNav.Search quick-search trigger part
+f9d2145 fix(TopNav): color-mix fallback for scrolled bar; reset scroll baseline on disable
+8d98deb feat(TopNav): add entrance, sticky, scrollBehavior and showProgress props
+079dc60 fix(Checkbox): center the checked tick via transform
+7ded16c fix(RichTextArea): land caret on a new line below inserted images
+
+## Files changed
+ evo-docs/src/components/Layout.tsx       |  28 ++++-
+ evo-docs/src/index.css                   |  19 ++++
+ evo-docs/src/pages/ChangelogPage.tsx     |  23 +++++
+ evo-docs/src/pages/TopNavPage.tsx        | 136 +++++++++++++++++++++++-
+ evo-ui/package.json                      |   2 +-
+ evo-ui/src/RichTextArea/RichTextArea.tsx |  23 ++++-
+ evo-ui/src/TopNav/TopNav.tsx             | 169 ++++++++++++++++++++++++++++++
+ evo-ui/src/css/checkbox.module.scss      |  13 ++-
+ evo-ui/src/css/topnav.module.scss        | 172 +++++++++++++++++++++++++++++++
+ skills/evo-rich-text-area/SKILL.md       |   1 +
+ skills/evo-topnav/SKILL.md               |  49 +++++++++
+ 11 files changed, 623 insertions(+), 12 deletions(-)
+
+## Diff
+diff --git a/evo-docs/src/components/Layout.tsx b/evo-docs/src/components/Layout.tsx
+index 7b9fc6f..3b19db3 100644
+--- a/evo-docs/src/components/Layout.tsx
++++ b/evo-docs/src/components/Layout.tsx
+@@ -174,20 +174,40 @@ export default function Layout() {
+   // Close mobile nav when route changes
+   useEffect(() => {
+     setMobileOpen(false)
+   }, [location.pathname])
+ 
+   useEffect(() => {
+     const t = window.setTimeout(() => setInitialLoad(false), 700)
+     return () => window.clearTimeout(t)
+   }, [])
+ 
++  // Elevate the docs topbar once the main content scrolls.
++  // .docs-main has no overflow-y — the window is the real scroll container.
++  const [topbarScrolled, setTopbarScrolled] = useState(false)
++  useEffect(() => {
++    // .docs-main has no overflow-y set; the window scrolls the main content.
++    // getComputedStyle check: if the element is not itself an overflow scroll
++    // container, fall back to window so scroll events actually fire.
++    const main = document.querySelector('.docs-main')
++    const isScroller = main instanceof HTMLElement &&
++      /(auto|scroll)/.test(getComputedStyle(main).overflowY)
++    const target: HTMLElement | Window = isScroller ? (main as HTMLElement) : window
++    const read = () => {
++      const y = target instanceof Window ? window.scrollY : (target as HTMLElement).scrollTop
++      setTopbarScrolled(y > 4)
++    }
++    read()
++    target.addEventListener('scroll', read, { passive: true })
++    return () => target.removeEventListener('scroll', read)
++  }, [])
++
+   useEffect(() => {
+     if (typeof window === 'undefined' || !window.matchMedia) return
+     const mql = window.matchMedia('(max-width: 900px)')
+     const update = () => setIsMobileWidth(mql.matches)
+     update()
+     mql.addEventListener('change', update)
+     return () => mql.removeEventListener('change', update)
+   }, [])
+ 
+   useEffect(() => {
+@@ -315,21 +335,21 @@ export default function Layout() {
+     <div className="docs-layout" data-collapsed={effectiveCollapsed ? 'true' : undefined}>
+       <aside
+         id="docs-sidebar"
+         className={`docs-sidebar${mobileOpen ? ' docs-sidebar-open' : ''}`}
+         inert={isMobileWidth && !mobileOpen}
+       >
+         <div className="docs-sidebar-logo">
+           <span className="docs-logo-mark" aria-hidden="true">E</span>
+           <span className="docs-logo-text">Evo UI</span>
+           {/* Keep in sync with evo-ui/package.json version on each release. */}
+-          <span className="docs-logo-version">v1.1</span>
++          <span className="docs-logo-version">v1.2</span>
+         </div>
+ 
+         <div className="docs-sidebar-search">
+           <div className="docs-search-field">
+             <SearchIcon />
+             <input
+               className="docs-search-input"
+               type="text"
+               value={query}
+               onChange={(e) => setQuery(e.target.value)}
+@@ -438,21 +458,25 @@ export default function Layout() {
+         </div>
+       </aside>
+ 
+       <div
+         className={`docs-sidebar-scrim${mobileOpen ? ' docs-sidebar-scrim-open' : ''}`}
+         onClick={() => setMobileOpen(false)}
+         aria-hidden="true"
+       />
+ 
+       <main className="docs-main">
+-        <header className="docs-topbar">
++        <header
++          className="docs-topbar"
++          data-scrolled={topbarScrolled ? 'true' : undefined}
++          data-initial={initialLoad ? 'true' : undefined}
++        >
+           <button
+             type="button"
+             className="docs-mobile-menu-btn"
+             aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
+             aria-expanded={mobileOpen}
+             aria-controls="docs-sidebar"
+             onClick={() => setMobileOpen((v) => !v)}
+           >
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+               <line x1="3" y1="6"  x2="21" y2="6" />
+diff --git a/evo-docs/src/index.css b/evo-docs/src/index.css
+index 421f61c..933bc75 100644
+--- a/evo-docs/src/index.css
++++ b/evo-docs/src/index.css
+@@ -362,34 +362,53 @@ p { margin: 0; }
+   .docs-sidebar,
+   .docs-main,
+   .docs-collapse-btn svg { transition: none; }
+   /* Match the gated selector's specificity so the stagger is truly disabled. */
+   .docs-sidebar-nav[data-initial='true'] nav > ul > li,
+   .docs-sidebar-nav nav > ul > li { animation: none; }
+ }
+ 
+ /* ─── Top bar (theme toggle + mobile menu) ───────────────────────── */
+ 
++@keyframes docsTopbarRise {
++  from { opacity: 0; transform: translateY(0.5rem); }
++  to   { opacity: 1; transform: translateY(0); }
++}
++
+ .docs-topbar {
+   position: sticky;
+   top: 0;
+   z-index: 90;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 0.75rem;
+   height: var(--docs-topbar-height);
+   padding: 0 1.25rem;
+   background: color-mix(in srgb, var(--docs-bg) 80%, transparent);
+   backdrop-filter: blur(10px);
+   -webkit-backdrop-filter: blur(10px);
+   border-bottom: 1px solid var(--docs-border-subtle);
++  transition: box-shadow 200ms ease, background-color 200ms ease;
++}
++
++.docs-topbar[data-scrolled='true'] {
++  background: color-mix(in srgb, var(--docs-bg) 92%, transparent);
++  box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.5);
++}
++
++.docs-topbar[data-initial='true'] .docs-topbar-title {
++  animation: docsTopbarRise 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .docs-topbar[data-initial='true'] .docs-topbar-title { animation: none; }
+ }
+ 
+ .docs-topbar-title {
+   font-size: 0.9rem;
+   font-weight: 600;
+   color: var(--docs-text-muted);
+   letter-spacing: -0.005em;
+ }
+ 
+ .docs-topbar-actions {
+diff --git a/evo-docs/src/pages/ChangelogPage.tsx b/evo-docs/src/pages/ChangelogPage.tsx
+index 3e5f82f..40741fd 100644
+--- a/evo-docs/src/pages/ChangelogPage.tsx
++++ b/evo-docs/src/pages/ChangelogPage.tsx
+@@ -18,20 +18,43 @@ type Release = {
+ 
+ const SEVERITY: Record<ChangeKind, 'success' | 'info' | 'warning' | 'danger'> = {
+   Created:  'success',
+   Added:    'success',
+   Changed:  'info',
+   Fixed:    'warning',
+   Breaking: 'danger',
+ }
+ 
+ const RELEASES: Release[] = [
++  {
++    version: '1.2.0',
++    date: '2026-06-22',
++    summary:
++      'EvoTopNav gains an opt-in entrance animation, sticky scroll-aware behavior, a scroll-progress line, and a new Search (⌘K) part — plus image-caret and checkbox-tick fixes.',
++    sections: [
++      {
++        kind: 'Added',
++        items: [
++          'EvoTopNav — `entrance` prop (`none` | `rise` | `fade`) staggers the brand, menu items, search and actions up on mount; plays once and is disabled under `prefers-reduced-motion`.',
++          'EvoTopNav — `sticky`, `scrollBehavior` (`none` | `elevate` | `shrink` | `hide`) and `showProgress` props add a pinned, scroll-aware bar with an optional reading-progress line, driven by one rAF-throttled scroll listener (zero new deps).',
++          'EvoTopNav.Search — a new presentational quick-search trigger sub-component with a platform-aware ⌘K / Ctrl K hint and an opt-in global `shortcut` hotkey; collapses to icon-only on mobile. Wire its `onClick` to EvoCommandPalette.',
++        ],
++      },
++      {
++        kind: 'Fixed',
++        items: [
++          'EvoRichTextArea — inserting an image (button, drag-drop, paste, or the `insertImage` handle) now lands the caret on a fresh paragraph below the image instead of beside the block-level image, where the caret painted at its top-right edge.',
++          'EvoCheckbox — the checked tick is now transform-centered in the box (it used hardcoded pixel offsets and could sit off-center); the scale-in animation now grows from the center. CSS-only.',
++        ],
++      },
++    ],
++  },
+   {
+     version: '1.1.0',
+     date: '2026-06-22',
+     summary:
+       'EvoNav gains collapsible groups, an icon-rail collapsed mode, group counts and row tooltips — plus a cleaner, more animated visual treatment.',
+     sections: [
+       {
+         kind: 'Added',
+         items: [
+           'EvoNav — `collapsed` prop renders an icon-only rail: labels hide with a left-to-right reveal, icons center, and each row surfaces a native tooltip from a new `tooltip` prop on EvoNav.Item / EvoNav.SubItem.',
+diff --git a/evo-docs/src/pages/TopNavPage.tsx b/evo-docs/src/pages/TopNavPage.tsx
+index a3f5ecb..e9b37f4 100644
+--- a/evo-docs/src/pages/TopNavPage.tsx
++++ b/evo-docs/src/pages/TopNavPage.tsx
+@@ -1,12 +1,12 @@
+ import { useState } from 'react'
+-import { EvoTopNav, EvoButton, EvoBadge, EvoDivider } from '@justin_evo/evo-ui'
++import { EvoTopNav, EvoButton, EvoBadge, EvoDivider, EvoBreadcrumb } from '@justin_evo/evo-ui'
+ import { CodeBlock } from '../components/CodeBlock'
+ import { PropsTable } from '../components/PropsTable'
+ 
+ export default function TopNavPage() {
+   const [active, setActive] = useState('home')
+   const [controlledOpen, setControlledOpen] = useState(false)
+ 
+   return (
+     <div>
+       <div className="docs-page-header">
+@@ -195,20 +195,145 @@ export default function TopNavPage() {
+               <EvoTopNav.Item icon={<span>📄</span>}>Docs</EvoTopNav.Item>
+             </EvoTopNav.Menu>
+             <EvoTopNav.Actions>
+               <EvoBadge severity="success">v1.0</EvoBadge>
+               <EvoButton label="Sign in" variant="ghost" size="sm" />
+             </EvoTopNav.Actions>
+           </EvoTopNav>
+         </div>
+       </div>
+ 
++      {/* --- Entrance animation --- */}
++      <div className="docs-section">
++        <div className="docs-section-title">Entrance animation</div>
++        <p className="docs-section-desc">
++          <code>entrance="rise"</code> staggers the brand, each menu item, and the
++          actions up from below on mount (<code>"fade"</code> does opacity only).
++          It plays once and is disabled entirely under{' '}
++          <code>prefers-reduced-motion</code>. Opt-in — the default is{' '}
++          <code>"none"</code>.
++        </p>
++        <div className="docs-preview col" style={{ width: '100%', padding: 0, overflow: 'hidden', borderRadius: 8 }}>
++          <EvoTopNav aria-label="Entrance example" entrance="rise">
++            <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++            <EvoTopNav.Menu>
++              <EvoTopNav.Item href="#home" active>Home</EvoTopNav.Item>
++              <EvoTopNav.Item href="#docs">Docs</EvoTopNav.Item>
++              <EvoTopNav.Item href="#blog">Blog</EvoTopNav.Item>
++            </EvoTopNav.Menu>
++            <EvoTopNav.Actions>
++              <EvoButton label="Sign in" variant="ghost" size="sm" />
++            </EvoTopNav.Actions>
++          </EvoTopNav>
++        </div>
++        <CodeBlock code={`<EvoTopNav aria-label="Primary" entrance="rise">
++  <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++  <EvoTopNav.Menu>
++    <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
++    <EvoTopNav.Item href="/docs">Docs</EvoTopNav.Item>
++  </EvoTopNav.Menu>
++</EvoTopNav>`} />
++      </div>
++
++      {/* --- Scroll behavior --- */}
++      <div className="docs-section">
++        <div className="docs-section-title">Sticky + scroll behavior</div>
++        <p className="docs-section-desc">
++          <code>sticky</code> pins the bar; <code>scrollBehavior</code> reacts to
++          scroll — <code>"elevate"</code> adds a blurred background + shadow,{' '}
++          <code>"shrink"</code> also reduces height, <code>"hide"</code> auto-hides
++          on scroll-down and reveals on scroll-up. <code>showProgress</code> draws a
++          thin reading-progress line along the bottom edge.
++        </p>
++        <CodeBlock code={`<EvoTopNav
++  aria-label="Primary"
++  sticky
++  scrollBehavior="shrink"
++  showProgress
++>
++  <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++  <EvoTopNav.Menu>
++    <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
++    <EvoTopNav.Item href="/docs">Docs</EvoTopNav.Item>
++  </EvoTopNav.Menu>
++</EvoTopNav>`} />
++        <p className="docs-section-desc" style={{ marginTop: '0.5rem' }}>
++          The docs site's own header uses this treatment — scroll this page to see
++          it elevate.
++        </p>
++      </div>
++
++      {/* --- Quick search (Cmd K) --- */}
++      <div className="docs-section">
++        <div className="docs-section-title">Quick search (⌘K)</div>
++        <p className="docs-section-desc">
++          <code>EvoTopNav.Search</code> is a presentational trigger: it renders the
++          search affordance + a platform-aware keyboard hint and fires{' '}
++          <code>onClick</code>. Wire it to an{' '}
++          <code>EvoCommandPalette</code>. Pass <code>shortcut="mod+k"</code> to also
++          register a global hotkey. It collapses to an icon-only button below the
++          breakpoint.
++        </p>
++        <div className="docs-preview col" style={{ width: '100%', padding: 0, overflow: 'hidden', borderRadius: 8 }}>
++          <EvoTopNav aria-label="Search example">
++            <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++            <EvoTopNav.Menu>
++              <EvoTopNav.Item href="#home" active>Home</EvoTopNav.Item>
++              <EvoTopNav.Item href="#docs">Docs</EvoTopNav.Item>
++            </EvoTopNav.Menu>
++            <EvoTopNav.Search placeholder="Search docs…" onClick={() => alert('open command palette')} />
++            <EvoTopNav.Actions>
++              <EvoButton label="Sign in" variant="ghost" size="sm" />
++            </EvoTopNav.Actions>
++          </EvoTopNav>
++        </div>
++        <CodeBlock code={`const [open, setOpen] = useState(false)
++
++<EvoTopNav aria-label="Primary">
++  <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++  <EvoTopNav.Menu>
++    <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
++  </EvoTopNav.Menu>
++  <EvoTopNav.Search
++    placeholder="Search docs…"
++    shortcut="mod+k"
++    onClick={() => setOpen(true)}
++  />
++</EvoTopNav>
++
++<EvoCommandPalette open={open} onOpenChange={setOpen} /* … */ />`} />
++      </div>
++
++      {/* --- Links + breadcrumb composition --- */}
++      <div className="docs-section">
++        <div className="docs-section-title">Icon links + breadcrumb</div>
++        <p className="docs-section-desc">
++          Drop icon links into <code>EvoTopNav.Actions</code>, and compose{' '}
++          <code>EvoBreadcrumb</code> inside the bar for a location trail — no extra
++          parts needed.
++        </p>
++        <div className="docs-preview col" style={{ width: '100%', padding: 0, overflow: 'hidden', borderRadius: 8 }}>
++          <EvoTopNav aria-label="Links example">
++            <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++            <EvoTopNav.Menu>
++              <EvoTopNav.Item href="#docs" active>Docs</EvoTopNav.Item>
++            </EvoTopNav.Menu>
++            <EvoTopNav.Actions>
++              <EvoBreadcrumb>
++                <EvoBreadcrumb.Item>Components</EvoBreadcrumb.Item>
++                <EvoBreadcrumb.Item current>TopNav</EvoBreadcrumb.Item>
++              </EvoBreadcrumb>
++            </EvoTopNav.Actions>
++          </EvoTopNav>
++        </div>
++      </div>
++
+       <EvoDivider />
+ 
+       {/* --- Accessibility --- */}
+       <div className="docs-section">
+         <div className="docs-section-title">Accessibility</div>
+         <ul className="docs-list">
+           <li>
+             The root renders as <code>&lt;nav&gt;</code> and forwards{' '}
+             <code>aria-label</code>. Always set <code>aria-label</code> when the
+             page has more than one <code>&lt;nav&gt;</code>.
+@@ -251,39 +376,48 @@ export default function TopNavPage() {
+       <div className="docs-section">
+         <div className="docs-section-title">Props</div>
+         <PropsTable props={[
+           { prop: 'EvoTopNav — children', type: 'ReactNode', required: true, description: 'Accepts Brand, Menu, Actions, Toggle, Dropdown, and DropdownItem sub-components.' },
+           { prop: 'EvoTopNav — aria-label', type: 'string', description: 'Accessible name for the nav. Required when the page has more than one <nav>.' },
+           { prop: 'EvoTopNav — open', type: 'boolean', description: 'Controlled open state of the mobile drawer.' },
+           { prop: 'EvoTopNav — defaultOpen', type: 'boolean', description: 'Uncontrolled initial open state.', default: 'false' },
+           { prop: 'EvoTopNav — onOpenChange', type: '(open: boolean) => void', description: 'Fires when the drawer opens or closes.' },
+           { prop: 'EvoTopNav — collapseBelow', type: 'number', description: 'Pixel width below which the menu collapses into the drawer.', default: '768' },
+           { prop: 'EvoTopNav — className', type: 'string', description: 'Extra class applied to the <nav> element.' },
++          { prop: 'EvoTopNav — entrance', type: "'none' | 'rise' | 'fade'", description: 'Staggered mount animation for the bar contents. Disabled under prefers-reduced-motion.', default: "'none'" },
++          { prop: 'EvoTopNav — sticky', type: 'boolean', description: 'Pin the bar with position: sticky; top: 0.', default: 'false' },
++          { prop: 'EvoTopNav — scrollBehavior', type: "'none' | 'elevate' | 'shrink' | 'hide'", description: 'On-scroll treatment: elevate (blur+shadow), shrink (also reduces height), or hide (auto-hide on scroll-down).', default: "'none'" },
++          { prop: 'EvoTopNav — showProgress', type: 'boolean', description: 'Render a thin scroll-progress accent line along the bottom edge.', default: 'false' },
+ 
+           { prop: 'EvoTopNav.Brand — children', type: 'ReactNode', required: true, description: 'Logo or brand name displayed on the left.' },
+ 
+           { prop: 'EvoTopNav.Menu — children', type: 'ReactNode', required: true, description: 'EvoTopNav.Item / .Dropdown elements.' },
+ 
+           { prop: 'EvoTopNav.Item — children', type: 'ReactNode', required: true, description: 'Item label, or (with asChild) the element to clone.' },
+           { prop: 'EvoTopNav.Item — active', type: 'boolean', description: 'Marks the item as current page (sets aria-current="page").' },
+           { prop: 'EvoTopNav.Item — icon', type: 'ReactNode', description: 'Icon rendered before the label.' },
+           { prop: 'EvoTopNav.Item — href', type: 'string', description: 'Renders the item as <a href={...}>.' },
+           { prop: 'EvoTopNav.Item — target', type: "'_self' | '_blank' | '_parent' | '_top'", description: 'Target attribute, only meaningful with href.' },
+           { prop: 'EvoTopNav.Item — rel', type: 'string', description: 'Rel attribute. Defaults to "noopener noreferrer" when target="_blank".' },
+           { prop: 'EvoTopNav.Item — onClick', type: '(e: MouseEvent) => void', description: 'Click handler. With href, runs alongside default nav.' },
+           { prop: 'EvoTopNav.Item — asChild', type: 'boolean', description: 'Clones the single child and merges our props (className, onClick, aria-current). Use for router Link.' },
+ 
+           { prop: 'EvoTopNav.Actions — children', type: 'ReactNode', required: true, description: 'Right-aligned slot for buttons, badges, avatars.' },
+ 
+           { prop: 'EvoTopNav.Toggle — icon', type: 'ReactNode', description: 'Custom toggle icon. Defaults to a hamburger / X.' },
+           { prop: 'EvoTopNav.Toggle — aria-label', type: 'string', description: 'Accessible name. Defaults to "Open menu" / "Close menu".' },
+ 
++          { prop: 'EvoTopNav.Search — placeholder', type: 'string', description: 'Placeholder text shown inside the trigger.', default: "'Search…'" },
++          { prop: 'EvoTopNav.Search — shortcut', type: 'string', description: "Opt-in global hotkey, e.g. 'mod+k' (mod = ⌘ on macOS, Ctrl elsewhere). Default: none." },
++          { prop: 'EvoTopNav.Search — shortcutHint', type: 'ReactNode', description: 'Override the keyboard hint shown on the right.', default: 'platform-aware ⌘K / Ctrl K' },
++          { prop: 'EvoTopNav.Search — onClick', type: '(e: MouseEvent) => void', description: 'Fires on click (and on the global hotkey, if set). Wire to your command palette.' },
++
+           { prop: 'EvoTopNav.Dropdown — label', type: 'ReactNode', required: true, description: 'Trigger label.' },
+           { prop: 'EvoTopNav.Dropdown — icon', type: 'ReactNode', description: 'Icon shown before the trigger label.' },
+           { prop: 'EvoTopNav.Dropdown — active', type: 'boolean', description: 'Marks the dropdown as the current section.' },
+           { prop: 'EvoTopNav.Dropdown — hoverable', type: 'boolean', description: 'Open on hover on fine-pointer devices.', default: 'true' },
+           { prop: 'EvoTopNav.Dropdown — open', type: 'boolean', description: 'Controlled open state.' },
+           { prop: 'EvoTopNav.Dropdown — defaultOpen', type: 'boolean', description: 'Uncontrolled initial open state.', default: 'false' },
+           { prop: 'EvoTopNav.Dropdown — onOpenChange', type: '(open: boolean) => void', description: 'Open/close callback.' },
+           { prop: 'EvoTopNav.Dropdown — children', type: 'ReactNode', required: true, description: 'EvoTopNav.DropdownItem elements.' },
+ 
+           { prop: 'EvoTopNav.DropdownItem — children', type: 'ReactNode', required: true, description: 'Item label, or (with asChild) the element to clone.' },
+diff --git a/evo-ui/package.json b/evo-ui/package.json
+index fc211a0..c7e6d95 100644
+--- a/evo-ui/package.json
++++ b/evo-ui/package.json
+@@ -1,13 +1,13 @@
+ {
+   "name": "@justin_evo/evo-ui",
+-  "version": "1.1.0",
++  "version": "1.2.0",
+   "main": "dist/index.cjs.js",
+   "module": "dist/index.es.js",
+   "types": "dist/index.d.ts",
+   "style": "dist/evo-ui.css",
+   "exports": {
+     ".": {
+       "types": "./dist/index.d.ts",
+       "import": "./dist/index.es.js",
+       "require": "./dist/index.cjs.js"
+     },
+diff --git a/evo-ui/src/RichTextArea/RichTextArea.tsx b/evo-ui/src/RichTextArea/RichTextArea.tsx
+index 63728d7..6914c5d 100644
+--- a/evo-ui/src/RichTextArea/RichTextArea.tsx
++++ b/evo-ui/src/RichTextArea/RichTextArea.tsx
+@@ -495,23 +495,40 @@ export const EvoRichTextArea = forwardRef<EvoRichTextHandle, EvoRichTextAreaProp
+     clear: () => {
+       const el = editorRef.current;
+       if (!el) return;
+       el.innerHTML = '';
+       emitChange();
+     },
+   }), [emitChange]);
+ 
+   // ---- Insert image (used by paste, drop, button) ----
+   const insertImageAtCaret = useCallback((src: string, alt = '') => {
+-    editorRef.current?.focus();
+-    const html = `<img src="${src.replace(/"/g, '&quot;')}" alt="${alt.replace(/"/g, '&quot;')}" />`;
+-    execCommand('insertHTML', html);
++    const el = editorRef.current;
++    if (!el) return;
++    el.focus();
++    const safeSrc = src.replace(/"/g, '&quot;');
++    const safeAlt = alt.replace(/"/g, '&quot;');
++    // Images render display:block; inserting a bare <img> leaves the caret
++    // beside it, which paints at the image's top-right edge. Drop a trailing
++    // empty paragraph and move the caret into it, so the user lands on a clean
++    // new line *below* the image. (Marker idiom matches unwrapBlocks above.)
++    execCommand('insertHTML', `<img src="${safeSrc}" alt="${safeAlt}" /><p data-evo-caret><br></p>`);
++    const landing = el.querySelector<HTMLParagraphElement>('p[data-evo-caret]');
++    if (landing) {
++      landing.removeAttribute('data-evo-caret');
++      const sel = window.getSelection();
++      const r = document.createRange();
++      r.setStart(landing, 0);
++      r.collapse(true);
++      sel?.removeAllRanges();
++      sel?.addRange(r);
++    }
+     emitChange();
+   }, [emitChange]);
+ 
+   // ---- Image upload pipeline (file -> URL) ----
+   const handleImageFile = useCallback(async (file: File) => {
+     if (!acceptedImageTypes.includes(file.type)) {
+       onImageError?.({ code: 'wrong-type', message: `Unsupported image type: ${file.type}` });
+       return;
+     }
+     if (maxImageSize && file.size > maxImageSize) {
+diff --git a/evo-ui/src/TopNav/TopNav.tsx b/evo-ui/src/TopNav/TopNav.tsx
+index 51c2ad5..e6d2439 100644
+--- a/evo-ui/src/TopNav/TopNav.tsx
++++ b/evo-ui/src/TopNav/TopNav.tsx
+@@ -25,20 +25,28 @@ import styles from '../css/topnav.module.scss';
+ // ============================================================================
+ 
+ export interface EvoTopNavProps
+   extends Omit<React.HTMLAttributes<HTMLElement>, 'onChange'> {
+   children: React.ReactNode;
+   open?: boolean;
+   defaultOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   /** Width in px below which Menu collapses into the drawer. @default 768 */
+   collapseBelow?: number;
++  /** Staggered mount animation for the bar's contents. @default 'none' */
++  entrance?: 'none' | 'rise' | 'fade';
++  /** Pin the bar with position: sticky; top: 0. @default false */
++  sticky?: boolean;
++  /** On-scroll treatment of a sticky bar. @default 'none' */
++  scrollBehavior?: 'none' | 'elevate' | 'shrink' | 'hide';
++  /** Render a thin scroll-progress accent line along the bottom edge. @default false */
++  showProgress?: boolean;
+   className?: string;
+ }
+ 
+ export interface EvoTopNavBrandProps
+   extends React.HTMLAttributes<HTMLDivElement> {
+   children: React.ReactNode;
+   className?: string;
+ }
+ 
+ export interface EvoTopNavMenuProps
+@@ -67,20 +75,31 @@ export interface EvoTopNavActionsProps
+ 
+ export interface EvoTopNavToggleProps
+   extends Omit<
+     React.ButtonHTMLAttributes<HTMLButtonElement>,
+     'aria-expanded' | 'aria-controls'
+   > {
+   icon?: React.ReactNode;
+   className?: string;
+ }
+ 
++export interface EvoTopNavSearchProps
++  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
++  /** Placeholder text shown inside the trigger. @default 'Search…' */
++  placeholder?: string;
++  /** Opt-in global hotkey, e.g. 'mod+k' (mod = ⌘ on macOS, Ctrl elsewhere). Default: none. */
++  shortcut?: string;
++  /** Override the kbd hint. @default platform-aware ⌘K / Ctrl K */
++  shortcutHint?: React.ReactNode;
++  className?: string;
++}
++
+ export interface EvoTopNavDropdownProps {
+   label: React.ReactNode;
+   icon?: React.ReactNode;
+   active?: boolean;
+   hoverable?: boolean;
+   open?: boolean;
+   defaultOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   children: React.ReactNode;
+   className?: string;
+@@ -152,20 +171,67 @@ function useMediaQuery(query: string, fallback = false) {
+ 
+ const useIsCollapsed = (breakpoint: number) =>
+   useMediaQuery(`(max-width: ${breakpoint - 1}px)`);
+ 
+ const useHoverCapable = () =>
+   useMediaQuery('(hover: hover) and (pointer: fine)', true);
+ 
+ const usePrefersReducedMotion = () =>
+   useMediaQuery('(prefers-reduced-motion: reduce)');
+ 
++function useScrollState(
++  enabled: boolean,
++  behavior: 'none' | 'elevate' | 'shrink' | 'hide',
++  wantProgress: boolean,
++) {
++  const [scrolled, setScrolled] = useState(false);
++  const [hidden, setHidden] = useState(false);
++  const [progress, setProgress] = useState(0);
++  const lastY = useRef(0);
++
++  useEffect(() => {
++    if (typeof window === 'undefined' || !enabled) {
++      setScrolled(false);
++      setHidden(false);
++      setProgress(0);
++      lastY.current = 0;
++      return;
++    }
++    let raf = 0;
++    const read = () => {
++      raf = 0;
++      const doc = document.documentElement;
++      const y = window.scrollY || doc.scrollTop || 0;
++      setScrolled(y > 8);
++      setHidden(behavior === 'hide' ? y > lastY.current && y > 64 : false);
++      if (wantProgress) {
++        const max = doc.scrollHeight - doc.clientHeight || 1;
++        setProgress(Math.min(1, Math.max(0, y / max)));
++      }
++      lastY.current = y;
++    };
++    const onScroll = () => {
++      if (!raf) raf = requestAnimationFrame(read);
++    };
++    read();
++    window.addEventListener('scroll', onScroll, { passive: true });
++    window.addEventListener('resize', onScroll, { passive: true });
++    return () => {
++      if (raf) cancelAnimationFrame(raf);
++      window.removeEventListener('scroll', onScroll);
++      window.removeEventListener('resize', onScroll);
++    };
++  }, [enabled, behavior, wantProgress]);
++
++  return { scrolled, hidden, progress };
++}
++
+ function getFocusable(root: HTMLElement | null) {
+   if (!root) return [] as HTMLElement[];
+   return Array.from(
+     root.querySelectorAll<HTMLElement>(
+       'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+     ),
+   ).filter(
+     (el) =>
+       !el.hasAttribute('aria-hidden') &&
+       el.offsetParent !== null,
+@@ -311,20 +377,37 @@ const ChevronIcon = ({ open }: { open: boolean }) => (
+     <path
+       d="M3 4.5l3 3 3-3"
+       stroke="currentColor"
+       strokeWidth="1.5"
+       strokeLinecap="round"
+       strokeLinejoin="round"
+     />
+   </svg>
+ );
+ 
++const SearchGlyph = () => (
++  <svg
++    width="16"
++    height="16"
++    viewBox="0 0 24 24"
++    fill="none"
++    stroke="currentColor"
++    strokeWidth="2"
++    strokeLinecap="round"
++    strokeLinejoin="round"
++    aria-hidden="true"
++  >
++    <circle cx="11" cy="11" r="7" />
++    <path d="m20 20-3.2-3.2" />
++  </svg>
++);
++
+ // ============================================================================
+ // EvoTopNav.Brand
+ // ============================================================================
+ 
+ const EvoTopNavBrand = forwardRef<HTMLDivElement, EvoTopNavBrandProps>(
+   function EvoTopNavBrand({ children, className, ...rest }, ref) {
+     return (
+       <div
+         ref={ref}
+         className={cn(styles.topNavBrand, className)}
+@@ -515,20 +598,83 @@ const EvoTopNavToggle = forwardRef<HTMLButtonElement, EvoTopNavToggleProps>(
+         }
+         onClick={handleClick}
+         {...rest}
+       >
+         {icon ?? <HamburgerIcon open={ctx.drawerOpen} />}
+       </button>
+     );
+   },
+ );
+ 
++// ============================================================================
++// EvoTopNav.Search — presentational ⌘K quick-search trigger
++// ============================================================================
++
++const EvoTopNavSearch = forwardRef<HTMLButtonElement, EvoTopNavSearchProps>(
++  function EvoTopNavSearch(
++    { placeholder = 'Search…', shortcut, shortcutHint, className, onClick, ...rest },
++    forwardedRef,
++  ) {
++    const localRef = useRef<HTMLButtonElement | null>(null);
++    const setRef = (node: HTMLButtonElement | null) => {
++      localRef.current = node;
++      if (typeof forwardedRef === 'function') forwardedRef(node);
++      else if (forwardedRef)
++        (forwardedRef as React.RefObject<HTMLButtonElement | null>).current = node;
++    };
++
++    // Platform-aware hint resolved after mount to avoid SSR hydration mismatch.
++    const [autoHint, setAutoHint] = useState<React.ReactNode>(null);
++    useEffect(() => {
++      if (shortcutHint !== undefined) return;
++      const platform =
++        (typeof navigator !== 'undefined' &&
++          (navigator.platform || navigator.userAgent)) || '';
++      setAutoHint(/Mac|iPhone|iPad|iPod/.test(platform) ? '⌘K' : 'Ctrl K');
++    }, [shortcutHint]);
++    const hint = shortcutHint !== undefined ? shortcutHint : autoHint;
++
++    // Opt-in global hotkey → dispatch a real click so onClick fires naturally.
++    useEffect(() => {
++      if (!shortcut) return;
++      const parts = shortcut.toLowerCase().split('+').map((p) => p.trim());
++      const wantMod = parts.some((p) => ['mod', 'cmd', 'meta', 'ctrl', 'control'].includes(p));
++      const key = parts[parts.length - 1];
++      const handler = (e: KeyboardEvent) => {
++        const mod = e.metaKey || e.ctrlKey;
++        if ((!wantMod || mod) && e.key.toLowerCase() === key) {
++          e.preventDefault();
++          localRef.current?.click();
++        }
++      };
++      document.addEventListener('keydown', handler);
++      return () => document.removeEventListener('keydown', handler);
++    }, [shortcut]);
++
++    return (
++      <button
++        ref={setRef}
++        className={cn(styles.topNavSearch, className)}
++        onClick={onClick}
++        {...rest}
++        type="button"
++      >
++        <span className={styles.topNavSearchIcon} aria-hidden="true">
++          <SearchGlyph />
++        </span>
++        <span className={styles.topNavSearchText}>{placeholder}</span>
++        {hint != null && <kbd className={styles.topNavSearchKbd}>{hint}</kbd>}
++      </button>
++    );
++  },
++);
++
+ // ============================================================================
+ // EvoTopNav.Dropdown
+ // ============================================================================
+ 
+ const EvoTopNavDropdown: React.FC<EvoTopNavDropdownProps> = ({
+   label,
+   icon,
+   active,
+   hoverable = true,
+   open,
+@@ -805,33 +951,44 @@ const EvoTopNavDropdownItem = forwardRef<HTMLElement, EvoTopNavDropdownItemProps
+ // ============================================================================
+ 
+ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
+   function EvoTopNav(
+     {
+       children,
+       open,
+       defaultOpen = false,
+       onOpenChange,
+       collapseBelow = 768,
++      entrance = 'none',
++      sticky = false,
++      scrollBehavior = 'none',
++      showProgress = false,
+       className,
++      style,
+       ...rest
+     },
+     ref,
+   ) {
+     const [drawerOpen, setDrawerOpen] = useControllableState({
+       value: open,
+       defaultValue: defaultOpen,
+       onChange: onOpenChange,
+     });
+ 
+     const isCollapsed = useIsCollapsed(collapseBelow);
+     const reducedMotion = usePrefersReducedMotion();
++    const scrollEnabled = scrollBehavior !== 'none' || showProgress;
++    const { scrolled, hidden, progress } = useScrollState(scrollEnabled, scrollBehavior, showProgress);
++    const animateEntrance = entrance !== 'none' && !reducedMotion;
++    const mergedStyle: React.CSSProperties = showProgress
++      ? ({ ...style, ['--evo-topnav-progress' as string]: progress } as React.CSSProperties)
++      : (style as React.CSSProperties);
+ 
+     const [toggleCount, setToggleCount] = useState(0);
+     const registerToggle = useCallback(() => {
+       setToggleCount((c) => c + 1);
+       return () => setToggleCount((c) => Math.max(0, c - 1));
+     }, []);
+ 
+     const menuId = useId();
+     const toggleId = useId();
+     const menuRef = useRef<HTMLUListElement | null>(null);
+@@ -937,58 +1094,70 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
+         toggleCount,
+       ],
+     );
+ 
+     return (
+       <TopNavContext.Provider value={ctxValue}>
+         <nav
+           ref={ref}
+           className={cn(
+             styles.topNav,
++            sticky && styles.topNavSticky,
+             drawerActive && styles.topNavDrawerOpen,
+             reducedMotion && styles.topNavReducedMotion,
+             className,
+           )}
++          style={mergedStyle}
+           data-collapsed={isCollapsed || undefined}
+           data-drawer-open={drawerActive || undefined}
++          data-entrance={animateEntrance ? entrance : undefined}
++          data-scroll={scrollBehavior !== 'none' ? scrollBehavior : undefined}
++          data-scrolled={scrolled || undefined}
++          data-hidden={hidden || undefined}
+           {...rest}
+         >
+           <div className={styles.topNavInner}>{children}</div>
++          {showProgress && (
++            <span className={styles.topNavProgress} aria-hidden="true" />
++          )}
+           {drawerActive && (
+             <div
+               className={styles.topNavBackdrop}
+               onClick={() => setDrawerOpen(false)}
+               aria-hidden="true"
+             />
+           )}
+         </nav>
+       </TopNavContext.Provider>
+     );
+   },
+ ) as React.ForwardRefExoticComponent<
+   EvoTopNavProps & React.RefAttributes<HTMLElement>
+ > & {
+   Brand: typeof EvoTopNavBrand;
+   Menu: typeof EvoTopNavMenu;
+   Item: typeof EvoTopNavItem;
+   Actions: typeof EvoTopNavActions;
+   Toggle: typeof EvoTopNavToggle;
++  Search: typeof EvoTopNavSearch;
+   Dropdown: typeof EvoTopNavDropdown;
+   DropdownItem: typeof EvoTopNavDropdownItem;
+ };
+ 
+ EvoTopNavBrand.displayName = 'EvoTopNav.Brand';
+ EvoTopNavMenu.displayName = 'EvoTopNav.Menu';
+ EvoTopNavItem.displayName = 'EvoTopNav.Item';
+ EvoTopNavActions.displayName = 'EvoTopNav.Actions';
+ EvoTopNavToggle.displayName = 'EvoTopNav.Toggle';
++EvoTopNavSearch.displayName = 'EvoTopNav.Search';
+ EvoTopNavDropdown.displayName = 'EvoTopNav.Dropdown';
+ EvoTopNavDropdownItem.displayName = 'EvoTopNav.DropdownItem';
+ (EvoTopNav as { displayName?: string }).displayName = 'EvoTopNav';
+ 
+ EvoTopNav.Brand = EvoTopNavBrand;
+ EvoTopNav.Menu = EvoTopNavMenu;
+ EvoTopNav.Item = EvoTopNavItem;
+ EvoTopNav.Actions = EvoTopNavActions;
+ EvoTopNav.Toggle = EvoTopNavToggle;
++EvoTopNav.Search = EvoTopNavSearch;
+ EvoTopNav.Dropdown = EvoTopNavDropdown;
+ EvoTopNav.DropdownItem = EvoTopNavDropdownItem;
+diff --git a/evo-ui/src/css/checkbox.module.scss b/evo-ui/src/css/checkbox.module.scss
+index e37e402..8dc42ec 100644
+--- a/evo-ui/src/css/checkbox.module.scss
++++ b/evo-ui/src/css/checkbox.module.scss
+@@ -35,21 +35,21 @@
+   width: 0;
+   height: 0;
+   pointer-events: none;
+ 
+   &:checked + .label .checkmark {
+     background-color: $evo-primary-color;
+     border-color: $evo-primary-color;
+ 
+     &::after {
+       opacity: 1;
+-      transform: rotate(45deg) scale(1);
++      transform: translate(-50%, -60%) rotate(45deg) scale(1);
+     }
+   }
+ 
+   &:indeterminate + .label .checkmark {
+     background-color: $evo-primary-color;
+     border-color: $evo-primary-color;
+ 
+     &::after {
+       content: '';
+       position: absolute;
+@@ -87,29 +87,32 @@
+   height: 1rem;
+   border: 2px solid $color-border;
+   border-radius: $radius-sm;
+   background: $color-surface;
+   transition: background-color $transition-fast, border-color $transition-fast;
+   flex-shrink: 0;
+ 
+   &::after {
+     content: '';
+     position: absolute;
+-    top: 0px;
+-    left: 3px;
++    top: 50%;
++    left: 50%;
+     width: 5px;
+-    height: 8px;
++    height: 9px;
+     border: 2px solid $evo-primary-fg;
+     border-top: none;
+     border-left: none;
+     opacity: 0;
+-    transform: rotate(45deg) scale(0.5);
++    // Centered via translate (parent's flex-centering can't reach an absolute
++    // child). -60% Y nudges the rotated "L" optically into the middle. The
++    // centering translate is folded into both states so the scale stays put.
++    transform: translate(-50%, -60%) rotate(45deg) scale(0.5);
+     transition: opacity $transition-fast, transform $transition-fast;
+   }
+ }
+ 
+ .labelText {
+   font-size: $text-sm;
+   color: $color-text-primary;
+ }
+ 
+ .helperText {
+diff --git a/evo-ui/src/css/topnav.module.scss b/evo-ui/src/css/topnav.module.scss
+index f4fd989..97cfc6c 100644
+--- a/evo-ui/src/css/topnav.module.scss
++++ b/evo-ui/src/css/topnav.module.scss
+@@ -13,20 +13,30 @@
+ @keyframes topNavDrawerSlideIn {
+   from { transform: translateX(100%); }
+   to   { transform: translateX(0); }
+ }
+ 
+ @keyframes topNavDropdownFadeIn {
+   from { opacity: 0; transform: translateY(-4px); }
+   to   { opacity: 1; transform: translateY(0); }
+ }
+ 
++@keyframes topNavRise {
++  from { opacity: 0; transform: translateY(0.5rem); }
++  to   { opacity: 1; transform: translateY(0); }
++}
++
++@keyframes topNavFade {
++  from { opacity: 0; }
++  to   { opacity: 1; }
++}
++
+ // ---------------------------------------------------------------------------
+ // Root
+ // ---------------------------------------------------------------------------
+ 
+ .topNav {
+   position: relative;
+   width: 100%;
+   font-family: $font-sans;
+   background-color: $color-surface;
+   border-bottom: 1px solid $color-border;
+@@ -152,20 +162,75 @@
+ // ---------------------------------------------------------------------------
+ 
+ .topNavActions {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   margin-left: auto;
+   flex-shrink: 0;
+ }
+ 
++// ---------------------------------------------------------------------------
++// Search trigger (EvoTopNav.Search) — presentational ⌘K affordance
++// ---------------------------------------------------------------------------
++
++.topNavSearch {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.5rem;
++  height: 2rem;
++  min-width: 12rem;
++  padding: 0 0.625rem;
++  font-family: inherit;
++  font-size: $text-sm;
++  color: $color-text-muted;
++  background-color: $color-surface-sunken;
++  border: 1px solid $color-border;
++  border-radius: $radius-sm;
++  cursor: pointer;
++  transition:
++    background-color $transition-fast,
++    border-color $transition-fast,
++    color $transition-fast;
++
++  &:hover {
++    background-color: $color-surface-hover;
++    color: $color-text-secondary;
++  }
++
++  &:focus-visible {
++    outline: 2px solid $evo-primary-focus;
++    outline-offset: 2px;
++  }
++}
++
++.topNavSearchIcon {
++  display: inline-flex;
++  flex-shrink: 0;
++}
++
++.topNavSearchText {
++  flex: 1;
++  text-align: left;
++}
++
++.topNavSearchKbd {
++  flex-shrink: 0;
++  font-family: inherit;
++  font-size: $text-xs;
++  color: $color-text-muted;
++  background-color: $color-surface;
++  border: 1px solid $color-border;
++  border-radius: 4px;
++  padding: 0.0625rem 0.3125rem;
++}
++
+ // ---------------------------------------------------------------------------
+ // Toggle (hamburger) — hidden above the collapse breakpoint
+ // ---------------------------------------------------------------------------
+ 
+ .topNavToggle {
+   display: none;
+   align-items: center;
+   justify-content: center;
+   width: 2.75rem;
+   height: 2.75rem;
+@@ -353,44 +418,151 @@
+ 
+   .topNavBackdrop {
+     position: fixed;
+     inset: 0;
+     background-color: $color-backdrop;
+     -webkit-backdrop-filter: blur(2px);
+     backdrop-filter: blur(2px);
+     z-index: 55;
+     animation: topNavOverlayFadeIn 180ms ease;
+   }
++
++  .topNavSearch {
++    min-width: 0;
++    width: 2.75rem;
++    height: 2.75rem;
++    justify-content: center;
++    padding: 0;
++
++    .topNavSearchText,
++    .topNavSearchKbd { display: none; }
++  }
+ }
+ 
+ // Above the breakpoint, drawer-specific bits never render visually.
+ @media (min-width: 768px) {
+   .topNavMenuDrawer,
+   .topNavMenuDrawerClosed,
+   .topNavBackdrop {
+     // no-op: structural classes shouldn't leak desktop styles
+   }
+ }
+ 
++// ---------------------------------------------------------------------------
++// Entrance animation (opt-in via `entrance` prop → data-entrance attribute)
++// ---------------------------------------------------------------------------
++
++.topNav[data-entrance='rise'] .topNavBrand,
++.topNav[data-entrance='rise'] .topNavMenu > li,
++.topNav[data-entrance='rise'] .topNavSearch,
++.topNav[data-entrance='rise'] .topNavActions {
++  animation: topNavRise 440ms cubic-bezier(0.22, 1, 0.36, 1) both;
++}
++
++.topNav[data-entrance='fade'] .topNavBrand,
++.topNav[data-entrance='fade'] .topNavMenu > li,
++.topNav[data-entrance='fade'] .topNavSearch,
++.topNav[data-entrance='fade'] .topNavActions {
++  animation: topNavFade 440ms ease both;
++}
++
++// Shared left-to-right stagger (applies to both variants).
++.topNav[data-entrance] .topNavBrand { animation-delay: 40ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(1) { animation-delay: 110ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(2) { animation-delay: 160ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(3) { animation-delay: 210ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(4) { animation-delay: 260ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(n + 5) { animation-delay: 300ms; }
++.topNav[data-entrance] .topNavSearch { animation-delay: 320ms; }
++.topNav[data-entrance] .topNavActions { animation-delay: 360ms; }
++
++// ---------------------------------------------------------------------------
++// Sticky + scroll-aware behavior (opt-in via `sticky` / `scrollBehavior`)
++// ---------------------------------------------------------------------------
++
++.topNavSticky {
++  position: sticky;
++  top: 0;
++  z-index: 30;
++}
++
++.topNav[data-scroll] {
++  transition:
++    background-color $transition-fast,
++    box-shadow $transition-fast,
++    transform 220ms ease;
++
++  .topNavInner { transition: min-height $transition-fast; }
++}
++
++.topNav[data-scrolled] {
++  background-color: $color-surface; // fallback for browsers without color-mix()
++  background-color: color-mix(in srgb, $color-surface 85%, transparent);
++  -webkit-backdrop-filter: blur(10px);
++  backdrop-filter: blur(10px);
++  box-shadow: $shadow-md;
++}
++
++.topNav[data-scroll='shrink'][data-scrolled] .topNavInner {
++  min-height: 2.75rem;
++}
++
++.topNav[data-scroll='hide'] { will-change: transform; }
++.topNav[data-scroll='hide'][data-hidden] { transform: translateY(-100%); }
++
++// ---------------------------------------------------------------------------
++// Scroll-progress line (opt-in via `showProgress`)
++// ---------------------------------------------------------------------------
++
++.topNavProgress {
++  position: absolute;
++  left: 0;
++  bottom: 0;
++  width: 100%;
++  height: 2px;
++  background: $evo-primary-color;
++  transform: scaleX(var(--evo-topnav-progress, 0));
++  transform-origin: left center;
++  pointer-events: none;
++  z-index: 31;
++}
++
+ // ---------------------------------------------------------------------------
+ // Reduced motion — kill animations
+ // ---------------------------------------------------------------------------
+ 
+ .topNavReducedMotion {
+   .topNavMenuDrawer,
+   .topNavDropdownContentOpen,
+   .topNavBackdrop {
+     animation: none;
+   }
+ 
+   .topNavDropdownChevron {
+     transition: none;
+   }
++
++  .topNavBrand,
++  .topNavMenu > li,
++  .topNavSearch,
++  .topNavActions {
++    animation: none !important;
++  }
++
++  &[data-scroll='hide'][data-hidden] { transition: none; }
++  .topNavProgress { transition: none; }
+ }
+ 
+ @media (prefers-reduced-motion: reduce) {
+   .topNavMenuDrawer,
+   .topNavDropdownContentOpen,
+   .topNavBackdrop {
+     animation: none;
+   }
++
++  .topNav[data-entrance] .topNavBrand,
++  .topNav[data-entrance] .topNavMenu > li,
++  .topNav[data-entrance] .topNavSearch,
++  .topNav[data-entrance] .topNavActions {
++    animation: none !important;
++  }
+ }
+diff --git a/skills/evo-rich-text-area/SKILL.md b/skills/evo-rich-text-area/SKILL.md
+index f23591a..1ee566b 100644
+--- a/skills/evo-rich-text-area/SKILL.md
++++ b/skills/evo-rich-text-area/SKILL.md
+@@ -251,20 +251,21 @@ function Editor() {
+ - The toolbar wrapper has `role="toolbar"` and `aria-label="Formatting toolbar"`. Dividers are `aria-hidden`.
+ - Every toolbar button is a real `<button type="button">` (never auto-submits), with `title`, `aria-label`, and `aria-pressed` (reflecting active state) where applicable; toolbar buttons are disabled when `disabled` or `readOnly`.
+ - Keyboard shortcuts inside the editor: ⌘/Ctrl+B (bold), ⌘/Ctrl+I (italic), ⌘/Ctrl+U (underline); ⌘/Ctrl+Z and ⇧⌘Z/Ctrl+Y for browser-native undo/redo.
+ - Enter inside a code block (`<pre>`) or blockquote exits to a fresh plain paragraph rather than extending the block; Shift+Enter inserts a soft line break within the block.
+ - The link prompt is a `role="dialog"` with `aria-label="Insert link"`; its input handles Enter (apply) and Escape (cancel).
+ - The drag-and-drop overlay ("Drop image to upload") is `aria-hidden`.
+ 
+ ## Gotchas
+ 
+ - The forwarded `ref` is an `EvoRichTextHandle` imperative object, NOT a DOM element ref. Type your ref as `useRef<EvoRichTextHandle | null>(null)`.
++- Inserting an image (button, drag-drop, paste, or the `insertImage` handle) drops the caret onto a fresh empty paragraph **below** the image, so typing continues on a new line rather than beside the block-level image.
+ - Value is HTML, not Markdown. `onChange` emits the raw `innerHTML`; `getText()` returns plain text. Sanitize on the server before persisting/rendering untrusted HTML.
+ - Controlled mode: when `value` is set, also provide `onChange`, or edits won't persist. External `value` changes are synced into the DOM only when they differ from the last emitted HTML (to avoid caret jumps during typing).
+ - Paste & drop image insertion is ALWAYS enabled, even if `'image'` is not in `tools` — the `'image'` key only adds the file-picker button. Pasted plain text is inserted as plain text (foreign styles stripped).
+ - Without `onImageUpload`, images embed as base64 data URLs — fine for prototypes, but bloats stored HTML; wire `onImageUpload` for production.
+ - Block tools (`h1`/`h2`/`h3`/`quote`/`code`) are toggles: clicking the active tool reverts the block to a plain paragraph.
+ - Toolbar buttons default to `type="button"`, so they never accidentally submit a surrounding `<form>`.
+ - Theme via Evo CSS tokens (`var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`) — never hard-code hex colors; the editor reads the same `--evo-color-*` tokens as every other component and supports light/dark mode.
+ - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once, app-wide.
+ - Named imports only from `@justin_evo/evo-ui` — never deep import paths.
+ 
+diff --git a/skills/evo-topnav/SKILL.md b/skills/evo-topnav/SKILL.md
+index 4c2c216..8a3fe26 100644
+--- a/skills/evo-topnav/SKILL.md
++++ b/skills/evo-topnav/SKILL.md
+@@ -60,20 +60,24 @@ function Header() {
+ 
+ Props for the root `EvoTopNav` component:
+ 
+ | Prop | Type | Default | Required | Description |
+ | --- | --- | --- | --- | --- |
+ | `children` | `React.ReactNode` | — | Yes | Compose Brand, Menu, Item, Actions, Toggle, Dropdown, and DropdownItem sub-components. |
+ | `open` | `boolean` | — | No | Controlled open state of the mobile drawer. Pair with `onOpenChange`. |
+ | `defaultOpen` | `boolean` | `false` | No | Uncontrolled initial open state of the drawer. |
+ | `onOpenChange` | `(open: boolean) => void` | — | No | Fires when the drawer opens or closes. |
+ | `collapseBelow` | `number` | `768` | No | Width in px below which Menu collapses into the drawer. |
++| `entrance` | `'none' \| 'rise' \| 'fade'` | `'none'` | No | Staggered mount animation of the bar contents (`rise` = up + fade, `fade` = opacity only). Plays once; disabled under `prefers-reduced-motion`. |
++| `sticky` | `boolean` | `false` | No | Pin the bar with `position: sticky; top: 0`. |
++| `scrollBehavior` | `'none' \| 'elevate' \| 'shrink' \| 'hide'` | `'none'` | No | On-scroll treatment: `elevate` (blur + shadow once scrolled), `shrink` (also reduces height), `hide` (auto-hide on scroll-down, reveal on scroll-up). |
++| `showProgress` | `boolean` | `false` | No | Render a thin scroll-progress accent line along the bottom edge (tracks document scroll). |
+ | `className` | `string` | — | No | Extra class applied to the root `<nav>` element. |
+ 
+ `EvoTopNavProps` extends `Omit<React.HTMLAttributes<HTMLElement>, 'onChange'>`, so all native `<nav>` attributes (e.g. `aria-label`, `id`, `style`, `data-*`) plus `ref` and `className` are forwarded to the root `<nav>` element. Always set `aria-label` when the page has more than one `<nav>`.
+ 
+ ## Sub-components
+ 
+ ### EvoTopNav.Brand
+ 
+ Logo / brand-name slot, rendered on the left. Renders a `<div>`.
+ 
+@@ -129,20 +133,34 @@ Extends `React.HTMLAttributes<HTMLDivElement>` — all native `<div>` attributes
+ The hamburger button that opens/closes the drawer. Renders a `<button type="button">` and must be rendered inside `<EvoTopNav>`. Its presence is what opts the Menu into drawer behaviour when collapsed; without it the Menu degrades to a horizontal scroll list. It auto-wires `aria-expanded`, `aria-controls` (pointing at the Menu id), and a default `aria-label`.
+ 
+ | Prop | Type | Default | Required | Description |
+ | --- | --- | --- | --- | --- |
+ | `icon` | `React.ReactNode` | hamburger / X icon | No | Custom toggle icon. Defaults to the built-in hamburger that becomes an X when open. |
+ | `aria-label` | `string` | `"Open menu"` / `"Close menu"` | No | Accessible name; defaults based on open state. |
+ | `className` | `string` | — | No | Extra class on the button. |
+ 
+ Extends `Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-expanded' \| 'aria-controls'>` — all native `<button>` attributes (except the two managed ARIA attributes) plus `ref` and `className` are forwarded. Must be rendered inside `<EvoTopNav>` (throws otherwise). `onClick` runs before the toggle action and can cancel it via `e.preventDefault()`.
+ 
++### EvoTopNav.Search
++
++A presentational quick-search trigger. Renders a `<button type="button">` with a search icon, placeholder text, and a platform-aware keyboard hint. It does NOT own a search overlay — wire `onClick` to your own launcher (e.g. [[evo-command-palette]]). Collapses to an icon-only button below `collapseBelow`.
++
++| Prop | Type | Default | Required | Description |
++| --- | --- | --- | --- | --- |
++| `placeholder` | `string` | `'Search…'` | No | Placeholder text shown inside the trigger. |
++| `shortcut` | `string` | — | No | Opt-in global hotkey, e.g. `'mod+k'` (`mod` = ⌘ on macOS, Ctrl elsewhere). When set, a document keydown listener dispatches a click on match. Default: no global listener. |
++| `shortcutHint` | `React.ReactNode` | platform-aware `⌘K` / `Ctrl K` | No | Override the keyboard hint shown on the right. |
++| `onClick` | `(e: React.MouseEvent) => void` | — | No | Fires on click and on the global hotkey (if `shortcut` set). |
++| `className` | `string` | — | No | Extra class on the button. |
++
++Extends `Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'>` — native `<button>` attributes plus `ref` and `className` are forwarded.
++
+ ### EvoTopNav.Dropdown
+ 
+ A nav item that opens a floating panel of DropdownItems. Renders a `<li>` containing a trigger `<button type="button">` and a `<ul role="menu">`. Opens on hover (fine-pointer devices only, when `hoverable`) and on click.
+ 
+ | Prop | Type | Default | Required | Description |
+ | --- | --- | --- | --- | --- |
+ | `label` | `React.ReactNode` | — | Yes | Trigger label. |
+ | `icon` | `React.ReactNode` | — | No | Icon shown before the trigger label. |
+ | `active` | `boolean` | — | No | Marks the dropdown as the current section (sets `aria-current="page"`). |
+ | `hoverable` | `boolean` | `true` | No | Open on hover on fine-pointer devices (disabled in the drawer and on coarse pointers). |
+@@ -282,20 +300,48 @@ function ResponsiveHeader() {
+       <EvoTopNav.Actions>
+         <EvoButton label="Sign in" variant="ghost" size="sm" />
+       </EvoTopNav.Actions>
+       {/* Required to opt into the drawer; without it the Menu becomes a scroll list */}
+       <EvoTopNav.Toggle />
+     </EvoTopNav>
+   );
+ }
+ ```
+ 
++### Animated, sticky header with quick search
++
++```tsx
++import { useState } from 'react';
++import { EvoTopNav, EvoButton, EvoCommandPalette } from '@justin_evo/evo-ui';
++
++function Header() {
++  const [open, setOpen] = useState(false);
++  return (
++    <>
++      <EvoTopNav aria-label="Primary" entrance="rise" sticky scrollBehavior="shrink" showProgress>
++        <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++        <EvoTopNav.Menu>
++          <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
++          <EvoTopNav.Item href="/docs">Docs</EvoTopNav.Item>
++        </EvoTopNav.Menu>
++        <EvoTopNav.Search placeholder="Search docs…" shortcut="mod+k" onClick={() => setOpen(true)} />
++        <EvoTopNav.Actions>
++          <EvoButton label="Sign in" variant="ghost" size="sm" />
++        </EvoTopNav.Actions>
++      </EvoTopNav>
++      {/* Wire Search to your launcher */}
++      {/* <EvoCommandPalette open={open} onOpenChange={setOpen} … /> */}
++    </>
++  );
++}
++```
++
+ ## Accessibility
+ 
+ - The root renders as a semantic `<nav>` and forwards `aria-label`. Always set `aria-label` when the page has more than one `<nav>`.
+ - `active` on Item / Dropdown / DropdownItem sets `aria-current="page"`, keeping the visual highlight and the screen-reader signal in sync. Item also sets a `data-active` attribute.
+ - `EvoTopNav.Toggle` auto-wires `aria-expanded` (drawer open state) and `aria-controls` (the Menu's generated id), and gives itself a ≥44px touch target. Its default `aria-label` is "Open menu" / "Close menu".
+ - `EvoTopNav.Dropdown` trigger exposes `aria-haspopup="menu"`, `aria-expanded`, `aria-controls`, and (when `active`) `aria-current="page"`. The panel is a `<ul role="menu">` whose items carry `role="menuitem"`; when closed the panel is `aria-hidden`.
+ - Dropdown keyboard support: on the trigger, ArrowDown / Enter / Space open and focus the first item; ArrowUp opens and focuses the last item. Inside the panel, ArrowDown / ArrowUp cycle items, Home / End jump to first / last, Tab leaves and closes the panel, Escape closes and returns focus to the trigger. Clicking outside also closes desktop dropdowns.
+ - While the drawer is open: focus is trapped inside the Menu (wrapping Tab / Shift+Tab), the body is scroll-locked, Escape closes it, a backdrop click closes it, and focus is restored to the toggle on close. The Menu is `aria-hidden` while the drawer is closed.
+ - Hover-to-open is disabled automatically on coarse pointers (`(hover: hover) and (pointer: fine)` gates it), so touch devices use click-only. All animations respect `prefers-reduced-motion`.
+ 
+@@ -304,20 +350,23 @@ function ResponsiveHeader() {
+ - The mobile drawer requires `EvoTopNav.Toggle`. Without a Toggle, below `collapseBelow` the Menu does NOT hide — it degrades to a horizontal scroll list (never hidden silently).
+ - Open/close state of the drawer uses `open` (controlled) + `onOpenChange`, or `defaultOpen` (uncontrolled). There is no `visible` / `show` prop. Same pattern on `EvoTopNav.Dropdown`.
+ - `collapseBelow` defaults to `768`; the menu collapses at widths strictly below that value.
+ - Item, DropdownItem, Toggle, and Dropdown triggers are buttons that default `type="button"` — they never accidentally submit a surrounding `<form>`.
+ - `Menu`, `Toggle`, `Dropdown`, and `DropdownItem` must be rendered inside `<EvoTopNav>`; `Menu` and `Toggle` throw a descriptive error if used outside it.
+ - `asChild` requires exactly one child element (it uses `React.Children.only`); your props (className, onClick, aria-current) are merged onto that child.
+ - Item / DropdownItem with `target="_blank"` auto-apply `rel="noopener noreferrer"` unless you pass your own `rel`.
+ - `EvoTopNavItemProps`, `EvoTopNavDropdownProps`, and `EvoTopNavDropdownItemProps` do NOT extend native attribute types — passing arbitrary DOM attributes (e.g. `id`, `data-*`) to those parts is not part of the typed API; spreadable native attributes are only available on the root, Brand, Menu, Actions, and Toggle.
+ - Theme via `var(--evo-color-*)` / `var(--evo-spacing-*)` / `var(--evo-radius-*)` tokens; never hard-code hex colors (breaks dark mode).
+ - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once globally. Use named imports from `@justin_evo/evo-ui` only — never deep paths.
++- `entrance` plays once on mount and is fully disabled under `prefers-reduced-motion` (the component drops the `data-entrance` attribute, and CSS has a media-query fallback). It animates the Brand, each Menu item, Search, and Actions.
++- `scrollBehavior` / `showProgress` only have a visible effect on a scrollable page; pair with `sticky` so the bar stays in view while you scroll. They attach one rAF-throttled `window` scroll listener, removed on unmount / when disabled.
++- `EvoTopNav.Search` is presentational — it does not render a search UI. Connect `onClick` to [[evo-command-palette]] or your own overlay. `shortcut` registers a *global* document keydown; omit it if you manage hotkeys yourself.
+ 
+ ## Related
+ 
+ - [[evo-nav]] — vertical sidebar navigation.
+ - [[evo-breadcrumb]] — hierarchical location trail.
+ - [[evo-tabs]] — switch between in-page views.
+ - [[evo-command-palette]] — searchable command launcher.
+ - [[evo-button]] — buttons for the Actions slot.
+ - [[evo-badge]] — status badges for the Actions slot.
+ - [[evo-theming]] — theme tokens and light/dark mode.

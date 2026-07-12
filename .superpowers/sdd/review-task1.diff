@@ -1,0 +1,85 @@
+﻿# Review package: aa6f23f..7ded16c
+
+## Commits
+7ded16c fix(RichTextArea): land caret on a new line below inserted images
+
+## Files changed
+ evo-ui/src/RichTextArea/RichTextArea.tsx | 23 ++++++++++++++++++++---
+ skills/evo-rich-text-area/SKILL.md       |  1 +
+ 2 files changed, 21 insertions(+), 3 deletions(-)
+
+## Diff
+diff --git a/evo-ui/src/RichTextArea/RichTextArea.tsx b/evo-ui/src/RichTextArea/RichTextArea.tsx
+index 63728d7..6914c5d 100644
+--- a/evo-ui/src/RichTextArea/RichTextArea.tsx
++++ b/evo-ui/src/RichTextArea/RichTextArea.tsx
+@@ -495,23 +495,40 @@ export const EvoRichTextArea = forwardRef<EvoRichTextHandle, EvoRichTextAreaProp
+     clear: () => {
+       const el = editorRef.current;
+       if (!el) return;
+       el.innerHTML = '';
+       emitChange();
+     },
+   }), [emitChange]);
+ 
+   // ---- Insert image (used by paste, drop, button) ----
+   const insertImageAtCaret = useCallback((src: string, alt = '') => {
+-    editorRef.current?.focus();
+-    const html = `<img src="${src.replace(/"/g, '&quot;')}" alt="${alt.replace(/"/g, '&quot;')}" />`;
+-    execCommand('insertHTML', html);
++    const el = editorRef.current;
++    if (!el) return;
++    el.focus();
++    const safeSrc = src.replace(/"/g, '&quot;');
++    const safeAlt = alt.replace(/"/g, '&quot;');
++    // Images render display:block; inserting a bare <img> leaves the caret
++    // beside it, which paints at the image's top-right edge. Drop a trailing
++    // empty paragraph and move the caret into it, so the user lands on a clean
++    // new line *below* the image. (Marker idiom matches unwrapBlocks above.)
++    execCommand('insertHTML', `<img src="${safeSrc}" alt="${safeAlt}" /><p data-evo-caret><br></p>`);
++    const landing = el.querySelector<HTMLParagraphElement>('p[data-evo-caret]');
++    if (landing) {
++      landing.removeAttribute('data-evo-caret');
++      const sel = window.getSelection();
++      const r = document.createRange();
++      r.setStart(landing, 0);
++      r.collapse(true);
++      sel?.removeAllRanges();
++      sel?.addRange(r);
++    }
+     emitChange();
+   }, [emitChange]);
+ 
+   // ---- Image upload pipeline (file -> URL) ----
+   const handleImageFile = useCallback(async (file: File) => {
+     if (!acceptedImageTypes.includes(file.type)) {
+       onImageError?.({ code: 'wrong-type', message: `Unsupported image type: ${file.type}` });
+       return;
+     }
+     if (maxImageSize && file.size > maxImageSize) {
+diff --git a/skills/evo-rich-text-area/SKILL.md b/skills/evo-rich-text-area/SKILL.md
+index f23591a..1ee566b 100644
+--- a/skills/evo-rich-text-area/SKILL.md
++++ b/skills/evo-rich-text-area/SKILL.md
+@@ -251,20 +251,21 @@ function Editor() {
+ - The toolbar wrapper has `role="toolbar"` and `aria-label="Formatting toolbar"`. Dividers are `aria-hidden`.
+ - Every toolbar button is a real `<button type="button">` (never auto-submits), with `title`, `aria-label`, and `aria-pressed` (reflecting active state) where applicable; toolbar buttons are disabled when `disabled` or `readOnly`.
+ - Keyboard shortcuts inside the editor: ⌘/Ctrl+B (bold), ⌘/Ctrl+I (italic), ⌘/Ctrl+U (underline); ⌘/Ctrl+Z and ⇧⌘Z/Ctrl+Y for browser-native undo/redo.
+ - Enter inside a code block (`<pre>`) or blockquote exits to a fresh plain paragraph rather than extending the block; Shift+Enter inserts a soft line break within the block.
+ - The link prompt is a `role="dialog"` with `aria-label="Insert link"`; its input handles Enter (apply) and Escape (cancel).
+ - The drag-and-drop overlay ("Drop image to upload") is `aria-hidden`.
+ 
+ ## Gotchas
+ 
+ - The forwarded `ref` is an `EvoRichTextHandle` imperative object, NOT a DOM element ref. Type your ref as `useRef<EvoRichTextHandle | null>(null)`.
++- Inserting an image (button, drag-drop, paste, or the `insertImage` handle) drops the caret onto a fresh empty paragraph **below** the image, so typing continues on a new line rather than beside the block-level image.
+ - Value is HTML, not Markdown. `onChange` emits the raw `innerHTML`; `getText()` returns plain text. Sanitize on the server before persisting/rendering untrusted HTML.
+ - Controlled mode: when `value` is set, also provide `onChange`, or edits won't persist. External `value` changes are synced into the DOM only when they differ from the last emitted HTML (to avoid caret jumps during typing).
+ - Paste & drop image insertion is ALWAYS enabled, even if `'image'` is not in `tools` — the `'image'` key only adds the file-picker button. Pasted plain text is inserted as plain text (foreign styles stripped).
+ - Without `onImageUpload`, images embed as base64 data URLs — fine for prototypes, but bloats stored HTML; wire `onImageUpload` for production.
+ - Block tools (`h1`/`h2`/`h3`/`quote`/`code`) are toggles: clicking the active tool reverts the block to a plain paragraph.
+ - Toolbar buttons default to `type="button"`, so they never accidentally submit a surrounding `<form>`.
+ - Theme via Evo CSS tokens (`var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`) — never hard-code hex colors; the editor reads the same `--evo-color-*` tokens as every other component and supports light/dark mode.
+ - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once, app-wide.
+ - Named imports only from `@justin_evo/evo-ui` — never deep import paths.
+ 

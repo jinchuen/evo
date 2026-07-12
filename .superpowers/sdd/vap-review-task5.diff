@@ -1,0 +1,185 @@
+﻿28bbaa5 feat(EvoTooltip): auto-flip via useAnchoredPosition; placement is now preferred side
+ evo-ui/src/Tooltip/Tooltip.tsx     | 46 +++++++++++++++++++++++++-----------
+ evo-ui/src/css/tooltip.module.scss | 48 +++++++-------------------------------
+ 2 files changed, 41 insertions(+), 53 deletions(-)
+diff --git a/evo-ui/src/Tooltip/Tooltip.tsx b/evo-ui/src/Tooltip/Tooltip.tsx
+index bc4bcb5..7df1575 100644
+--- a/evo-ui/src/Tooltip/Tooltip.tsx
++++ b/evo-ui/src/Tooltip/Tooltip.tsx
+@@ -1,38 +1,58 @@
+-import React, { useState } from 'react';
++import React, { useRef, useState } from 'react';
++import ReactDOM from 'react-dom';
+ import styles from '../css/tooltip.module.scss';
++import { useAnchoredPosition, type AnchorSide } from '../hooks/useAnchoredPosition';
+ 
+-type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
++type TooltipPlacement = AnchorSide;
+ 
+ interface EvoTooltipProps {
+   content: React.ReactNode;
+   children: React.ReactNode;
++  /** Preferred side; flips automatically when there is no room. Default 'top'. */
+   placement?: TooltipPlacement;
+   className?: string;
+ }
+ 
+ export const EvoTooltip = ({
+   content,
+   children,
+   placement = 'top',
+   className = '',
+ }: EvoTooltipProps) => {
+-  const [visible, setVisible] = useState(false);
++  const [open, setOpen] = useState(false);
++  const anchorRef = useRef<HTMLSpanElement>(null);
++
++  const { floatingRef, floatingStyles, arrowStyles, placement: side } = useAnchoredPosition({
++    open,
++    anchorRef,
++    placement,
++    offset: 8,
++  });
+ 
+   return (
+     <span
++      ref={anchorRef}
+       className={`${styles.wrapper} ${className}`}
+-      onMouseEnter={() => setVisible(true)}
+-      onMouseLeave={() => setVisible(false)}
+-      onFocus={() => setVisible(true)}
+-      onBlur={() => setVisible(false)}
++      onMouseEnter={() => setOpen(true)}
++      onMouseLeave={() => setOpen(false)}
++      onFocus={() => setOpen(true)}
++      onBlur={() => setOpen(false)}
+     >
+       {children}
+-      {visible && (
+-        <span className={`${styles.tooltip} ${styles[placement]}`} role="tooltip">
+-          {content}
+-          <span className={styles.arrow} />
+-        </span>
+-      )}
++      {open && typeof document !== 'undefined' &&
++        ReactDOM.createPortal(
++          <div
++            ref={floatingRef}
++            className={styles.tooltip}
++            data-placement={side}
++            style={floatingStyles}
++            role="tooltip"
++          >
++            {content}
++            <span className={styles.arrow} data-placement={side} style={arrowStyles} />
++          </div>,
++          document.body,
++        )}
+     </span>
+   );
+ };
+diff --git a/evo-ui/src/css/tooltip.module.scss b/evo-ui/src/css/tooltip.module.scss
+index cc04bd0..5e7b204 100644
+--- a/evo-ui/src/css/tooltip.module.scss
++++ b/evo-ui/src/css/tooltip.module.scss
+@@ -6,92 +6,60 @@
+   to   { opacity: 1; transform: scale(1); }
+ }
+ 
+ .wrapper {
+   position: relative;
+   display: inline-flex;
+   align-items: center;
+ }
+ 
+ .tooltip {
+-  position: absolute;
+-  z-index: 9000;
++  z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
+   padding: 0.375rem 0.625rem;
+   background-color: $color-surface-elevated;
+   color: $color-text-primary;
+   font-size: $text-xs;
+   font-family: $font-sans;
+   border-radius: $radius-sm;
+   white-space: nowrap;
+   box-shadow: $shadow-lg;
+   border: 1px solid $color-border;
+   pointer-events: none;
+   animation: tooltipFadeIn 150ms ease;
+   line-height: 1.4;
++}
+ 
+-  &.top {
+-    bottom: calc(100% + 8px);
+-    left: 50%;
+-    transform: translateX(-50%);
+-  }
+-
+-  &.bottom {
+-    top: calc(100% + 8px);
+-    left: 50%;
+-    transform: translateX(-50%);
+-  }
+-
+-  &.left {
+-    right: calc(100% + 8px);
+-    top: 50%;
+-    transform: translateY(-50%);
+-  }
+-
+-  &.right {
+-    left: calc(100% + 8px);
+-    top: 50%;
+-    transform: translateY(-50%);
+-  }
++@media (prefers-reduced-motion: reduce) {
++  .tooltip { animation: none; }
+ }
+ 
+ .arrow {
+   position: absolute;
+   width: 0;
+   height: 0;
+   border: 5px solid transparent;
+ 
+-  .top & {
++  .tooltip[data-placement='top'] & {
+     top: 100%;
+-    left: 50%;
+     transform: translateX(-50%);
+     border-top-color: $color-surface-elevated;
+     border-bottom: none;
+-    border-top-width: 5px;
+   }
+-
+-  .bottom & {
++  .tooltip[data-placement='bottom'] & {
+     bottom: 100%;
+-    left: 50%;
+     transform: translateX(-50%);
+     border-bottom-color: $color-surface-elevated;
+     border-top: none;
+-    border-bottom-width: 5px;
+   }
+-
+-  .left & {
++  .tooltip[data-placement='left'] & {
+     left: 100%;
+-    top: 50%;
+     transform: translateY(-50%);
+     border-left-color: $color-surface-elevated;
+     border-right: none;
+-    border-left-width: 5px;
+   }
+-
+-  .right & {
++  .tooltip[data-placement='right'] & {
+     right: 100%;
+-    top: 50%;
+     transform: translateY(-50%);
+     border-right-color: $color-surface-elevated;
+     border-left: none;
+-    border-right-width: 5px;
+   }
+ }

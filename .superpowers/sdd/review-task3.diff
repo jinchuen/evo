@@ -1,0 +1,359 @@
+﻿# Review package: 079dc60..8d98deb
+
+## Commits
+8d98deb feat(TopNav): add entrance, sticky, scrollBehavior and showProgress props
+
+## Files changed
+ evo-ui/src/TopNav/TopNav.tsx      |  74 +++++++++++++++++++++++++++
+ evo-ui/src/css/topnav.module.scss | 105 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 179 insertions(+)
+
+## Diff
+diff --git a/evo-ui/src/TopNav/TopNav.tsx b/evo-ui/src/TopNav/TopNav.tsx
+index 51c2ad5..72e9243 100644
+--- a/evo-ui/src/TopNav/TopNav.tsx
++++ b/evo-ui/src/TopNav/TopNav.tsx
+@@ -25,20 +25,28 @@ import styles from '../css/topnav.module.scss';
+ // ============================================================================
+ 
+ export interface EvoTopNavProps
+   extends Omit<React.HTMLAttributes<HTMLElement>, 'onChange'> {
+   children: React.ReactNode;
+   open?: boolean;
+   defaultOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   /** Width in px below which Menu collapses into the drawer. @default 768 */
+   collapseBelow?: number;
++  /** Staggered mount animation for the bar's contents. @default 'none' */
++  entrance?: 'none' | 'rise' | 'fade';
++  /** Pin the bar with position: sticky; top: 0. @default false */
++  sticky?: boolean;
++  /** On-scroll treatment of a sticky bar. @default 'none' */
++  scrollBehavior?: 'none' | 'elevate' | 'shrink' | 'hide';
++  /** Render a thin scroll-progress accent line along the bottom edge. @default false */
++  showProgress?: boolean;
+   className?: string;
+ }
+ 
+ export interface EvoTopNavBrandProps
+   extends React.HTMLAttributes<HTMLDivElement> {
+   children: React.ReactNode;
+   className?: string;
+ }
+ 
+ export interface EvoTopNavMenuProps
+@@ -152,20 +160,66 @@ function useMediaQuery(query: string, fallback = false) {
+ 
+ const useIsCollapsed = (breakpoint: number) =>
+   useMediaQuery(`(max-width: ${breakpoint - 1}px)`);
+ 
+ const useHoverCapable = () =>
+   useMediaQuery('(hover: hover) and (pointer: fine)', true);
+ 
+ const usePrefersReducedMotion = () =>
+   useMediaQuery('(prefers-reduced-motion: reduce)');
+ 
++function useScrollState(
++  enabled: boolean,
++  behavior: 'none' | 'elevate' | 'shrink' | 'hide',
++  wantProgress: boolean,
++) {
++  const [scrolled, setScrolled] = useState(false);
++  const [hidden, setHidden] = useState(false);
++  const [progress, setProgress] = useState(0);
++  const lastY = useRef(0);
++
++  useEffect(() => {
++    if (typeof window === 'undefined' || !enabled) {
++      setScrolled(false);
++      setHidden(false);
++      setProgress(0);
++      return;
++    }
++    let raf = 0;
++    const read = () => {
++      raf = 0;
++      const doc = document.documentElement;
++      const y = window.scrollY || doc.scrollTop || 0;
++      setScrolled(y > 8);
++      setHidden(behavior === 'hide' ? y > lastY.current && y > 64 : false);
++      if (wantProgress) {
++        const max = doc.scrollHeight - doc.clientHeight || 1;
++        setProgress(Math.min(1, Math.max(0, y / max)));
++      }
++      lastY.current = y;
++    };
++    const onScroll = () => {
++      if (!raf) raf = requestAnimationFrame(read);
++    };
++    read();
++    window.addEventListener('scroll', onScroll, { passive: true });
++    window.addEventListener('resize', onScroll, { passive: true });
++    return () => {
++      if (raf) cancelAnimationFrame(raf);
++      window.removeEventListener('scroll', onScroll);
++      window.removeEventListener('resize', onScroll);
++    };
++  }, [enabled, behavior, wantProgress]);
++
++  return { scrolled, hidden, progress };
++}
++
+ function getFocusable(root: HTMLElement | null) {
+   if (!root) return [] as HTMLElement[];
+   return Array.from(
+     root.querySelectorAll<HTMLElement>(
+       'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+     ),
+   ).filter(
+     (el) =>
+       !el.hasAttribute('aria-hidden') &&
+       el.offsetParent !== null,
+@@ -805,33 +859,44 @@ const EvoTopNavDropdownItem = forwardRef<HTMLElement, EvoTopNavDropdownItemProps
+ // ============================================================================
+ 
+ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
+   function EvoTopNav(
+     {
+       children,
+       open,
+       defaultOpen = false,
+       onOpenChange,
+       collapseBelow = 768,
++      entrance = 'none',
++      sticky = false,
++      scrollBehavior = 'none',
++      showProgress = false,
+       className,
++      style,
+       ...rest
+     },
+     ref,
+   ) {
+     const [drawerOpen, setDrawerOpen] = useControllableState({
+       value: open,
+       defaultValue: defaultOpen,
+       onChange: onOpenChange,
+     });
+ 
+     const isCollapsed = useIsCollapsed(collapseBelow);
+     const reducedMotion = usePrefersReducedMotion();
++    const scrollEnabled = scrollBehavior !== 'none' || showProgress;
++    const { scrolled, hidden, progress } = useScrollState(scrollEnabled, scrollBehavior, showProgress);
++    const animateEntrance = entrance !== 'none' && !reducedMotion;
++    const mergedStyle: React.CSSProperties = showProgress
++      ? ({ ...style, ['--evo-topnav-progress' as string]: progress } as React.CSSProperties)
++      : (style as React.CSSProperties);
+ 
+     const [toggleCount, setToggleCount] = useState(0);
+     const registerToggle = useCallback(() => {
+       setToggleCount((c) => c + 1);
+       return () => setToggleCount((c) => Math.max(0, c - 1));
+     }, []);
+ 
+     const menuId = useId();
+     const toggleId = useId();
+     const menuRef = useRef<HTMLUListElement | null>(null);
+@@ -937,29 +1002,38 @@ export const EvoTopNav = forwardRef<HTMLElement, EvoTopNavProps>(
+         toggleCount,
+       ],
+     );
+ 
+     return (
+       <TopNavContext.Provider value={ctxValue}>
+         <nav
+           ref={ref}
+           className={cn(
+             styles.topNav,
++            sticky && styles.topNavSticky,
+             drawerActive && styles.topNavDrawerOpen,
+             reducedMotion && styles.topNavReducedMotion,
+             className,
+           )}
++          style={mergedStyle}
+           data-collapsed={isCollapsed || undefined}
+           data-drawer-open={drawerActive || undefined}
++          data-entrance={animateEntrance ? entrance : undefined}
++          data-scroll={scrollBehavior !== 'none' ? scrollBehavior : undefined}
++          data-scrolled={scrolled || undefined}
++          data-hidden={hidden || undefined}
+           {...rest}
+         >
+           <div className={styles.topNavInner}>{children}</div>
++          {showProgress && (
++            <span className={styles.topNavProgress} aria-hidden="true" />
++          )}
+           {drawerActive && (
+             <div
+               className={styles.topNavBackdrop}
+               onClick={() => setDrawerOpen(false)}
+               aria-hidden="true"
+             />
+           )}
+         </nav>
+       </TopNavContext.Provider>
+     );
+diff --git a/evo-ui/src/css/topnav.module.scss b/evo-ui/src/css/topnav.module.scss
+index f4fd989..9d2e53d 100644
+--- a/evo-ui/src/css/topnav.module.scss
++++ b/evo-ui/src/css/topnav.module.scss
+@@ -13,20 +13,30 @@
+ @keyframes topNavDrawerSlideIn {
+   from { transform: translateX(100%); }
+   to   { transform: translateX(0); }
+ }
+ 
+ @keyframes topNavDropdownFadeIn {
+   from { opacity: 0; transform: translateY(-4px); }
+   to   { opacity: 1; transform: translateY(0); }
+ }
+ 
++@keyframes topNavRise {
++  from { opacity: 0; transform: translateY(0.5rem); }
++  to   { opacity: 1; transform: translateY(0); }
++}
++
++@keyframes topNavFade {
++  from { opacity: 0; }
++  to   { opacity: 1; }
++}
++
+ // ---------------------------------------------------------------------------
+ // Root
+ // ---------------------------------------------------------------------------
+ 
+ .topNav {
+   position: relative;
+   width: 100%;
+   font-family: $font-sans;
+   background-color: $color-surface;
+   border-bottom: 1px solid $color-border;
+@@ -364,33 +374,128 @@
+ 
+ // Above the breakpoint, drawer-specific bits never render visually.
+ @media (min-width: 768px) {
+   .topNavMenuDrawer,
+   .topNavMenuDrawerClosed,
+   .topNavBackdrop {
+     // no-op: structural classes shouldn't leak desktop styles
+   }
+ }
+ 
++// ---------------------------------------------------------------------------
++// Entrance animation (opt-in via `entrance` prop → data-entrance attribute)
++// ---------------------------------------------------------------------------
++
++.topNav[data-entrance='rise'] .topNavBrand,
++.topNav[data-entrance='rise'] .topNavMenu > li,
++.topNav[data-entrance='rise'] .topNavSearch,
++.topNav[data-entrance='rise'] .topNavActions {
++  animation: topNavRise 440ms cubic-bezier(0.22, 1, 0.36, 1) both;
++}
++
++.topNav[data-entrance='fade'] .topNavBrand,
++.topNav[data-entrance='fade'] .topNavMenu > li,
++.topNav[data-entrance='fade'] .topNavSearch,
++.topNav[data-entrance='fade'] .topNavActions {
++  animation: topNavFade 440ms ease both;
++}
++
++// Shared left-to-right stagger (applies to both variants).
++.topNav[data-entrance] .topNavBrand { animation-delay: 40ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(1) { animation-delay: 110ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(2) { animation-delay: 160ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(3) { animation-delay: 210ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(4) { animation-delay: 260ms; }
++.topNav[data-entrance] .topNavMenu > li:nth-child(n + 5) { animation-delay: 300ms; }
++.topNav[data-entrance] .topNavSearch { animation-delay: 320ms; }
++.topNav[data-entrance] .topNavActions { animation-delay: 360ms; }
++
++// ---------------------------------------------------------------------------
++// Sticky + scroll-aware behavior (opt-in via `sticky` / `scrollBehavior`)
++// ---------------------------------------------------------------------------
++
++.topNavSticky {
++  position: sticky;
++  top: 0;
++  z-index: 30;
++}
++
++.topNav[data-scroll] {
++  transition:
++    background-color $transition-fast,
++    box-shadow $transition-fast,
++    transform 220ms ease;
++
++  .topNavInner { transition: min-height $transition-fast; }
++}
++
++.topNav[data-scrolled] {
++  background-color: color-mix(in srgb, $color-surface 85%, transparent);
++  -webkit-backdrop-filter: blur(10px);
++  backdrop-filter: blur(10px);
++  box-shadow: $shadow-md;
++}
++
++.topNav[data-scroll='shrink'][data-scrolled] .topNavInner {
++  min-height: 2.75rem;
++}
++
++.topNav[data-scroll='hide'] { will-change: transform; }
++.topNav[data-scroll='hide'][data-hidden] { transform: translateY(-100%); }
++
++// ---------------------------------------------------------------------------
++// Scroll-progress line (opt-in via `showProgress`)
++// ---------------------------------------------------------------------------
++
++.topNavProgress {
++  position: absolute;
++  left: 0;
++  bottom: 0;
++  width: 100%;
++  height: 2px;
++  background: $evo-primary-color;
++  transform: scaleX(var(--evo-topnav-progress, 0));
++  transform-origin: left center;
++  pointer-events: none;
++  z-index: 31;
++}
++
+ // ---------------------------------------------------------------------------
+ // Reduced motion — kill animations
+ // ---------------------------------------------------------------------------
+ 
+ .topNavReducedMotion {
+   .topNavMenuDrawer,
+   .topNavDropdownContentOpen,
+   .topNavBackdrop {
+     animation: none;
+   }
+ 
+   .topNavDropdownChevron {
+     transition: none;
+   }
++
++  .topNavBrand,
++  .topNavMenu > li,
++  .topNavSearch,
++  .topNavActions {
++    animation: none !important;
++  }
++
++  &[data-scroll='hide'][data-hidden] { transition: none; }
++  .topNavProgress { transition: none; }
+ }
+ 
+ @media (prefers-reduced-motion: reduce) {
+   .topNavMenuDrawer,
+   .topNavDropdownContentOpen,
+   .topNavBackdrop {
+     animation: none;
+   }
++
++  .topNav[data-entrance] .topNavBrand,
++  .topNav[data-entrance] .topNavMenu > li,
++  .topNav[data-entrance] .topNavSearch,
++  .topNav[data-entrance] .topNavActions {
++    animation: none !important;
++  }
+ }

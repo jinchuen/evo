@@ -1,0 +1,223 @@
+﻿# Review package: 51443b8..f4d68f6
+
+## Commits
+f4d68f6 docs(TopNav): demo entrance, scroll, Search and breadcrumb composition
+
+## Files changed
+ evo-docs/src/pages/TopNavPage.tsx | 136 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 135 insertions(+), 1 deletion(-)
+
+## Diff
+diff --git a/evo-docs/src/pages/TopNavPage.tsx b/evo-docs/src/pages/TopNavPage.tsx
+index a3f5ecb..e9b37f4 100644
+--- a/evo-docs/src/pages/TopNavPage.tsx
++++ b/evo-docs/src/pages/TopNavPage.tsx
+@@ -1,12 +1,12 @@
+ import { useState } from 'react'
+-import { EvoTopNav, EvoButton, EvoBadge, EvoDivider } from '@justin_evo/evo-ui'
++import { EvoTopNav, EvoButton, EvoBadge, EvoDivider, EvoBreadcrumb } from '@justin_evo/evo-ui'
+ import { CodeBlock } from '../components/CodeBlock'
+ import { PropsTable } from '../components/PropsTable'
+ 
+ export default function TopNavPage() {
+   const [active, setActive] = useState('home')
+   const [controlledOpen, setControlledOpen] = useState(false)
+ 
+   return (
+     <div>
+       <div className="docs-page-header">
+@@ -195,20 +195,145 @@ export default function TopNavPage() {
+               <EvoTopNav.Item icon={<span>📄</span>}>Docs</EvoTopNav.Item>
+             </EvoTopNav.Menu>
+             <EvoTopNav.Actions>
+               <EvoBadge severity="success">v1.0</EvoBadge>
+               <EvoButton label="Sign in" variant="ghost" size="sm" />
+             </EvoTopNav.Actions>
+           </EvoTopNav>
+         </div>
+       </div>
+ 
++      {/* --- Entrance animation --- */}
++      <div className="docs-section">
++        <div className="docs-section-title">Entrance animation</div>
++        <p className="docs-section-desc">
++          <code>entrance="rise"</code> staggers the brand, each menu item, and the
++          actions up from below on mount (<code>"fade"</code> does opacity only).
++          It plays once and is disabled entirely under{' '}
++          <code>prefers-reduced-motion</code>. Opt-in — the default is{' '}
++          <code>"none"</code>.
++        </p>
++        <div className="docs-preview col" style={{ width: '100%', padding: 0, overflow: 'hidden', borderRadius: 8 }}>
++          <EvoTopNav aria-label="Entrance example" entrance="rise">
++            <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++            <EvoTopNav.Menu>
++              <EvoTopNav.Item href="#home" active>Home</EvoTopNav.Item>
++              <EvoTopNav.Item href="#docs">Docs</EvoTopNav.Item>
++              <EvoTopNav.Item href="#blog">Blog</EvoTopNav.Item>
++            </EvoTopNav.Menu>
++            <EvoTopNav.Actions>
++              <EvoButton label="Sign in" variant="ghost" size="sm" />
++            </EvoTopNav.Actions>
++          </EvoTopNav>
++        </div>
++        <CodeBlock code={`<EvoTopNav aria-label="Primary" entrance="rise">
++  <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++  <EvoTopNav.Menu>
++    <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
++    <EvoTopNav.Item href="/docs">Docs</EvoTopNav.Item>
++  </EvoTopNav.Menu>
++</EvoTopNav>`} />
++      </div>
++
++      {/* --- Scroll behavior --- */}
++      <div className="docs-section">
++        <div className="docs-section-title">Sticky + scroll behavior</div>
++        <p className="docs-section-desc">
++          <code>sticky</code> pins the bar; <code>scrollBehavior</code> reacts to
++          scroll — <code>"elevate"</code> adds a blurred background + shadow,{' '}
++          <code>"shrink"</code> also reduces height, <code>"hide"</code> auto-hides
++          on scroll-down and reveals on scroll-up. <code>showProgress</code> draws a
++          thin reading-progress line along the bottom edge.
++        </p>
++        <CodeBlock code={`<EvoTopNav
++  aria-label="Primary"
++  sticky
++  scrollBehavior="shrink"
++  showProgress
++>
++  <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++  <EvoTopNav.Menu>
++    <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
++    <EvoTopNav.Item href="/docs">Docs</EvoTopNav.Item>
++  </EvoTopNav.Menu>
++</EvoTopNav>`} />
++        <p className="docs-section-desc" style={{ marginTop: '0.5rem' }}>
++          The docs site's own header uses this treatment — scroll this page to see
++          it elevate.
++        </p>
++      </div>
++
++      {/* --- Quick search (Cmd K) --- */}
++      <div className="docs-section">
++        <div className="docs-section-title">Quick search (⌘K)</div>
++        <p className="docs-section-desc">
++          <code>EvoTopNav.Search</code> is a presentational trigger: it renders the
++          search affordance + a platform-aware keyboard hint and fires{' '}
++          <code>onClick</code>. Wire it to an{' '}
++          <code>EvoCommandPalette</code>. Pass <code>shortcut="mod+k"</code> to also
++          register a global hotkey. It collapses to an icon-only button below the
++          breakpoint.
++        </p>
++        <div className="docs-preview col" style={{ width: '100%', padding: 0, overflow: 'hidden', borderRadius: 8 }}>
++          <EvoTopNav aria-label="Search example">
++            <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++            <EvoTopNav.Menu>
++              <EvoTopNav.Item href="#home" active>Home</EvoTopNav.Item>
++              <EvoTopNav.Item href="#docs">Docs</EvoTopNav.Item>
++            </EvoTopNav.Menu>
++            <EvoTopNav.Search placeholder="Search docs…" onClick={() => alert('open command palette')} />
++            <EvoTopNav.Actions>
++              <EvoButton label="Sign in" variant="ghost" size="sm" />
++            </EvoTopNav.Actions>
++          </EvoTopNav>
++        </div>
++        <CodeBlock code={`const [open, setOpen] = useState(false)
++
++<EvoTopNav aria-label="Primary">
++  <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++  <EvoTopNav.Menu>
++    <EvoTopNav.Item href="/" active>Home</EvoTopNav.Item>
++  </EvoTopNav.Menu>
++  <EvoTopNav.Search
++    placeholder="Search docs…"
++    shortcut="mod+k"
++    onClick={() => setOpen(true)}
++  />
++</EvoTopNav>
++
++<EvoCommandPalette open={open} onOpenChange={setOpen} /* … */ />`} />
++      </div>
++
++      {/* --- Links + breadcrumb composition --- */}
++      <div className="docs-section">
++        <div className="docs-section-title">Icon links + breadcrumb</div>
++        <p className="docs-section-desc">
++          Drop icon links into <code>EvoTopNav.Actions</code>, and compose{' '}
++          <code>EvoBreadcrumb</code> inside the bar for a location trail — no extra
++          parts needed.
++        </p>
++        <div className="docs-preview col" style={{ width: '100%', padding: 0, overflow: 'hidden', borderRadius: 8 }}>
++          <EvoTopNav aria-label="Links example">
++            <EvoTopNav.Brand>Evo UI</EvoTopNav.Brand>
++            <EvoTopNav.Menu>
++              <EvoTopNav.Item href="#docs" active>Docs</EvoTopNav.Item>
++            </EvoTopNav.Menu>
++            <EvoTopNav.Actions>
++              <EvoBreadcrumb>
++                <EvoBreadcrumb.Item>Components</EvoBreadcrumb.Item>
++                <EvoBreadcrumb.Item current>TopNav</EvoBreadcrumb.Item>
++              </EvoBreadcrumb>
++            </EvoTopNav.Actions>
++          </EvoTopNav>
++        </div>
++      </div>
++
+       <EvoDivider />
+ 
+       {/* --- Accessibility --- */}
+       <div className="docs-section">
+         <div className="docs-section-title">Accessibility</div>
+         <ul className="docs-list">
+           <li>
+             The root renders as <code>&lt;nav&gt;</code> and forwards{' '}
+             <code>aria-label</code>. Always set <code>aria-label</code> when the
+             page has more than one <code>&lt;nav&gt;</code>.
+@@ -251,39 +376,48 @@ export default function TopNavPage() {
+       <div className="docs-section">
+         <div className="docs-section-title">Props</div>
+         <PropsTable props={[
+           { prop: 'EvoTopNav — children', type: 'ReactNode', required: true, description: 'Accepts Brand, Menu, Actions, Toggle, Dropdown, and DropdownItem sub-components.' },
+           { prop: 'EvoTopNav — aria-label', type: 'string', description: 'Accessible name for the nav. Required when the page has more than one <nav>.' },
+           { prop: 'EvoTopNav — open', type: 'boolean', description: 'Controlled open state of the mobile drawer.' },
+           { prop: 'EvoTopNav — defaultOpen', type: 'boolean', description: 'Uncontrolled initial open state.', default: 'false' },
+           { prop: 'EvoTopNav — onOpenChange', type: '(open: boolean) => void', description: 'Fires when the drawer opens or closes.' },
+           { prop: 'EvoTopNav — collapseBelow', type: 'number', description: 'Pixel width below which the menu collapses into the drawer.', default: '768' },
+           { prop: 'EvoTopNav — className', type: 'string', description: 'Extra class applied to the <nav> element.' },
++          { prop: 'EvoTopNav — entrance', type: "'none' | 'rise' | 'fade'", description: 'Staggered mount animation for the bar contents. Disabled under prefers-reduced-motion.', default: "'none'" },
++          { prop: 'EvoTopNav — sticky', type: 'boolean', description: 'Pin the bar with position: sticky; top: 0.', default: 'false' },
++          { prop: 'EvoTopNav — scrollBehavior', type: "'none' | 'elevate' | 'shrink' | 'hide'", description: 'On-scroll treatment: elevate (blur+shadow), shrink (also reduces height), or hide (auto-hide on scroll-down).', default: "'none'" },
++          { prop: 'EvoTopNav — showProgress', type: 'boolean', description: 'Render a thin scroll-progress accent line along the bottom edge.', default: 'false' },
+ 
+           { prop: 'EvoTopNav.Brand — children', type: 'ReactNode', required: true, description: 'Logo or brand name displayed on the left.' },
+ 
+           { prop: 'EvoTopNav.Menu — children', type: 'ReactNode', required: true, description: 'EvoTopNav.Item / .Dropdown elements.' },
+ 
+           { prop: 'EvoTopNav.Item — children', type: 'ReactNode', required: true, description: 'Item label, or (with asChild) the element to clone.' },
+           { prop: 'EvoTopNav.Item — active', type: 'boolean', description: 'Marks the item as current page (sets aria-current="page").' },
+           { prop: 'EvoTopNav.Item — icon', type: 'ReactNode', description: 'Icon rendered before the label.' },
+           { prop: 'EvoTopNav.Item — href', type: 'string', description: 'Renders the item as <a href={...}>.' },
+           { prop: 'EvoTopNav.Item — target', type: "'_self' | '_blank' | '_parent' | '_top'", description: 'Target attribute, only meaningful with href.' },
+           { prop: 'EvoTopNav.Item — rel', type: 'string', description: 'Rel attribute. Defaults to "noopener noreferrer" when target="_blank".' },
+           { prop: 'EvoTopNav.Item — onClick', type: '(e: MouseEvent) => void', description: 'Click handler. With href, runs alongside default nav.' },
+           { prop: 'EvoTopNav.Item — asChild', type: 'boolean', description: 'Clones the single child and merges our props (className, onClick, aria-current). Use for router Link.' },
+ 
+           { prop: 'EvoTopNav.Actions — children', type: 'ReactNode', required: true, description: 'Right-aligned slot for buttons, badges, avatars.' },
+ 
+           { prop: 'EvoTopNav.Toggle — icon', type: 'ReactNode', description: 'Custom toggle icon. Defaults to a hamburger / X.' },
+           { prop: 'EvoTopNav.Toggle — aria-label', type: 'string', description: 'Accessible name. Defaults to "Open menu" / "Close menu".' },
+ 
++          { prop: 'EvoTopNav.Search — placeholder', type: 'string', description: 'Placeholder text shown inside the trigger.', default: "'Search…'" },
++          { prop: 'EvoTopNav.Search — shortcut', type: 'string', description: "Opt-in global hotkey, e.g. 'mod+k' (mod = ⌘ on macOS, Ctrl elsewhere). Default: none." },
++          { prop: 'EvoTopNav.Search — shortcutHint', type: 'ReactNode', description: 'Override the keyboard hint shown on the right.', default: 'platform-aware ⌘K / Ctrl K' },
++          { prop: 'EvoTopNav.Search — onClick', type: '(e: MouseEvent) => void', description: 'Fires on click (and on the global hotkey, if set). Wire to your command palette.' },
++
+           { prop: 'EvoTopNav.Dropdown — label', type: 'ReactNode', required: true, description: 'Trigger label.' },
+           { prop: 'EvoTopNav.Dropdown — icon', type: 'ReactNode', description: 'Icon shown before the trigger label.' },
+           { prop: 'EvoTopNav.Dropdown — active', type: 'boolean', description: 'Marks the dropdown as the current section.' },
+           { prop: 'EvoTopNav.Dropdown — hoverable', type: 'boolean', description: 'Open on hover on fine-pointer devices.', default: 'true' },
+           { prop: 'EvoTopNav.Dropdown — open', type: 'boolean', description: 'Controlled open state.' },
+           { prop: 'EvoTopNav.Dropdown — defaultOpen', type: 'boolean', description: 'Uncontrolled initial open state.', default: 'false' },
+           { prop: 'EvoTopNav.Dropdown — onOpenChange', type: '(open: boolean) => void', description: 'Open/close callback.' },
+           { prop: 'EvoTopNav.Dropdown — children', type: 'ReactNode', required: true, description: 'EvoTopNav.DropdownItem elements.' },
+ 
+           { prop: 'EvoTopNav.DropdownItem — children', type: 'ReactNode', required: true, description: 'Item label, or (with asChild) the element to clone.' },

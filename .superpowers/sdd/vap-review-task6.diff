@@ -1,0 +1,347 @@
+﻿2f47f6d docs(evo-ui): document viewport-aware positioning + EvoBadge detail; bump 1.3.0
+ evo-docs/src/pages/AutoCompletePage.tsx | 10 ++++++++++
+ evo-docs/src/pages/BadgePage.tsx        | 27 +++++++++++++++++++++++++++
+ evo-docs/src/pages/ChangelogPage.tsx    | 26 ++++++++++++++++++++++++++
+ evo-docs/src/pages/SelectPage.tsx       | 10 ++++++++++
+ evo-docs/src/pages/TooltipPage.tsx      |  9 +++++++++
+ evo-docs/src/pages/TreeSelectPage.tsx   | 10 ++++++++++
+ evo-ui/package.json                     |  2 +-
+ skills/evo-autocomplete/SKILL.md        |  1 +
+ skills/evo-badge/SKILL.md               |  8 ++++++--
+ skills/evo-select/SKILL.md              |  1 +
+ skills/evo-tooltip/SKILL.md             |  1 +
+ skills/evo-tree-select/SKILL.md         |  1 +
+ 12 files changed, 103 insertions(+), 3 deletions(-)
+diff --git a/evo-docs/src/pages/AutoCompletePage.tsx b/evo-docs/src/pages/AutoCompletePage.tsx
+index 1d97076..034b837 100644
+--- a/evo-docs/src/pages/AutoCompletePage.tsx
++++ b/evo-docs/src/pages/AutoCompletePage.tsx
+@@ -95,12 +95,22 @@ export default function AutoCompletePage() {
+         </p>
+         <div className="docs-import-line">
+           import {'{ '}<span>EvoAutoComplete</span>{' }'} from '@justin_evo/evo-ui'
+         </div>
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Viewport-aware menu</div>
++        <p className="docs-section-desc">
++          The dropdown measures available space when it opens and flips upward when the
++          trigger sits near the bottom of the viewport. It renders in a portal, so it is
++          never clipped by <code>overflow: hidden</code> or scroll containers — including
++          inside an <code>EvoModal</code>. Fully automatic; no configuration.
++        </p>
++      </div>
++
+       <div className="docs-section">
+         <div className="docs-section-title">Why EvoAutoComplete</div>
+         <p className="docs-section-desc">
+           A plain <code>EvoSelect</code> is for short, fixed option sets. Reach
+           for <code>EvoAutoComplete</code> when the user types to narrow a long
+           (or remote) list, and you want graceful failure when the query has no
+diff --git a/evo-docs/src/pages/BadgePage.tsx b/evo-docs/src/pages/BadgePage.tsx
+index f425385..a2b923f 100644
+--- a/evo-docs/src/pages/BadgePage.tsx
++++ b/evo-docs/src/pages/BadgePage.tsx
+@@ -106,24 +106,51 @@ export default function BadgePage() {
+       {tag}
+     </EvoBadge>
+   ))}
+ </EvoBadge.Group>`} />
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Detail popover</div>
++        <p className="docs-section-desc">
++          Pass <code>detail</code> to reveal extra status context on hover, keyboard focus,
++          or tap. The popover uses viewport-aware positioning — it flips and shifts to stay
++          on-screen and escapes <code>overflow: hidden</code> containers. It is a
++          hover/focus-first disclosure (on touch it taps to toggle); because the badge stays
++          label-sized, use it for supplementary detail, not as a primary touch control.
++        </p>
++        <div className="docs-preview">
++          <EvoBadge severity="success" dot detail="Deployed 2 min ago · commit a1b2c3d">
++            Live
++          </EvoBadge>
++          <EvoBadge severity="warning" dot detail="3 checks pending · retry in 30s">
++            Pending
++          </EvoBadge>
++          <EvoBadge severity="danger" dot detail="Build failed: 2 tests · view logs">
++            Failed
++          </EvoBadge>
++        </div>
++        <CodeBlock code={`<EvoBadge severity="success" dot detail="Deployed 2 min ago · commit a1b2c3d">
++  Live
++</EvoBadge>`} />
++      </div>
++
+       <EvoDivider />
+ 
+       <div className="docs-section">
+         <div className="docs-section-title">Props</div>
+         <PropsTable props={[
+           { prop: 'children', type: 'ReactNode', required: true, description: 'Badge content.' },
+           { prop: 'severity', type: "'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info'", default: "'primary'", description: 'Color theme.' },
+           { prop: 'variant', type: "'solid' | 'outline' | 'subtle'", default: "'solid'", description: 'Visual style.' },
+           { prop: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Badge size.' },
+           { prop: 'dot', type: 'boolean', default: 'false', description: 'Render a dot indicator before the content.' },
+           { prop: 'removable', type: 'boolean', default: 'false', description: 'Show a remove button.' },
+           { prop: 'onRemove', type: '() => void', description: 'Called when the remove button is clicked.' },
++          { prop: 'detail', type: 'ReactNode', description: 'Rich content revealed in a popover on hover / focus / tap. Descriptive (non-interactive).' },
++          { prop: 'detailPlacement', type: "'top' | 'bottom' | 'left' | 'right'", default: "'bottom'", description: 'Preferred popover side; flips automatically when there is no room.' },
+           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
+         ]} />
+       </div>
+     </div>
+   )
+ }
+diff --git a/evo-docs/src/pages/ChangelogPage.tsx b/evo-docs/src/pages/ChangelogPage.tsx
+index 40741fd..0fba6dd 100644
+--- a/evo-docs/src/pages/ChangelogPage.tsx
++++ b/evo-docs/src/pages/ChangelogPage.tsx
+@@ -22,12 +22,38 @@ const SEVERITY: Record<ChangeKind, 'success' | 'info' | 'warning' | 'danger'> =
+   Changed:  'info',
+   Fixed:    'warning',
+   Breaking: 'danger',
+ }
+ 
+ const RELEASES: Release[] = [
++  {
++    version: '1.3.0',
++    date: '2026-07-12',
++    summary:
++      'Viewport-aware positioning across every floating layer: dropdowns flip near the screen edge, EvoBadge gains a hover detail popover, and EvoTooltip auto-flips — all on one shared zero-dependency hook.',
++    sections: [
++      {
++        kind: 'Added',
++        items: [
++          'EvoBadge — new `detail` prop renders a rich popover on hover / focus / tap (with `detailPlacement` to set the preferred side). It uses viewport-aware positioning: flips and shifts to stay on-screen and escapes `overflow: hidden` / scroll containers. EvoBadge now also forwards `ref` and spreads standard HTML attributes.',
++        ],
++      },
++      {
++        kind: 'Fixed',
++        items: [
++          'EvoSelect, EvoAutoComplete, EvoTreeSelect — the dropdown menu no longer clips or overflows when the trigger sits near the bottom of the viewport. It now measures available space, flips upward when needed, and renders in a portal so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). (#10)',
++        ],
++      },
++      {
++        kind: 'Changed',
++        items: [
++          'EvoTooltip — `placement` is now the *preferred* side: the tooltip auto-flips to the opposite side and shifts to stay fully on-screen when the preferred side lacks room, and renders in a portal so it is never clipped. Existing `placement` values keep working unchanged when they fit.',
++        ],
++      },
++    ],
++  },
+   {
+     version: '1.2.0',
+     date: '2026-06-22',
+     summary:
+       'EvoTopNav gains an opt-in entrance animation, sticky scroll-aware behavior, a scroll-progress line, and a new Search (⌘K) part — plus image-caret and checkbox-tick fixes.',
+     sections: [
+diff --git a/evo-docs/src/pages/SelectPage.tsx b/evo-docs/src/pages/SelectPage.tsx
+index 479f639..1cb3232 100644
+--- a/evo-docs/src/pages/SelectPage.tsx
++++ b/evo-docs/src/pages/SelectPage.tsx
+@@ -62,12 +62,22 @@ export default function SelectPage() {
+         </p>
+         <div className="docs-import-line">
+           import {'{ '}<span>EvoSelect</span>{' }'} from '@justin_evo/evo-ui'
+         </div>
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Viewport-aware menu</div>
++        <p className="docs-section-desc">
++          The dropdown measures available space when it opens and flips upward when the
++          trigger sits near the bottom of the viewport. It renders in a portal, so it is
++          never clipped by <code>overflow: hidden</code> or scroll containers — including
++          inside an <code>EvoModal</code>. Fully automatic; no configuration.
++        </p>
++      </div>
++
+       <div className="docs-section">
+         <div className="docs-section-title">Basic</div>
+         <div className="docs-preview col">
+           <EvoSelect
+             label="Country"
+             options={basicCountries}
+diff --git a/evo-docs/src/pages/TooltipPage.tsx b/evo-docs/src/pages/TooltipPage.tsx
+index 6edd25b..5380ffd 100644
+--- a/evo-docs/src/pages/TooltipPage.tsx
++++ b/evo-docs/src/pages/TooltipPage.tsx
+@@ -14,12 +14,21 @@ export default function TooltipPage() {
+         </p>
+         <div className="docs-import-line">
+           import {'{ '}<span>EvoTooltip</span>{' }'} from '@justin_evo/evo-ui'
+         </div>
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Auto-flip</div>
++        <p className="docs-section-desc">
++          <code>placement</code> is the <em>preferred</em> side. If there isn't room there,
++          the tooltip flips to the opposite side and shifts to stay fully on-screen, so it
++          never renders off the edge or clipped by a scroll container.
++        </p>
++      </div>
++
+       <div className="docs-section">
+         <div className="docs-section-title">Placements</div>
+         <div className="docs-preview center" style={{ gap: '1.5rem', paddingBlock: '3rem' }}>
+           <EvoTooltip content="Tooltip on top" placement="top">
+             <EvoButton label="Top" variant="outline" />
+           </EvoTooltip>
+diff --git a/evo-docs/src/pages/TreeSelectPage.tsx b/evo-docs/src/pages/TreeSelectPage.tsx
+index e548767..27b9b70 100644
+--- a/evo-docs/src/pages/TreeSelectPage.tsx
++++ b/evo-docs/src/pages/TreeSelectPage.tsx
+@@ -136,12 +136,22 @@ export default function TreeSelectPage() {
+         </p>
+         <div className="docs-import-line">
+           import {'{ '}<span>EvoTreeSelect</span>{' }'} from '@justin_evo/evo-ui'
+         </div>
+       </div>
+ 
++      <div className="docs-section">
++        <div className="docs-section-title">Viewport-aware menu</div>
++        <p className="docs-section-desc">
++          The dropdown measures available space when it opens and flips upward when the
++          trigger sits near the bottom of the viewport. It renders in a portal, so it is
++          never clipped by <code>overflow: hidden</code> or scroll containers — including
++          inside an <code>EvoModal</code>. Fully automatic; no configuration.
++        </p>
++      </div>
++
+       <div className="docs-section">
+         <div className="docs-section-title">Basic (single-select)</div>
+         <div className="docs-preview col">
+           <EvoTreeSelect
+             label="Region"
+             data={regions}
+diff --git a/evo-ui/package.json b/evo-ui/package.json
+index 7192eb0..1b7075d 100644
+--- a/evo-ui/package.json
++++ b/evo-ui/package.json
+@@ -1,9 +1,9 @@
+ {
+   "name": "@justin_evo/evo-ui",
+-  "version": "1.2.1",
++  "version": "1.3.0",
+   "main": "dist/index.cjs.js",
+   "module": "dist/index.es.js",
+   "types": "dist/index.d.ts",
+   "style": "dist/evo-ui.css",
+   "exports": {
+     ".": {
+diff --git a/skills/evo-autocomplete/SKILL.md b/skills/evo-autocomplete/SKILL.md
+index 57b37ca..7d6f79a 100644
+--- a/skills/evo-autocomplete/SKILL.md
++++ b/skills/evo-autocomplete/SKILL.md
+@@ -313,12 +313,13 @@ The clear (✕) button is `type="button"`, `tabIndex={-1}`, and `aria-label="Cle
+ - **In-memory recents reset on reload and are keyed by `name`/`id`.** Use `evoLocalRecents(key)` for persistence; implement `RecentsStorage` yourself for server/IndexedDB backing.
+ - **Provide `name` for native form submission.** When `name` is set, a hidden `<input name=... value={value}>` is rendered so the selected value posts with the form.
+ - **Each `AutoCompleteOption.value` must be unique and stable** — it is the identity returned by `onChange` and used to match the selected option and recents.
+ - **The clear button never auto-submits.** It is `type="button"`; consistent with Evo's rule that buttons default to `type="button"`.
+ - **Theme via `var(--evo-color-*)` tokens** (and `--evo-spacing-*` / `--evo-radius-*`); never hard-code hex. Light + dark mode and >=44px mobile touch targets are built in.
+ - **Single CSS import, named imports only.** Import `@justin_evo/evo-ui/dist/evo-ui.css` once globally, and import `EvoAutoComplete` / `evoLocalRecents` from `@justin_evo/evo-ui` — never from deep paths.
++- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
+ 
+ ## Related
+ 
+ - [[evo-select]]
+ - [[evo-tree-select]]
+ - [[evo-input]]
+diff --git a/skills/evo-badge/SKILL.md b/skills/evo-badge/SKILL.md
+index da9a667..16453fe 100644
+--- a/skills/evo-badge/SKILL.md
++++ b/skills/evo-badge/SKILL.md
+@@ -50,15 +50,17 @@ function StatusLabel() {
+ | `severity` | `'primary' \| 'secondary' \| 'success' \| 'warning' \| 'danger' \| 'info'` | `'primary'` | No | Color theme. |
+ | `variant` | `'solid' \| 'outline' \| 'subtle'` | `'solid'` | No | Visual style. |
+ | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | No | Badge size. |
+ | `dot` | `boolean` | `false` | No | Render a dot indicator before the content. |
+ | `removable` | `boolean` | `false` | No | Show a remove (✕) button. |
+ | `onRemove` | `() => void` | — | No | Called when the remove button is clicked. |
++| `detail` | `React.ReactNode` | — | No | Rich content revealed in a popover on hover / focus / tap. Descriptive (non-interactive). |
++| `detailPlacement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom'` | No | Preferred popover side; flips automatically when there is no room. |
+ | `className` | `string` | `''` | No | Additional CSS class appended to the root `<span>`. |
+ 
+-Note: EvoBadge does NOT extend a native element attribute type and does NOT forward `ref` or spread `...rest`. Only the props listed above are accepted; `className` is the only pass-through, and it is merged onto the root `<span>`. Arbitrary HTML attributes (e.g. `id`, `title`, `data-*`, `onClick`) are not forwarded.
++Note: EvoBadge forwards `ref` to the root `<span>` and spreads standard HTML attributes (`...rest`, e.g. `id`, `title`, `data-*`, `onClick`) onto it. When `detail` is set, the badge manages its own hover/focus/tap/keydown handlers and `tabIndex`, and clicking the built-in remove button does not toggle the popover.
+ 
+ ## Sub-components
+ 
+ ### `EvoBadge.Group`
+ 
+ A presentational wrapper `<div>` that lays out multiple badges together (e.g. a row of removable tags).
+@@ -165,13 +167,15 @@ function Tags() {
+ - When `removable` is true, the remove control renders as a native `<button>` with `aria-label="Remove"`, making it keyboard-focusable and operable (Enter/Space) and announced to screen readers. Clicking or activating it fires `onRemove`.
+ - Because the badge body is a non-interactive `<span>`, do not rely on it for click actions; provide accessible interactive controls (like the built-in remove button, or a separate [[evo-button]]) instead.
+ - Convey meaning with text, not color alone — `severity` only changes the color theme.
+ 
+ ## Gotchas
+ 
+-- No `ref` / `...rest` forwarding: only the documented props (plus `className`) are accepted. You cannot pass `id`, `title`, `data-*`, `onClick`, or other HTML attributes directly to the root — wrap the badge if you need them.
++- With `detail`, the badge is a focusable disclosure trigger (`tabIndex=0`, `aria-describedby` → popover) and toggles on tap for touch; it opens on hover/focus and closes on blur/`Escape`. The popover is portaled to `<body>` and flips/shifts to stay on-screen.
++- `detail` is intended for descriptive, non-interactive content. Do not put focusable controls (links/buttons) inside it — the popover uses `role="tooltip"`, which is not a focus container.
++- A `detail` badge stays label-sized (below the 44px touch-target guideline). It is a hover/focus-first supplementary disclosure, not a primary touch control — don't hide critical touch-only actions/info behind it.
+ - `onRemove` only fires when `removable` is true (the remove button is only rendered in that case). Setting `onRemove` without `removable` does nothing.
+ - Removing a tag is your responsibility: the component just calls `onRemove`; you must update your own state to actually drop the badge (see the tags example).
+ - `dot` renders a leading indicator element, not a standalone dot — it appears before `children`, so still provide a label.
+ - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, and `var(--evo-radius-*)` tokens; never hard-code hex colors (breaks light/dark mode).
+ - Import the CSS once globally (`@justin_evo/evo-ui/dist/evo-ui.css`); without it badges are unstyled.
+ - Named imports only from `@justin_evo/evo-ui` — never import from deep/internal paths.
+diff --git a/skills/evo-select/SKILL.md b/skills/evo-select/SKILL.md
+index dbcd93f..36b5ade 100644
+--- a/skills/evo-select/SKILL.md
++++ b/skills/evo-select/SKILL.md
+@@ -250,12 +250,13 @@ import { EvoSelect } from '@justin_evo/evo-ui';
+ - **`searchable` filters by `label` only**, case-insensitively — not by `value` or `description`. An empty filtered list shows a "No results" row.
+ - **The trigger never auto-submits.** It is `type="button"`, so it is safe inside a `<form>`.
+ - **Form submission via `name`.** Setting `name` renders hidden `<input>`(s) so the value posts with native form submit — one hidden input per selected value in multi mode.
+ - **Theme via tokens, not hex.** Style through `var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`; never hard-code colors (it breaks dark mode).
+ - **One CSS import, named imports only.** Import `@justin_evo/evo-ui/dist/evo-ui.css` once at the app root and import `EvoSelect` from `@justin_evo/evo-ui` — never from a deep path.
+ - **No ref / rest passthrough.** Unlike most Evo inputs, EvoSelect's props are a closed set; only `className`, `id`, `name`, and `label` reach the DOM. Do not expect arbitrary native attributes or a forwarded `ref`.
++- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
+ 
+ ## Related
+ 
+ - [[evo-autocomplete]] — free-text input with filtered suggestions.
+ - [[evo-tree-select]] — selecting from a hierarchical tree.
+ - [[evo-checkbox]] — multi-choice when options are shown inline.
+diff --git a/skills/evo-tooltip/SKILL.md b/skills/evo-tooltip/SKILL.md
+index d4c3a49..d7f3137 100644
+--- a/skills/evo-tooltip/SKILL.md
++++ b/skills/evo-tooltip/SKILL.md
+@@ -152,12 +152,13 @@ function HelpHint() {
+ - `className` is appended to the outer wrapper `<span>`, not the tooltip bubble element. To style the bubble itself, target the rendered tooltip via your own CSS or theme tokens.
+ - The trigger must be keyboard-focusable for the focus/blur path to work; passing inert content makes the tooltip hover-only.
+ - Hover-only behavior is unreliable on touch screens — do not put information that must be readable on mobile exclusively inside a tooltip.
+ - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, and `var(--evo-radius-*)` tokens — never hard-coded hex — so the tooltip works in both light and dark mode.
+ - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` once at your app root, or the tooltip will be unstyled.
+ - Use named imports from `@justin_evo/evo-ui` only — never deep import paths.
++- `placement` is the *preferred* side. The tooltip auto-flips to the opposite side and shifts to stay on-screen when the preferred side lacks room; it renders in a portal so it is never clipped.
+ 
+ ## Related
+ 
+ - [[evo-button]]
+ - [[evo-badge]]
+ - [[evo-modal]]
+diff --git a/skills/evo-tree-select/SKILL.md b/skills/evo-tree-select/SKILL.md
+index ceec7d6..180fd91 100644
+--- a/skills/evo-tree-select/SKILL.md
++++ b/skills/evo-tree-select/SKILL.md
+@@ -327,12 +327,13 @@ When `searchable`, the search input auto-focuses on open and shares the same key
+ - `value` typing depends on `multiple`: pass a `string` for single-select and a `string[]` for multi-select. `onChange` mirrors this — cast appropriately (e.g. `v as string` vs `v as string[]`).
+ - Cascade is on by default in multi-select: checking a parent selects all descendant leaves and `onChange` returns leaves only (`checkedStrategy: 'leaf'`). Use `checkStrictly` to disable cascade, or `checkedStrategy` to return collapsed parents (`'parent'`) or every checked node (`'all'`).
+ - `loadChildren` only fires for nodes with `isLeaf === false` (or nodes without `children` and not explicitly `isLeaf: true`), and only on their first expand — results are cached per node.
+ - This component does not forward `ref` and does not spread arbitrary native attributes; only the documented props are accepted, and `className` lands on the outer wrapper, not the trigger button.
+ - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)` tokens — never hard-coded hex, which breaks dark mode. Touch targets are sized to be ≥44px on mobile.
+ - Single, app-wide CSS import (`@justin_evo/evo-ui/dist/evo-ui.css`). Use named imports from `@justin_evo/evo-ui` only — never deep paths.
++- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
+ 
+ ## Related
+ 
+ - [[evo-select]]
+ - [[evo-autocomplete]]
+ - [[evo-checkbox]]
