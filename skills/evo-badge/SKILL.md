@@ -25,11 +25,12 @@ import { EvoBadge } from '@justin_evo/evo-ui';
 - Labeling categories, counts, or metadata next to a title or list item.
 - Rendering removable tags / chips (keywords, filters, selected items).
 - Pairing a small dot indicator with a short text label.
+- Revealing extra status context (description, reason, timestamp) on hover / focus / tap via `detail`.
 
 ## When NOT to use
 
 - For a full notification or message banner — use [[evo-alert]].
-- For a clickable action — use [[evo-button]]; a badge is not an interactive control (only its remove button is).
+- For a clickable action — use [[evo-button]]. A plain badge is not a control; `detail` makes it a hover/focus-first disclosure trigger, but still not a primary action, and its tap target stays label-sized (below 44px).
 - For transient app-level toasts/notifications — use [[evo-notification]].
 
 ## Quick start
@@ -161,9 +162,36 @@ function Tags() {
 }
 ```
 
+### Status detail on hover (`detail`)
+
+```tsx
+import { EvoBadge } from '@justin_evo/evo-ui';
+
+function DeployStatus() {
+  return (
+    <EvoBadge.Group>
+      <EvoBadge severity="success" dot detail="Deployed 2 min ago · commit a1b2c3d">
+        Live
+      </EvoBadge>
+      <EvoBadge severity="warning" dot detail="3 checks pending · retry in 30s">
+        Pending
+      </EvoBadge>
+      <EvoBadge severity="danger" dot detail="Build failed: 2 tests · view logs">
+        Failed
+      </EvoBadge>
+    </EvoBadge.Group>
+  );
+}
+```
+
+Hovering, focusing, or tapping a badge reveals its `detail` in a popover that flips and
+shifts to stay on-screen (and escapes `overflow: hidden` containers). Set `detailPlacement`
+to prefer a side; it flips automatically when there is no room.
+
 ## Accessibility
 
-- EvoBadge is presentational and renders a `<span>`. It carries no `role` and is not focusable on its own.
+- EvoBadge is presentational and renders a `<span>`. Without `detail` it carries no `role` and is not focusable on its own.
+- With `detail`, the badge becomes a focusable disclosure trigger (`tabIndex=0`) linked to its popover via `aria-describedby` (the popover uses `role="tooltip"`). Hover or focus opens it; `Escape` closes it and returns focus to the badge. Keep `detail` content descriptive, not interactive.
 - When `removable` is true, the remove control renders as a native `<button>` with `aria-label="Remove"`, making it keyboard-focusable and operable (Enter/Space) and announced to screen readers. Clicking or activating it fires `onRemove`.
 - Because the badge body is a non-interactive `<span>`, do not rely on it for click actions; provide accessible interactive controls (like the built-in remove button, or a separate [[evo-button]]) instead.
 - Convey meaning with text, not color alone — `severity` only changes the color theme.
