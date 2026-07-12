@@ -109,6 +109,31 @@ export default function BadgePage() {
 </EvoBadge.Group>`} />
       </div>
 
+      <div className="docs-section">
+        <div className="docs-section-title">Detail popover</div>
+        <p className="docs-section-desc">
+          Pass <code>detail</code> to reveal extra status context on hover, keyboard focus,
+          or tap. The popover uses viewport-aware positioning — it flips and shifts to stay
+          on-screen and escapes <code>overflow: hidden</code> containers. It is a
+          hover/focus-first disclosure (on touch it taps to toggle); because the badge stays
+          label-sized, use it for supplementary detail, not as a primary touch control.
+        </p>
+        <div className="docs-preview">
+          <EvoBadge severity="success" dot detail="Deployed 2 min ago · commit a1b2c3d">
+            Live
+          </EvoBadge>
+          <EvoBadge severity="warning" dot detail="3 checks pending · retry in 30s">
+            Pending
+          </EvoBadge>
+          <EvoBadge severity="danger" dot detail="Build failed: 2 tests · view logs">
+            Failed
+          </EvoBadge>
+        </div>
+        <CodeBlock code={`<EvoBadge severity="success" dot detail="Deployed 2 min ago · commit a1b2c3d">
+  Live
+</EvoBadge>`} />
+      </div>
+
       <EvoDivider />
 
       <div className="docs-section">
@@ -121,6 +146,8 @@ export default function BadgePage() {
           { prop: 'dot', type: 'boolean', default: 'false', description: 'Render a dot indicator before the content.' },
           { prop: 'removable', type: 'boolean', default: 'false', description: 'Show a remove button.' },
           { prop: 'onRemove', type: '() => void', description: 'Called when the remove button is clicked.' },
+          { prop: 'detail', type: 'ReactNode', description: 'Rich content revealed in a popover on hover / focus / tap. Descriptive (non-interactive).' },
+          { prop: 'detailPlacement', type: "'top' | 'bottom' | 'left' | 'right'", default: "'bottom'", description: 'Preferred popover side; flips automatically when there is no room.' },
           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
         ]} />
       </div>

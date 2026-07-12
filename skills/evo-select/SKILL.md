@@ -253,6 +253,7 @@ import { EvoSelect } from '@justin_evo/evo-ui';
 - **Theme via tokens, not hex.** Style through `var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`; never hard-code colors (it breaks dark mode).
 - **One CSS import, named imports only.** Import `@justin_evo/evo-ui/dist/evo-ui.css` once at the app root and import `EvoSelect` from `@justin_evo/evo-ui` — never from a deep path.
 - **No ref / rest passthrough.** Unlike most Evo inputs, EvoSelect's props are a closed set; only `className`, `id`, `name`, and `label` reach the DOM. Do not expect arbitrary native attributes or a forwarded `ref`.
+- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
 
 ## Related
 

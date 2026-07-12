@@ -155,6 +155,7 @@ function HelpHint() {
 - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, and `var(--evo-radius-*)` tokens — never hard-coded hex — so the tooltip works in both light and dark mode.
 - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` once at your app root, or the tooltip will be unstyled.
 - Use named imports from `@justin_evo/evo-ui` only — never deep import paths.
+- `placement` is the *preferred* side. The tooltip auto-flips to the opposite side and shifts to stay on-screen when the preferred side lacks room; it renders in a portal so it is never clipped.
 
 ## Related
 

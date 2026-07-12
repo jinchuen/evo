@@ -18,6 +18,15 @@ export default function TooltipPage() {
       </div>
 
       <div className="docs-section">
+        <div className="docs-section-title">Auto-flip</div>
+        <p className="docs-section-desc">
+          <code>placement</code> is the <em>preferred</em> side. If there isn't room there,
+          the tooltip flips to the opposite side and shifts to stay fully on-screen, so it
+          never renders off the edge or clipped by a scroll container.
+        </p>
+      </div>
+
+      <div className="docs-section">
         <div className="docs-section-title">Placements</div>
         <div className="docs-preview center" style={{ gap: '1.5rem', paddingBlock: '3rem' }}>
           <EvoTooltip content="Tooltip on top" placement="top">

@@ -26,6 +26,32 @@ const SEVERITY: Record<ChangeKind, 'success' | 'info' | 'warning' | 'danger'> = 
 
 const RELEASES: Release[] = [
   {
+    version: '1.3.0',
+    date: '2026-07-12',
+    summary:
+      'Viewport-aware positioning across every floating layer: dropdowns flip near the screen edge, EvoBadge gains a hover detail popover, and EvoTooltip auto-flips — all on one shared zero-dependency hook.',
+    sections: [
+      {
+        kind: 'Added',
+        items: [
+          'EvoBadge — new `detail` prop renders a rich popover on hover / focus / tap (with `detailPlacement` to set the preferred side). It uses viewport-aware positioning: flips and shifts to stay on-screen and escapes `overflow: hidden` / scroll containers. EvoBadge now also forwards `ref` and spreads standard HTML attributes.',
+        ],
+      },
+      {
+        kind: 'Fixed',
+        items: [
+          'EvoSelect, EvoAutoComplete, EvoTreeSelect — the dropdown menu no longer clips or overflows when the trigger sits near the bottom of the viewport. It now measures available space, flips upward when needed, and renders in a portal so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). (#10)',
+        ],
+      },
+      {
+        kind: 'Changed',
+        items: [
+          'EvoTooltip — `placement` is now the *preferred* side: the tooltip auto-flips to the opposite side and shifts to stay fully on-screen when the preferred side lacks room, and renders in a portal so it is never clipped. Existing `placement` values keep working unchanged when they fit.',
+        ],
+      },
+    ],
+  },
+  {
     version: '1.2.0',
     date: '2026-06-22',
     summary:

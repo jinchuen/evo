@@ -99,6 +99,16 @@ export default function AutoCompletePage() {
       </div>
 
       <div className="docs-section">
+        <div className="docs-section-title">Viewport-aware menu</div>
+        <p className="docs-section-desc">
+          The dropdown measures available space when it opens and flips upward when the
+          trigger sits near the bottom of the viewport. It renders in a portal, so it is
+          never clipped by <code>overflow: hidden</code> or scroll containers — including
+          inside an <code>EvoModal</code>. Fully automatic; no configuration.
+        </p>
+      </div>
+
+      <div className="docs-section">
         <div className="docs-section-title">Why EvoAutoComplete</div>
         <p className="docs-section-desc">
           A plain <code>EvoSelect</code> is for short, fixed option sets. Reach

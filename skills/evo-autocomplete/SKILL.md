@@ -316,6 +316,7 @@ The clear (✕) button is `type="button"`, `tabIndex={-1}`, and `aria-label="Cle
 - **The clear button never auto-submits.** It is `type="button"`; consistent with Evo's rule that buttons default to `type="button"`.
 - **Theme via `var(--evo-color-*)` tokens** (and `--evo-spacing-*` / `--evo-radius-*`); never hard-code hex. Light + dark mode and >=44px mobile touch targets are built in.
 - **Single CSS import, named imports only.** Import `@justin_evo/evo-ui/dist/evo-ui.css` once globally, and import `EvoAutoComplete` / `evoLocalRecents` from `@justin_evo/evo-ui` — never from deep paths.
+- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
 
 ## Related
 

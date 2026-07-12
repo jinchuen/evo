@@ -53,9 +53,11 @@ function StatusLabel() {
 | `dot` | `boolean` | `false` | No | Render a dot indicator before the content. |
 | `removable` | `boolean` | `false` | No | Show a remove (✕) button. |
 | `onRemove` | `() => void` | — | No | Called when the remove button is clicked. |
+| `detail` | `React.ReactNode` | — | No | Rich content revealed in a popover on hover / focus / tap. Descriptive (non-interactive). |
+| `detailPlacement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom'` | No | Preferred popover side; flips automatically when there is no room. |
 | `className` | `string` | `''` | No | Additional CSS class appended to the root `<span>`. |
 
-Note: EvoBadge does NOT extend a native element attribute type and does NOT forward `ref` or spread `...rest`. Only the props listed above are accepted; `className` is the only pass-through, and it is merged onto the root `<span>`. Arbitrary HTML attributes (e.g. `id`, `title`, `data-*`, `onClick`) are not forwarded.
+Note: EvoBadge forwards `ref` to the root `<span>` and spreads standard HTML attributes (`...rest`, e.g. `id`, `title`, `data-*`, `onClick`) onto it. When `detail` is set, the badge manages its own hover/focus/tap/keydown handlers and `tabIndex`, and clicking the built-in remove button does not toggle the popover.
 
 ## Sub-components
 
@@ -168,7 +170,9 @@ function Tags() {
 
 ## Gotchas
 
-- No `ref` / `...rest` forwarding: only the documented props (plus `className`) are accepted. You cannot pass `id`, `title`, `data-*`, `onClick`, or other HTML attributes directly to the root — wrap the badge if you need them.
+- With `detail`, the badge is a focusable disclosure trigger (`tabIndex=0`, `aria-describedby` → popover) and toggles on tap for touch; it opens on hover/focus and closes on blur/`Escape`. The popover is portaled to `<body>` and flips/shifts to stay on-screen.
+- `detail` is intended for descriptive, non-interactive content. Do not put focusable controls (links/buttons) inside it — the popover uses `role="tooltip"`, which is not a focus container.
+- A `detail` badge stays label-sized (below the 44px touch-target guideline). It is a hover/focus-first supplementary disclosure, not a primary touch control — don't hide critical touch-only actions/info behind it.
 - `onRemove` only fires when `removable` is true (the remove button is only rendered in that case). Setting `onRemove` without `removable` does nothing.
 - Removing a tag is your responsibility: the component just calls `onRemove`; you must update your own state to actually drop the badge (see the tags example).
 - `dot` renders a leading indicator element, not a standalone dot — it appears before `children`, so still provide a label.

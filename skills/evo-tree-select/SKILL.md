@@ -330,6 +330,7 @@ When `searchable`, the search input auto-focuses on open and shares the same key
 - This component does not forward `ref` and does not spread arbitrary native attributes; only the documented props are accepted, and `className` lands on the outer wrapper, not the trigger button.
 - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)` tokens — never hard-coded hex, which breaks dark mode. Touch targets are sized to be ≥44px on mobile.
 - Single, app-wide CSS import (`@justin_evo/evo-ui/dist/evo-ui.css`). Use named imports from `@justin_evo/evo-ui` only — never deep paths.
+- The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
 
 ## Related
 
