@@ -35,7 +35,7 @@ const EvoBadgeGroup = ({ children, className = '' }: EvoBadgeGroupProps) => (
 const OPEN_DELAY = 120;
 const CLOSE_DELAY = 140;
 
-export const EvoBadge = forwardRef<HTMLSpanElement, EvoBadgeProps>(function EvoBadge(
+const EvoBadgeBase = forwardRef<HTMLSpanElement, EvoBadgeProps>(function EvoBadge(
   {
     children,
     severity = 'primary',
@@ -94,6 +94,12 @@ export const EvoBadge = forwardRef<HTMLSpanElement, EvoBadgeProps>(function EvoB
 
   useEffect(() => clearTimers, [clearTimers]);
 
+  // If `detail` is removed while the popover is open, close it so it can't
+  // auto-reappear from stale state when `detail` returns.
+  useEffect(() => {
+    if (!hasDetail) setOpen(false);
+  }, [hasDetail]);
+
   const { floatingRef, floatingStyles, arrowStyles, placement } = useAnchoredPosition({
     open: open && hasDetail,
     anchorRef,
@@ -138,7 +144,7 @@ export const EvoBadge = forwardRef<HTMLSpanElement, EvoBadgeProps>(function EvoB
           <button
             type="button"
             className={styles.removeBtn}
-            onClick={onRemove}
+            onClick={(e) => { e.stopPropagation(); onRemove?.(); }}
             aria-label="Remove"
           >
             ✕
@@ -167,8 +173,9 @@ export const EvoBadge = forwardRef<HTMLSpanElement, EvoBadgeProps>(function EvoB
   );
 });
 
-EvoBadge.displayName = 'EvoBadge';
+EvoBadgeBase.displayName = 'EvoBadge';
 
-(EvoBadge as typeof EvoBadge & { Group: typeof EvoBadgeGroup }).Group = EvoBadgeGroup;
+type EvoBadgeComponent = typeof EvoBadgeBase & { Group: typeof EvoBadgeGroup };
 
-export default EvoBadge;
+export const EvoBadge = EvoBadgeBase as EvoBadgeComponent;
+EvoBadge.Group = EvoBadgeGroup;
