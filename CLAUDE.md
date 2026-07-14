@@ -117,6 +117,12 @@ most often forgotten — treat them as part of the change, not afterthoughts.
     - `patch` (1.0.0 → 1.0.1) — bug fix, no API change.
     - `minor` (1.0.0 → 1.1.0) — new prop / new component / additive.
     - `major` (1.0.0 → 2.0.0) — anything in the **Breaking** section.
+- [ ] **Bump the plugin manifest too — whenever this change touched a
+      `skills/` file.** The skills ship as a Claude Code plugin that consumers
+      cache **by version**, so bump `"version"` in **both**
+      `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` to the
+      same number as `evo-ui/package.json`. Skip it and every existing install
+      keeps loading the stale skill (see section 13.3).
 - [ ] **Smoke-test.** Run `cd evo-docs && npm run dev`, then verify:
     1. The component's docs page loads without console errors.
     2. All code examples render their live preview correctly.
@@ -207,6 +213,10 @@ file.
       consumers use; a missing skill makes agents hallucinate the component.
 - [ ] **Add a Changelog entry** with an `Added` section.
 - [ ] **Bump the minor version** in `evo-ui/package.json`.
+- [ ] **Bump the plugin manifest** to the same version in **both**
+      `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` — a new
+      component always adds a `skills/evo-<name>/SKILL.md`, so this is never
+      optional (see section 13.3).
 - [ ] **Run the full smoke-test from section 1.**
 
 ---
@@ -346,6 +356,7 @@ Which do you want?"
 | Touch theming                   | `evo-ui/src/css/tokens.css`, `ThemeProvider/ThemeProvider.tsx`                                                                        |
 | Touch the docs site shell       | `evo-docs/src/components/Layout.tsx`, `evo-docs/src/styles/`                                                                          |
 | Write a Form-related component  | `Input/Input.tsx`, `Checkbox/Checkbox.tsx`, `Form/Form.tsx`, current `FormPage.tsx`                                                   |
+| Release the skills plugin       | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, and section 13.3                                                     |
 
 ---
 
@@ -363,8 +374,10 @@ it before doing anything**.
   component)
 - ❌ Editing any shared file under `evo-docs/src/styles/`
 - ❌ Running `npm publish` or `git push` to main
-- ❌ Modifying files outside `evo-ui/` or `evo-docs/` (e.g. workspace
-  config, CI files)
+- ❌ Modifying files outside `evo-ui/`, `evo-docs/`, or the skills plugin
+  (`skills/`, `.claude-plugin/`) — e.g. workspace config, CI files. Updating a
+  component's skill and bumping the plugin manifest on release (sections 1, 2,
+  13.3) are expected release work, not forbidden.
 
 Format for surfacing:
 
@@ -637,7 +650,47 @@ Firebase Hosting on 2026-06-25.)
   with `Cannot read properties of null (reading 'useState')` (an invalid hook
   call). Keep the dedupe.
 
-### 13.3 Changelog cleanup still pending
+### 13.3 Publishing the skills plugin
+
+The `skills/` folder also ships as a **Claude Code plugin**, distributed
+straight from this repo — there is no separate registry. Consumers install it
+with:
+
+```
+/plugin marketplace add jinchuen/evo
+/plugin install evo-ui@evo
+```
+
+Claude Code caches the plugin under a **version-keyed** directory
+(`~/.claude/plugins/cache/evo/evo-ui/<version>/`), where `<version>` is the
+`"version"` field of `.claude-plugin/plugin.json`.
+
+**Release rules — do not skip:**
+
+1. ⚠️ **Bump the manifest version in lockstep with the library.** Any release
+   that touches `skills/` must set `"version"` in **both**
+   `.claude-plugin/plugin.json` and the plugin entry of
+   `.claude-plugin/marketplace.json` to the same number as
+   `evo-ui/package.json`. That version is the **only** signal `/plugin` has that
+   new content exists; leave it unchanged and every already-installed consumer
+   keeps loading the **stale** skills no matter how often they update. (Exactly
+   this happened from 1.0.0 → 1.4.0: the manifest sat at 1.0.0 while seven new
+   components' skills piled up unseen.)
+
+2. ⚠️ **Never force-push `main`.** A consumer's marketplace clone tracks
+   `origin/main`; rewriting published history makes their clone
+   non-fast-forwardable, so `/plugin marketplace update` can no longer pull and
+   they are stranded on old skills. Ship releases as ordinary fast-forward
+   merges. If you ever truly must rewrite published history, call it out in the
+   release notes and tell consumers to recover with
+   `/plugin marketplace remove evo` then `/plugin marketplace add jinchuen/evo`.
+
+There is nothing to build or upload: pushing the version-bumped manifest to
+`main` **is** the release. To pick it up, a consumer runs
+`/plugin marketplace update evo`, reinstalls (`/plugin uninstall evo-ui@evo`
+then `/plugin install evo-ui@evo`), and `/reload-plugins`.
+
+### 13.4 Changelog cleanup still pending
 
 Section 4 has been updated to the launched, four-kind format. The one
 remaining task: the existing v1.0.0 `Created` block in
