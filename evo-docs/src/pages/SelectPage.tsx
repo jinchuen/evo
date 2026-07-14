@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { EvoSelect, EvoDivider } from '@justin_evo/evo-ui'
+import { EvoSelect, EvoDivider, EvoButton } from '@justin_evo/evo-ui'
 import { CodeBlock } from '../components/CodeBlock'
 import { PropsTable } from '../components/PropsTable'
 
@@ -38,11 +38,21 @@ const plans = [
   { value: 'enterprise', label: 'Enterprise', description: 'Custom SLAs · dedicated success' },
 ]
 
+const RECOMMENDED_PLAN = 'pro'
+
+const smartPlans = [
+  { value: 'free', label: 'Free', description: '1 project · community support' },
+  { value: 'pro', label: 'Pro', description: 'Recommended — unlimited projects, priority support' },
+  { value: 'team', label: 'Team', description: 'Collaboration · SSO · audit logs' },
+  { value: 'enterprise', label: 'Enterprise', description: 'Custom SLAs · dedicated success' },
+]
+
 export default function SelectPage() {
   const [country, setCountry] = useState('')
   const [countryWithIcon, setCountryWithIcon] = useState('us')
   const [role, setRole] = useState('')
   const [plan, setPlan] = useState('pro')
+  const [smartPlan, setSmartPlan] = useState(RECOMMENDED_PLAN)
   const [search, setSearch] = useState('')
   const [clearable, setClearable] = useState('uk')
   const [multiChips, setMultiChips] = useState<string[]>(['us', 'jp'])
@@ -139,6 +149,66 @@ export default function SelectPage() {
 ]
 
 <EvoSelect label="Plan" options={plans} value={plan} onChange={setPlan} />`} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Smart defaults — prefill the recommended option</div>
+        <p className="docs-section-desc">
+          Don't make users choose when you already know what most of them want.
+          Preselect the best-fit option through <code>value</code>/<code>defaultValue</code>,
+          annotate it as <strong>Recommended</strong> in that option's{' '}
+          <code>description</code> field so the reasoning stays visible in the closed
+          trigger's helper text and inside the menu, and pair it with a one-tap ghost{' '}
+          <code>EvoButton</code> that resets the controlled value back to the default —
+          so people who know better can still change their mind in one click instead of
+          hunting through the list.
+        </p>
+        <div className="docs-preview col">
+          <EvoSelect
+            label="Plan"
+            options={smartPlans}
+            value={smartPlan}
+            onChange={setSmartPlan}
+            helperText="Recommended for most teams — change any time."
+          />
+          <EvoButton
+            variant="ghost"
+            size="sm"
+            label="Use recommended"
+            onClick={() => setSmartPlan(RECOMMENDED_PLAN)}
+            disabled={smartPlan === RECOMMENDED_PLAN}
+          />
+        </div>
+        <CodeBlock code={`const RECOMMENDED_PLAN = 'pro'
+
+const plans = [
+  { value: 'free', label: 'Free', description: '1 project · community support' },
+  { value: 'pro', label: 'Pro', description: 'Recommended — unlimited projects, priority support' },
+  { value: 'team', label: 'Team', description: 'Collaboration · SSO · audit logs' },
+]
+
+// Preselect the recommended option instead of an empty placeholder.
+const [plan, setPlan] = useState(RECOMMENDED_PLAN)
+
+<EvoSelect label="Plan" options={plans} value={plan} onChange={setPlan} />
+
+<EvoButton
+  variant="ghost"
+  size="sm"
+  label="Use recommended"
+  onClick={() => setPlan(RECOMMENDED_PLAN)}
+  disabled={plan === RECOMMENDED_PLAN}
+/>`} />
+        <ul className="docs-list">
+          <li>
+            This is a plain composition of existing props — no new EvoSelect API. The
+            "Recommended" annotation lives in the option's <code>description</code> text.
+          </li>
+          <li>
+            The reset button is a normal controlled <code>onClick</code> outside the
+            component, disabled once the recommended value is already selected.
+          </li>
+        </ul>
       </div>
 
       <div className="docs-section">

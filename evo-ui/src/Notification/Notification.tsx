@@ -13,6 +13,7 @@ import {
   type ReactNode,
 } from 'react';
 import ReactDOM from 'react-dom';
+import { EvoCountdown } from '../Countdown/Countdown';
 import styles from '../css/notification.module.scss';
 
 // ============================================================
@@ -77,6 +78,19 @@ export interface EvoToastOptions {
    * `evoNotify.toast.progress()`, but valid on any toast.
    */
   progress?: number;
+  /**
+   * Loss-aversion emphasis (see the UX psychology doc's loss-aversion
+   * principle). When true, thickens the toast's left severity bar so its
+   * mere presence reads as heightened urgency, independent of copy.
+   */
+  urgency?: boolean;
+  /**
+   * A deadline this toast is counting down to. When set, renders a live
+   * `EvoCountdown` plus a draining 1→0 time bar (reusing the progress-bar
+   * track) so time pressure is visible at a glance, not just implied.
+   * Ignored when an explicit `progress` is also set (progress wins).
+   */
+  deadline?: number | Date;
 }
 
 export interface EvoPromiseMessages<T> {
@@ -117,6 +131,10 @@ export interface EvoInboxItemInput {
   onClick?: (item: EvoInboxItem) => void;
   meta?: Record<string, unknown>;
   toast?: boolean | Partial<EvoToastOptions>;
+  /** Loss-aversion emphasis — see `EvoToastOptions.urgency`. */
+  urgency?: boolean;
+  /** A deadline this item is counting down to — see `EvoToastOptions.deadline`. */
+  deadline?: number | Date;
 }
 
 export interface EvoInboxItem {
@@ -131,6 +149,9 @@ export interface EvoInboxItem {
   action?: EvoNotificationAction;
   onClick?: (item: EvoInboxItem) => void;
   meta?: Record<string, unknown>;
+  urgency?: boolean;
+  /** Epoch-ms deadline (normalized from a `Date` at push time). */
+  deadline?: number;
 }
 
 interface InternalToast extends EvoToastOptions {
@@ -351,6 +372,8 @@ class NotificationStore {
       severity: options.severity ?? 'info',
       icon: options.icon,
       action: options.action,
+      urgency: options.urgency,
+      deadline: options.deadline,
       ...(typeof options.inbox === 'object' ? options.inbox : {}),
     };
     this.pushInbox(inboxInput);
@@ -454,6 +477,8 @@ class NotificationStore {
       action: input.action,
       onClick: input.onClick,
       meta: input.meta,
+      urgency: input.urgency,
+      deadline: input.deadline instanceof Date ? input.deadline.getTime() : input.deadline,
     };
 
     const idx = this.inboxItems.findIndex((i) => i.id === id);
@@ -903,6 +928,21 @@ const ToastRow = ({ toast, anchor, index, total, hovered, pausedExternally, redu
   const hasProgress = typeof toast.progress === 'number';
   const progressValue = hasProgress ? clamp01(toast.progress as number) : 0;
 
+  // Deadline: normalize to an epoch, then capture the *remaining* duration
+  // once per `restartKey` (mirrors EvoCountdown's own capture-on-mount
+  // pattern) so the CSS drain animation's length doesn't jitter on
+  // unrelated re-renders (hover, other toasts arriving, etc.).
+  const deadlineMs = toast.deadline == null
+    ? undefined
+    : toast.deadline instanceof Date ? toast.deadline.getTime() : toast.deadline;
+  const deadlineDurationRef = useRef<{ key: number; duration: number } | null>(null);
+  if (deadlineMs != null && deadlineDurationRef.current?.key !== toast.restartKey) {
+    deadlineDurationRef.current = { key: toast.restartKey, duration: Math.max(0, deadlineMs - Date.now()) };
+  }
+  // Only render the auto-driven deadline bar when no explicit `progress`
+  // is set — an explicit progress value always wins.
+  const showDeadlineBar = !hasProgress && deadlineMs != null;
+
   // When the toast has plain-text content the Toaster's persistent live
   // region announces it, so the card itself is just a navigable `group`.
   // A JSX-only toast (no extractable text) keeps an in-place live role as
@@ -914,6 +954,7 @@ const ToastRow = ({ toast, anchor, index, total, hovered, pausedExternally, redu
       className={cx(
         styles.toast,
         styles[`sev-${toast.severity}`],
+        toast.urgency && styles.urgent,
         exiting && styles.exiting,
         reducedMotion && styles.noMotion,
         toast.className,
@@ -928,7 +969,10 @@ const ToastRow = ({ toast, anchor, index, total, hovered, pausedExternally, redu
           <div className={styles.toastTitle}>
             {titleNode}
             {toast.count > 1 && (
-              <span className={styles.toastCount} aria-label={`repeated ${toast.count} times`}>
+              // Keyed by count so each increment remounts the span, retriggering
+              // the reduced-motion-safe pop keyframe (a CSS-class toggle alone
+              // wouldn't replay on an in-place value change).
+              <span key={toast.count} className={styles.toastCount} aria-label={`repeated ${toast.count} times`}>
                 ×{toast.count}
               </span>
             )}
@@ -936,6 +980,9 @@ const ToastRow = ({ toast, anchor, index, total, hovered, pausedExternally, redu
         )}
         {toast.description != null && (
           <div className={styles.toastDescription}>{toast.description}</div>
+        )}
+        {deadlineMs != null && (
+          <EvoCountdown deadline={deadlineMs} className={styles.toastCountdown} />
         )}
       </div>
       {toast.action && (
@@ -973,6 +1020,18 @@ const ToastRow = ({ toast, anchor, index, total, hovered, pausedExternally, redu
           <div
             className={styles.toastProgressFill}
             style={{ transform: `scaleX(${progressValue})` }}
+          />
+        </div>
+      )}
+      {showDeadlineBar && (
+        <div className={styles.toastProgressTrack} aria-hidden="true">
+          <div
+            className={cx(styles.toastProgressFill, styles.toastDeadlineFill)}
+            style={
+              reducedMotion
+                ? { transform: 'scaleX(1)' }
+                : { animationDuration: `${deadlineDurationRef.current?.duration ?? 0}ms` }
+            }
           />
         </div>
       )}
@@ -1231,7 +1290,9 @@ export const EvoNotificationBell = forwardRef<HTMLButtonElement, EvoNotification
         >
           <BellGlyph />
           {showBadge && (
-            <span className={cx(styles.bellBadge, unread === 0 && styles.bellBadgeZero)}>
+            // Keyed by badgeText so each count change remounts the span,
+            // retriggering the reduced-motion-safe pop keyframe.
+            <span key={badgeText} className={cx(styles.bellBadge, unread === 0 && styles.bellBadgeZero)}>
               {badgeText}
             </span>
           )}
@@ -1421,8 +1482,10 @@ export const EvoNotificationItem = forwardRef<HTMLDivElement, EvoNotificationIte
         ref={ref}
         className={cx(
           styles.item,
+          styles[`sev-${item.severity}`],
           !item.read && styles.itemUnread,
           interactive && styles.itemInteractive,
+          item.urgency && styles.itemUrgent,
           className,
         )}
         role={interactive ? 'button' : 'group'}
@@ -1446,6 +1509,9 @@ export const EvoNotificationItem = forwardRef<HTMLDivElement, EvoNotificationIte
           )}
           <div className={styles.itemMeta}>
             <span className={styles.itemTimestamp}>{formatRelative(item.timestamp, now)}</span>
+            {item.deadline != null && (
+              <EvoCountdown deadline={item.deadline} className={styles.itemCountdown} />
+            )}
             {item.action && (
               <button
                 type="button"

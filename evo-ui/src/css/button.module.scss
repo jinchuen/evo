@@ -20,7 +20,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   padding: $evo-btn-padding-y $evo-btn-padding-x;
   min-height: 2.25rem;
   max-width: 100%;
@@ -54,8 +54,14 @@
   &:disabled {
     opacity: $evo-btn-disabled-opacity;
     cursor: not-allowed;
-    pointer-events: none;
   }
+}
+
+// Bump touch targets on coarse-pointer (touch) devices so sm/md
+// buttons never fall below the 44px minimum target size.
+@media (pointer: coarse) {
+  .sm { min-height: 2.5rem; }
+  .md { min-height: 2.75rem; }
 }
 
 // --- Slots ---
@@ -97,7 +103,7 @@
 
 // --- Size modifiers ---
 .sm {
-  gap: 0.3rem;
+  gap: 0.25rem;
   padding: $evo-btn-padding-y-sm $evo-btn-padding-x-sm;
   min-height: 1.75rem;
   font-size: $evo-btn-font-size-sm;
@@ -133,8 +139,8 @@
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 
-  &.sm { padding-left: 0.35rem; padding-right: 0.35rem; }
-  &.lg { padding-left: 0.65rem; padding-right: 0.65rem; }
+  &.sm { padding-left: 0.25rem; padding-right: 0.25rem; }
+  &.lg { padding-left: 0.75rem; padding-right: 0.75rem; }
 }
 
 // --- Layout modifiers ---

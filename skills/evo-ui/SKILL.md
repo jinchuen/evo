@@ -11,7 +11,7 @@ description: Use when building any web UI with the Evo UI React component librar
 ## What is Evo UI
 
 Evo UI (`@justin_evo/evo-ui`) is a high-performance, enterprise-grade React component
-library: **31 components** across 8 categories, fully typed, with light/dark theming
+library: **38 components** across 9 categories, fully typed, with light/dark theming
 driven by CSS variables, `forwardRef` + native attribute pass-through on every
 component, and **zero runtime dependencies** (React 17+ is a peer dependency).
 
@@ -96,6 +96,14 @@ singleton (`evoNotify.toast.success('Saved')`, callable from outside React).
 | [[evo-pagination]] | `EvoPagination` | Paginating lists, tables, or search results with prev/next and ellipsis. |
 | [[evo-command-palette]] | `EvoCommandPalette` | A Cmd/Ctrl+K launcher with fuzzy search, grouped items, and shortcut hints. |
 
+### Progress & Flow
+| Skill | Exports | Use it for |
+| --- | --- | --- |
+| [[evo-progress]] | `EvoProgress` | Determinate/indeterminate progress bars (uploads, completion, storage meters); `minVisible` gives a goal-gradient head start without lying to assistive tech. |
+| [[evo-progress-ring]] | `EvoProgressRing` | Compact radial/circular progress for dashboard tiles, tier badges, and card summaries, with a center content slot. |
+| [[evo-stepper]] | `EvoStepper`, `EvoStepper.Step` | Multi-step flow progress (checkout, onboarding): current step highlighted, completed steps banked solid. |
+| [[evo-wizard]] | `EvoWizard` (+ `.Progress/.Step/.Review/.Review.Item/.Actions`) | Stateful multi-step flows with gated advancement and a review payoff — onboarding, checkout, setup wizards. |
+
 ### Forms & Inputs
 | Skill | Exports | Use it for |
 | --- | --- | --- |
@@ -107,7 +115,7 @@ singleton (`evoNotify.toast.success('Saved')`, callable from outside React).
 | [[evo-checkbox]] | `EvoCheckbox`, `EvoCheckbox.Group` | Boolean opt-ins, indeterminate "select all", grouped multi-select. |
 | [[evo-radio]] | `EvoRadio`, `EvoRadio.Group` | Single choice from a small set of visible, mutually exclusive options. |
 | [[evo-toggle]] | `EvoToggle` | Switching a single boolean setting on/off (dark mode, feature flags). |
-| [[evo-form]] | `EvoForm` (+ `.Header/.Section/.Row/.Field/.Actions`) | Form layouts (login, settings, profiles) with shared label/error/required metadata. |
+| [[evo-form]] | `EvoForm` (+ `.Header/.Section/.Row/.Field/.Actions/.Repeater`) | Form layouts (login, settings, profiles) with shared label/error/required metadata; `.Repeater` for repeatable "add another" field groups. |
 | [[evo-rich-text-area]] | `EvoRichTextArea` | In-app WYSIWYG rich text authoring with a configurable toolbar and image upload. |
 
 ### Data Display
@@ -117,11 +125,14 @@ singleton (`evoNotify.toast.success('Saved')`, callable from outside React).
 | [[evo-table]] | `EvoTable` | Sortable, structured row/column data with density, sticky header, mobile stacking. |
 | [[evo-badge]] | `EvoBadge`, `EvoBadge.Group` | Status labels, count chips, category tags, dot indicators, removable filter tags. |
 | [[evo-skeleton]] | `EvoSkeleton` (+ `.Text/.Circle`) | Loading placeholders that reserve layout space while content fetches. |
+| [[evo-pricing-table]] | `EvoPricingTable` (+ `.Root/.Tier/.Price/.FeatureList/.Feature/.Cta`) | Tier/plan comparison with a struck-through anchor price, a raised recommended tier, and row-aligned features (price anchoring). |
+| [[evo-countdown]] | `EvoCountdown` | Self-ticking "time remaining" text for deadlines/trials/offers; warning→danger escalation, days/clock/auto grain. |
 
 ### Feedback & Overlays
 | Skill | Exports | Use it for |
 | --- | --- | --- |
-| [[evo-alert]] | `EvoAlert` | Inline success/error/warning/info banners and dismissible callouts. |
+| [[evo-alert]] | `EvoAlert` | Inline success/error/warning/info banners and dismissible callouts; `urgency` for loss-aversion emphasis. |
+| [[evo-banner]] | `EvoBanner` | Value-first promo/upsell/trial callout with a CTA + reassurance note — a calm `role="region"` landmark, not a status alert. |
 | [[evo-modal]] | `EvoModal` (+ `.Header/.Body/.Footer`) | Modal dialogs, confirmations, and overlay panels (Escape + backdrop close). |
 | [[evo-tooltip]] | `EvoTooltip` | A transient hover/focus hint positioned around a trigger. |
 | [[evo-notification]] | `EvoNotification` (+ `.Provider/.Toaster/.Bell/.Panel`), `evoNotify`, `useEvoInbox` | Toasts and a persistent notification center, driven by the `evoNotify` singleton. |
@@ -141,6 +152,8 @@ singleton (`evoNotify.toast.success('Saved')`, callable from outside React).
 - **A surface** → [[evo-card]]; **a transient message** → [[evo-alert]]; **a blocking dialog** → [[evo-modal]]; **a fleeting toast** → [[evo-notification]].
 - **App chrome** → [[evo-topnav]] (top bar) and/or [[evo-nav]] (sidebar).
 - **Layout** → [[evo-stack]] (1D), [[evo-grid]] (2D), [[evo-container]] (page width).
+- **Progress / "don't start at 0%"** → [[evo-progress]] (bar) or [[evo-progress-ring]] (radial); **staged tasks** → [[evo-stepper]]; **a full stateful multi-step flow** → [[evo-wizard]].
+- **Plans / pricing comparison** → [[evo-pricing-table]]; **a value-first promo before you ask for signup** → [[evo-banner]]; **a deadline / "time left" cue** → [[evo-countdown]] (or `urgency` on [[evo-alert]] / [[evo-notification]]).
 
 ## Global rules (apply to every component)
 

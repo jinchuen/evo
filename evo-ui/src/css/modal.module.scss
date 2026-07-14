@@ -29,7 +29,7 @@
   background-color: $color-surface-elevated;
   border: 1px solid $color-border;
   border-radius: $radius-lg;
-  box-shadow: 0 25px 60px -12px rgb(0 0 0 / 0.45);
+  box-shadow: $shadow-2xl;
   display: flex;
   flex-direction: column;
   max-height: 90vh;
@@ -61,14 +61,16 @@
   font-weight: 600;
   color: $color-text-primary;
   font-family: $font-sans;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .closeBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
   background: transparent;
   border: none;
   border-radius: $radius-sm;
@@ -81,6 +83,15 @@
   &:hover {
     background-color: $color-surface-hover;
     color: $color-text-primary;
+  }
+
+  &:active {
+    background-color: $color-surface-active;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
   }
 }
 
@@ -102,4 +113,13 @@
   padding: 1rem 1.5rem;
   border-top: 1px solid $color-border;
   flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay { animation-duration: 1ms; }
+
+  .dialog {
+    animation-name: overlayFadeIn;
+    animation-duration: 1ms;
+  }
 }

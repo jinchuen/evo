@@ -116,7 +116,7 @@
   // touch target so they stay tappable on mobile.
   min-height: 2.75rem;
 
-  &:hover:not(:disabled) {
+  &:hover:not(:disabled):not([aria-disabled='true']) {
     transform: translateY(-2px);
     box-shadow: $shadow-lg;
   }
@@ -129,7 +129,7 @@
     background-color: $color-surface-hover;
   }
 
-  &:active:not(:disabled) {
+  &:active:not(:disabled):not([aria-disabled='true']) {
     transform: translateY(0);
     box-shadow: $shadow-sm;
   }
@@ -143,7 +143,11 @@
   &[aria-disabled='true'] {
     opacity: 0.5;
     cursor: not-allowed;
-    pointer-events: none;
+    // No `pointer-events: none` here: native `disabled` already blocks
+    // interaction on <button>, and removing pointer-events keeps the
+    // `cursor: not-allowed` visible. For the <a> case (which has no
+    // native disabled state) navigation is guarded in JS instead — see
+    // the aria-disabled click guard in Card.tsx.
   }
 }
 
@@ -192,7 +196,8 @@
   margin: 0;
   font-size: $text-lg;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: $color-text-primary;
 }
 

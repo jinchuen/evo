@@ -55,8 +55,9 @@ function ResultsFooter() {
 | `siblingCount` | `number` | `1` | No | Number of page buttons shown on each side of the current page when the list is truncated. |
 | `onChange` | `(page: number) => void` | — | Yes | Called with the next page number when a page, previous, or next button is clicked. You must update your own state in response. |
 | `className` | `string` | `''` | No | Additional CSS class appended to the root `<nav>` element. |
+| `...rest` | native `<nav>` attributes | — | No | Any other native `<nav>` prop (`id`, `data-*`, `aria-*`, event handlers, …) is spread onto the root element. |
 
-Note: `EvoPagination` is a plain function component. It does **not** forward a `ref` and does **not** spread arbitrary native attributes (`...rest`) onto the root — only `className` is accepted and merged onto the `<nav>`. Do not rely on passing other DOM props through.
+`EvoPagination` forwards a `ref` (typed `HTMLElement`) to the root `<nav>` and spreads any remaining native `<nav>` attributes (`...rest` — `id`, `data-*`, `aria-*`, event handlers, …) onto it, in addition to `className`.
 
 ## Variants & options
 
@@ -165,8 +166,10 @@ function UserTable() {
 - `page` is **1-indexed**. Passing `0` or a value above the computed page count produces out-of-range navigation; clamp in your own state if needed.
 - Ellipsis truncation only engages when the total page count is greater than 7. With 7 or fewer pages every page button is shown.
 - The page count is derived as `Math.max(1, Math.ceil(total / pageSize))`, so it always renders at least one page button even when `total` is `0`.
-- The buttons are native `<button>` elements and (per Evo convention) do not auto-submit a surrounding `<form>`; they only call `onChange`.
-- Only `className` is forwarded to the root — there is no `ref` forwarding and no `...rest` passthrough, unlike most Evo components. Do not attach other DOM props directly.
+- The buttons are native `<button type="button">` elements and (per Evo convention) do not auto-submit a surrounding `<form>`; they only call `onChange`.
+- Every page/prev/next button shows a visible `:focus-visible` ring (2px, primary color, 2px offset) and a subtle press (`:active`) scale — both respect `prefers-reduced-motion: reduce`.
+- All buttons meet the 44px minimum touch target (`min-height`/`min-width: 2.75rem`), up from the earlier undersized 32px.
+- Inactive page buttons are ghost-style (transparent until hover) so the filled `.activePage` button reads as the single visual anchor.
 - Style it through Evo theme tokens (`var(--evo-color-*)`, `var(--evo-radius-*)`, `var(--evo-spacing-*)`) — never hard-coded hex — so it stays correct in light and dark mode.
 - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once at your app root, and use named imports from `@justin_evo/evo-ui` only (no deep paths).
 

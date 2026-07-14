@@ -162,12 +162,40 @@ const items: CommandPaletteItem[] = [
         <div className="docs-preview col">
           <p className="docs-kbd-list">
             <strong>⌘ K / Ctrl K</strong> — Toggle the palette (works anywhere on the page)<br />
-            <strong>↑ / ↓</strong> — Move the active result<br />
+            <strong>↑ / ↓</strong> — Move the active result (shown with a filled accent bar)<br />
             <strong>Enter</strong> — Run the active item's <code>onSelect</code><br />
+            <strong>Tab / Shift Tab</strong> — Cycle focus within the palette; it is trapped and
+            cannot escape behind the overlay while open<br />
             <strong>Esc</strong> — Close the palette<br />
             <strong>Type</strong> — Fuzzy-filter by label, description, or group
           </p>
         </div>
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Accessibility</div>
+        <ul className="docs-list">
+          <li>
+            The root renders with <code>role="dialog"</code> and{' '}
+            <code>aria-modal="true"</code>; the search input carries{' '}
+            <code>aria-label="Command search"</code>.
+          </li>
+          <li>
+            <strong>Focus trap.</strong> While open, <code>Tab</code> / <code>Shift Tab</code>{' '}
+            cycle through the palette's focusable elements only — focus cannot land on
+            content behind the overlay.
+          </li>
+          <li>
+            <strong>Keyboard vs. mouse selection are visually distinct.</strong> Moving with{' '}
+            <code>↑</code>/<code>↓</code> shows an inset accent bar on the active row;
+            hovering with the mouse shows a plain background tint. This keeps "where Enter
+            will act" unambiguous even when the two disagree.
+          </li>
+          <li>
+            The search input shows a visible focus ring (<code>:focus-visible</code>), and
+            every result row shows one too when reached via keyboard.
+          </li>
+        </ul>
       </div>
 
       <EvoDivider />
@@ -179,7 +207,14 @@ const items: CommandPaletteItem[] = [
           { prop: 'placeholder', type: 'string', default: "'Search commands…'", description: 'Search input placeholder.' },
           { prop: 'open', type: 'boolean', description: 'Controlled open state. Omit for uncontrolled mode (⌘K toggles internally).' },
           { prop: 'onClose', type: '() => void', description: 'Called when the user dismisses the palette (Esc, overlay click, or item selection).' },
+          { prop: 'className', type: 'string', description: 'Extra class(es) merged onto the root overlay element.' },
+          { prop: '...rest', type: 'React.HTMLAttributes<HTMLDivElement>', description: 'Any other native div attribute (e.g. `id`, `data-*`) is spread onto the root overlay element.' },
         ]} />
+        <p className="docs-section-desc">
+          <code>EvoCommandPalette</code> forwards <code>ref</code> to its root overlay
+          element (<code>forwardRef&lt;HTMLDivElement&gt;</code>), and spreads{' '}
+          <code>className</code> / any other native div attributes onto that same node.
+        </p>
       </div>
 
       <div className="docs-section">

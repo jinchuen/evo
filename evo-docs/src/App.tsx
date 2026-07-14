@@ -39,6 +39,13 @@ import ImageCropperApiPage from './pages/ImageCropperApiPage'
 import ChangelogPage from './pages/ChangelogPage'
 import SkillsPage from './pages/SkillsPage'
 import CommandPalettePage from './pages/CommandPalettePage'
+import ProgressPage from './pages/ProgressPage'
+import ProgressRingPage from './pages/ProgressRingPage'
+import StepperPage from './pages/StepperPage'
+import WizardPage from './pages/WizardPage'
+import BannerPage from './pages/BannerPage'
+import PricingTablePage from './pages/PricingTablePage'
+import CountdownPage from './pages/CountdownPage'
 
 export default function App() {
   return (
@@ -82,6 +89,13 @@ export default function App() {
             <Route path="/components/breadcrumb" element={<BreadcrumbPage />} />
             <Route path="/components/topnav" element={<TopNavPage />} />
             <Route path="/components/command-palette" element={<CommandPalettePage />} />
+            <Route path="/components/progress" element={<ProgressPage />} />
+            <Route path="/components/progress-ring" element={<ProgressRingPage />} />
+            <Route path="/components/stepper" element={<StepperPage />} />
+            <Route path="/components/wizard" element={<WizardPage />} />
+            <Route path="/components/banner" element={<BannerPage />} />
+            <Route path="/components/pricing-table" element={<PricingTablePage />} />
+            <Route path="/components/countdown" element={<CountdownPage />} />
             <Route path="/components/image-cropper" element={<ImageCropperPage />} />
             <Route path="/components/image-cropper/api" element={<ImageCropperApiPage />} />
             <Route path="/utilities" element={<UtilitiesPage />} />

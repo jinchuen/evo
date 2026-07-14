@@ -54,8 +54,10 @@ const items: CommandPaletteItem[] = [
 | `placeholder` | `string` | `'Search commands…'` | No | Search input placeholder text. |
 | `open` | `boolean` | `undefined` | No | Controlled open state. Omit for uncontrolled mode (Ctrl+K / ⌘K toggles it internally). When provided, the component is controlled and Ctrl+K no longer toggles it — you must drive `open` yourself. |
 | `onClose` | `() => void` | `undefined` | No | Called when the user dismisses the palette (Escape, overlay click, or item selection). |
+| `className` | `string` | `undefined` | No | Extra class(es) merged onto the root overlay element. |
+| `...rest` | `React.HTMLAttributes<HTMLDivElement>` | — | No | Any other native `<div>` attribute (`id`, `data-*`, `aria-*`, …) is spread onto the root overlay element. |
 
-Note: `EvoCommandPalette` is a function component that does NOT forward `ref`, `className`, or `...rest`. Its public API is exactly the four props above; the root overlay/palette markup and classNames are managed internally.
+`EvoCommandPalette` is `forwardRef<HTMLDivElement, EvoCommandPaletteProps>` — pass `ref` to reach the root overlay `<div>` (e.g. for measuring or portal-adjacent logic). `EvoCommandPaletteProps` is exported as a named type for consumers who need to type wrapper components.
 
 ## Sub-components
 
@@ -159,14 +161,19 @@ const items: CommandPaletteItem[] = [
 - Overlay root renders with `role="dialog"` and `aria-modal="true"`.
 - The search `<input>` carries `aria-label="Command search"`.
 - Focus management: when the palette opens it clears the query, resets the active item to the first result, and focuses the search input automatically (after a ~30ms mount delay).
+- **Focus trap**: while open, `Tab` / `Shift+Tab` cycle only through the palette's own focusable elements (search input, result buttons) — focus cannot escape to content behind the overlay. Wrapping is handled on `Tab` keydown inside the palette.
+- **Visible focus rings**: the search input and every result row show a `:focus-visible` outline (`2px` solid primary). Nothing in the palette relies on an invisible/removed outline.
+- **Keyboard selection vs. mouse hover are visually distinct**: the roving keyboard-selected row (moved with ArrowUp/ArrowDown) shows a background tint plus an inset `2px` accent bar on its leading edge; a row the mouse is merely hovering shows only the background tint. This keeps "where Enter will act" unambiguous even when the pointer rests elsewhere.
 - Keyboard interactions:
   - Ctrl+K / ⌘K (Cmd) — toggles the palette open/closed in uncontrolled mode (a global `document` keydown listener; `preventDefault` is called). In controlled mode this listener does not toggle `open`.
   - Escape — closes the palette when open (global listener).
-  - ArrowDown / ArrowUp — move the active result (clamped to the list bounds); the active row is scrolled into view with `block: 'nearest'`.
+  - ArrowDown / ArrowUp — move the active result (clamped to the list bounds); the active row is scrolled into view with `block: 'nearest'`; marks the selection as keyboard-sourced for styling.
+  - Tab / Shift+Tab — cycle focus within the trapped palette (see above).
   - Enter — runs the active item's `onSelect`, then closes.
-  - Typing — fuzzy-filters items by `label`, `description`, or `group` (case-insensitive substring match).
-- Mouse: hovering a result sets it active (`onMouseEnter`); clicking a result runs its `onSelect` and closes; clicking the dimmed overlay (outside the palette) closes it.
-- Results are real `<button>` elements; group headings and footer hints render `<kbd>` badges for key labels. An empty filtered list shows a "No results" message.
+  - Typing — fuzzy-filters items by `label`, `description`, or `group` (case-insensitive substring match); resets selection to keyboard-sourced.
+- Mouse: hovering a result sets it active and marks the selection as mouse-sourced (`onMouseEnter`); clicking a result runs its `onSelect` and closes; clicking the dimmed overlay (outside the palette) closes it.
+- Results are real `<button type="button">` elements (44px min touch target via `min-height: 2.75rem`); group headings and footer hints render `<kbd>` badges for key labels. An empty filtered list shows a "No results" message.
+- All entrance animation (`overlayIn` opacity fade, `paletteIn` opacity+translate+scale) and the result-row hover/active transition are disabled under `prefers-reduced-motion: reduce`.
 
 ## Gotchas
 
@@ -175,9 +182,10 @@ const items: CommandPaletteItem[] = [
 - The component renders `null` when closed — nothing is in the DOM until it is open, so don't rely on querying its markup ahead of time.
 - Items without a `group` are bucketed under the literal heading `'Actions'`.
 - `onClose` fires on every dismissal path (Escape, overlay click, AND item selection), so it is called even when the user successfully picks an action — keep its handler idempotent.
-- It does not forward `ref` / `className` / `...rest`; you cannot style or target the root via those. Theme it through Evo CSS variables (`var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`) — never hard-coded hex.
+- It DOES forward `ref` / `className` / `...rest` onto the root overlay `<div>` (see Props above) — theme it through Evo CSS variables (`var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`), never hard-coded hex.
 - The Ctrl+K and Escape listeners are attached to `document`, so they are global while the component is mounted; mounting multiple palettes will register multiple listeners.
 - Single CSS import: include `@justin_evo/evo-ui/dist/evo-ui.css` once. Use named imports from `@justin_evo/evo-ui` only — never deep paths.
+- The Tab focus trap only guards elements inside the palette's own subtree — if you render content with `tabindex="-1"` inside a result via `icon`, it will be skipped (as intended).
 
 ## Related
 

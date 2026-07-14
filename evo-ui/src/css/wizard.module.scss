@@ -1,0 +1,171 @@
+@use './base/variables' as *;
+
+// ============================================================
+// EvoWizard
+// ------------------------------------------------------------
+// Structural component — most of the visual weight belongs to
+// whatever is composed inside (EvoStepper for Progress, EvoForm
+// for Step content, EvoButton for Actions). This stylesheet only
+// supplies layout rhythm, the review "manifest" surface, and one
+// quiet entrance micro-interaction per step.
+//
+// The one distinctive decision lives in the component, not here:
+// EvoWizard.Review.Item ties every value back to the step it came
+// from with an editable row (IKEA effect — see Wizard.tsx header
+// comment). This file just gives that row its "receipt" look:
+// close, bordered rows on a flat surface, not a floating card.
+// ============================================================
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  font-family: $font-sans;
+}
+
+.progress {
+  width: 100%;
+}
+
+// ----- Step content ------------------------------------------
+
+.step {
+  display: block;
+  min-width: 0;
+  animation: evoWizardStepIn $transition-normal ease-out;
+}
+
+@keyframes evoWizardStepIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ----- Review (assembled-result payoff) ------------------------
+
+.review {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $color-border;
+  border-radius: $evo-border-radius-lg;
+  background-color: $color-surface;
+  overflow: hidden;
+}
+
+.reviewTitle {
+  font-size: $text-lg;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: $color-text-primary;
+  padding: 0.875rem 1rem 0.5rem;
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid $color-border-subtle;
+
+  &:first-child {
+    border-top: none;
+  }
+}
+
+.reviewItemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.reviewItemLabel {
+  font-size: $text-xs;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $color-text-muted;
+}
+
+.reviewItemValue {
+  font-size: $text-sm;
+  line-height: 1.5;
+  color: $color-text-primary;
+  overflow-wrap: anywhere;
+}
+
+.reviewItemEdit {
+  flex-shrink: 0;
+  appearance: none;
+  border: none;
+  background-color: transparent;
+  color: $evo-primary-color;
+  font: inherit;
+  font-size: $text-sm;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: $radius-sm;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color $transition-fast,
+    color $transition-fast;
+
+  &:hover {
+    background-color: $color-surface-hover;
+    color: $evo-primary-hover;
+  }
+
+  &:active {
+    color: $evo-primary-active;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
+  }
+
+  // Compact by default (it sits inline with a text row); grows to a
+  // real touch target only where it matters — coarse (touch) pointers.
+  @media (pointer: coarse) {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+}
+
+// ----- Actions --------------------------------------------------
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid $color-border-subtle;
+}
+
+// ----- Motion preferences ----------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  .step {
+    animation: none;
+  }
+
+  .reviewItemEdit {
+    transition: none;
+  }
+}

@@ -66,6 +66,13 @@ export interface EvoTableProps<T extends Record<string, unknown>> {
   /** Add custom classes to specific rows. */
   getRowClassName?: (row: T, index: number) => string | undefined;
   /**
+   * Tint a single column (matched by `TableColumn.key`) to anchor attention —
+   * e.g. a recommended plan/tier column. Tints both the `th` and `td` with a
+   * subtle primary wash plus a top accent bar. `undefined` (default) leaves
+   * every column styled identically.
+   */
+  highlightColumn?: string;
+  /**
    * Small-viewport behaviour.
    * - `scroll` (default): horizontal scroll with a thin scrollbar.
    * - `stack`: under ~640px each row becomes a labelled card.
@@ -155,6 +162,7 @@ export const EvoTable = <T extends Record<string, unknown>>({
   sort,
   onSortChange,
   defaultSort,
+  highlightColumn,
   className,
 }: EvoTableProps<T>) => {
   const isControlled = sort !== undefined;
@@ -221,7 +229,12 @@ export const EvoTable = <T extends Record<string, unknown>>({
         ? 'none'
         : undefined;
 
-    const thClass = [styles.th, styles[`align-${align}`], col.headerClassName]
+    const thClass = [
+      styles.th,
+      styles[`align-${align}`],
+      highlightColumn && col.key === highlightColumn ? styles.highlight : undefined,
+      col.headerClassName,
+    ]
       .filter(Boolean)
       .join(' ');
 
@@ -258,7 +271,11 @@ export const EvoTable = <T extends Record<string, unknown>>({
           {columns.map((col) => (
             <td
               key={col.key}
-              className={[styles.td, styles[`align-${col.align ?? 'left'}`]]
+              className={[
+                styles.td,
+                styles[`align-${col.align ?? 'left'}`],
+                highlightColumn && col.key === highlightColumn ? styles.highlight : undefined,
+              ]
                 .filter(Boolean)
                 .join(' ')}
               data-label={typeof col.header === 'string' ? col.header : col.key}
@@ -293,11 +310,28 @@ export const EvoTable = <T extends Record<string, unknown>>({
           onDoubleClick={
             onRowDoubleClick ? () => onRowDoubleClick(row, rowIndex) : undefined
           }
+          tabIndex={onRowClick ? 0 : undefined}
+          role={onRowClick ? 'button' : undefined}
+          onKeyDown={
+            onRowClick
+              ? (event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onRowClick(row, rowIndex);
+                  }
+                }
+              : undefined
+          }
         >
           {columns.map((col) => {
             const value = getNestedValue(row, col.key);
             const align = col.align ?? 'left';
-            const tdClass = [styles.td, styles[`align-${align}`], col.cellClassName]
+            const tdClass = [
+              styles.td,
+              styles[`align-${align}`],
+              highlightColumn && col.key === highlightColumn ? styles.highlight : undefined,
+              col.cellClassName,
+            ]
               .filter(Boolean)
               .join(' ');
             return (

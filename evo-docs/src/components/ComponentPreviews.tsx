@@ -15,6 +15,12 @@ import {
   EvoBreadcrumb,
   EvoTabs,
   EvoPagination,
+  EvoProgress,
+  EvoProgressRing,
+  EvoStepper,
+  EvoWizard,
+  EvoBanner,
+  EvoCountdown,
 } from '@justin_evo/evo-ui'
 
 /* =====================================================================
@@ -570,6 +576,85 @@ export const NotificationPreview = () => (
       >
         3
       </span>
+    </div>
+  </div>
+)
+
+// ---------- Progress & Flow ----------
+
+export const ProgressPreview = () => (
+  <div style={{ width: '100%', maxWidth: 220 }}>
+    <EvoProgress value={0} minVisible={35} size="sm" severity="primary" />
+  </div>
+)
+
+export const StepperPreview = () => (
+  <EvoStepper active={1} size="sm" style={{ width: '100%', maxWidth: 220 }}>
+    <EvoStepper.Step title="Cart" />
+    <EvoStepper.Step title="Shipping" />
+    <EvoStepper.Step title="Payment" />
+  </EvoStepper>
+)
+
+export const ProgressRingPreview = () => (
+  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+    <EvoProgressRing value={72} severity="primary" size="md" />
+    <EvoProgressRing value={45} severity="success" size="md" />
+  </div>
+)
+
+export const WizardPreview = () => (
+  <EvoWizard style={{ width: '100%', maxWidth: 240, pointerEvents: 'none' }} defaultStep={1}>
+    <EvoWizard.Progress size="sm" />
+    <EvoWizard.Step id="one" title="Account"><span /></EvoWizard.Step>
+    <EvoWizard.Step id="two" title="Plan"><span /></EvoWizard.Step>
+    <EvoWizard.Step id="three" title="Confirm"><span /></EvoWizard.Step>
+  </EvoWizard>
+)
+
+// ---------- Feedback ----------
+
+export const BannerPreview = () => (
+  <EvoBanner
+    tone="brand"
+    title="Try Pro free"
+    action={<EvoButton label="Start" size="sm" />}
+    note="No card required"
+  >
+    <span style={{ fontSize: '0.75rem' }}>14-day trial, cancel anytime.</span>
+  </EvoBanner>
+)
+
+// ---------- Data Display ----------
+
+export const CountdownPreview = () => (
+  <EvoStack direction="row" gap="0.6rem" align="center">
+    <EvoCountdown deadline={Date.now() + 9 * 24 * 60 * 60 * 1000} format="days" />
+    <EvoCountdown deadline={Date.now() + 45_000} format="clock" dangerThreshold={60_000} />
+  </EvoStack>
+)
+
+export const PricingTablePreview = () => (
+  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'flex-end' }}>
+    <div style={{ ...mockSurface, flexDirection: 'column', alignItems: 'flex-start', gap: '0.15rem', minWidth: '3.4rem' }}>
+      <span style={{ fontSize: '0.6rem', color: 'var(--evo-color-text-muted)' }}>Basic</span>
+      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--evo-color-text)' }}>$9</span>
+    </div>
+    <div
+      style={{
+        ...mockSurface,
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: '0.15rem',
+        minWidth: '3.4rem',
+        background: 'var(--evo-color-surface-elevated)',
+        border: '1px solid var(--evo-color-primary)',
+        outline: '1px solid var(--evo-color-primary)',
+        outlineOffset: '-1px',
+      }}
+    >
+      <EvoBadge severity="primary" size="sm">Pro</EvoBadge>
+      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--evo-color-text)' }}>$29</span>
     </div>
   </div>
 )

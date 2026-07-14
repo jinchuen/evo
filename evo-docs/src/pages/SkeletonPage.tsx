@@ -87,11 +87,30 @@ export default function SkeletonPage() {
         <PropsTable props={[
           { prop: 'EvoSkeleton — width', type: 'number | string', default: "'100%'", description: 'Width of the skeleton.' },
           { prop: 'EvoSkeleton — height', type: 'number | string', default: "'1rem'", description: 'Height of the skeleton.' },
-          { prop: 'EvoSkeleton — borderRadius', type: 'number | string', default: "'6px'", description: 'Border radius.' },
-          { prop: 'EvoSkeleton — animated', type: 'boolean', default: 'true', description: 'Enables the shimmer animation.' },
+          { prop: 'EvoSkeleton — borderRadius', type: 'number | string', default: 'theme radius ($radius-sm)', description: 'Border radius. Omit to use the default token-driven radius.' },
+          { prop: 'EvoSkeleton — animated', type: 'boolean', default: 'true', description: 'Enables the shimmer animation. Disabled automatically under prefers-reduced-motion.' },
+          { prop: 'EvoSkeleton — aria-hidden', type: "boolean | 'true' | 'false'", default: "'true'", description: 'Marks the placeholder as decorative to assistive tech. Overridable via the standard aria-hidden prop.' },
+          { prop: 'EvoSkeleton — ref', type: 'Ref<HTMLDivElement>', default: '—', description: 'Forwarded to the root element.' },
           { prop: 'EvoSkeleton.Text — lines', type: 'number', default: '3', description: 'Number of text lines to render.' },
+          { prop: 'EvoSkeleton.Text — ref', type: 'Ref<HTMLDivElement>', default: '—', description: 'Forwarded to the wrapping element, which carries role="status" and a visually-hidden "Loading…" label.' },
           { prop: 'EvoSkeleton.Circle — size', type: 'number | string', default: '40', description: 'Diameter of the circle.' },
+          { prop: 'EvoSkeleton.Circle — aria-hidden', type: "boolean | 'true' | 'false'", default: "'true'", description: 'Marks the placeholder as decorative to assistive tech. Overridable.' },
+          { prop: 'EvoSkeleton.Circle — ref', type: 'Ref<HTMLDivElement>', default: '—', description: 'Forwarded to the root element.' },
         ]} />
+        <p className="docs-section-desc">
+          All three components now forward <code>ref</code> and spread any remaining native
+          <code>div</code> attributes (<code>id</code>, <code>data-*</code>, event handlers, etc.) onto
+          their root element.
+        </p>
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Accessibility</div>
+        <ul className="docs-list">
+          <li><code>EvoSkeleton</code> and <code>EvoSkeleton.Circle</code> default to <code>aria-hidden="true"</code> — they are decorative placeholders and are hidden from assistive tech by default. Pass <code>aria-hidden={'{'}false{'}'}</code> to override.</li>
+          <li><code>EvoSkeleton.Text</code>'s wrapper has <code>role="status"</code> plus a visually-hidden "Loading…" label, so screen reader users are told content is loading without every bar being individually announced.</li>
+          <li>The shimmer animation is disabled under <code>prefers-reduced-motion: reduce</code> — the placeholder falls back to a static fill colour (WCAG 2.3.3).</li>
+        </ul>
       </div>
     </div>
   )

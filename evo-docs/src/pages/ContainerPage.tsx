@@ -57,7 +57,13 @@ export default function ContainerPage() {
           { prop: 'size', type: "'sm' | 'md' | 'lg' | 'xl' | 'full'", default: "'lg'", description: 'Max-width preset.' },
           { prop: 'centered', type: 'boolean', default: 'true', description: 'Centers the container horizontally.' },
           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
+          { prop: '...rest', type: 'HTMLAttributes<HTMLDivElement>', description: 'Every other native div attribute (id, style, data-*, aria-*, role, onClick, …) is forwarded to the root element.' },
         ]} />
+        <p className="docs-section-desc">
+          EvoContainer forwards a <code>ref</code> to its root <code>&lt;div&gt;</code> (via <code>forwardRef</code>)
+          and spreads any native HTML attributes through, so you can attach listeners, ARIA
+          attributes, or a ref for measurement/animation without wrapping it in another element.
+        </p>
       </div>
     </div>
   )

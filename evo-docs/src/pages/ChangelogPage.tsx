@@ -26,6 +26,52 @@ const SEVERITY: Record<ChangeKind, 'success' | 'info' | 'warning' | 'danger'> = 
 
 const RELEASES: Release[] = [
   {
+    version: '1.4.0',
+    date: '2026-07-14',
+    summary:
+      'A psychology-driven release out of a full library audit (#12): seven new components for goal-gradient progress, price anchoring, and loss aversion, plus urgency variants — and a library-wide accessibility + dark-mode elevation sweep across 30 existing components.',
+    sections: [
+      {
+        kind: 'Added',
+        items: [
+          'EvoProgress — determinate/indeterminate progress bar; its `minVisible` prop shows a goal-gradient head start on a 0% bar without changing what `aria-valuenow` reports to assistive tech.',
+          'EvoProgressRing — compact radial progress with a center content slot, for dashboard tiles, tier badges, and card summaries.',
+          'EvoStepper (+ EvoStepper.Step) — accessible multi-step flow progress (checkout, onboarding); completed steps bank as a solid filled connector.',
+          'EvoWizard (+ .Progress / .Step / .Review / .Review.Item / .Actions) — a stateful multi-step orchestrator with gated advancement and an assembled-result Review payoff (IKEA effect).',
+          'EvoPricingTable (+ .Root / .Tier / .Price / .FeatureList / .Feature / .Cta) — tier comparison with a struck-through `anchorPrice`, a raised recommended tier, and subgrid-aligned feature rows (price anchoring).',
+          'EvoBanner — a calm value-first callout (`role="region"`, never `role="alert"`) with a CTA slot and reassurance note, for giving value before you ask (reciprocity).',
+          'EvoCountdown — a self-ticking "time remaining" display that escalates warning → danger near the deadline (loss aversion); tab-visibility aware and reduced-motion safe.',
+          'EvoAlert — new orthogonal `urgency` prop escalating any severity to a higher-attention treatment for loss-aversion emphasis.',
+          'EvoNotification — new `urgency` and `deadline` options on toasts and inbox items (a deadline renders a live EvoCountdown plus a draining time bar on toasts).',
+          'EvoTable — new `highlightColumn` prop to tint and top-accent a recommended/featured column in comparison tables.',
+          'EvoForm.Repeater — a controlled repeatable field-group ("add another") for assembling lists row by row.',
+          'EvoGrid — new `minColWidth` prop (auto-fit / minmax) so grids self-collapse at narrow viewports without a manual breakpoint.',
+          'EvoThemeToggle gains an optional `disabled` prop; EvoTopNav.Item gains a `disabled` prop.',
+          'ref forwarding + native attribute pass-through added to EvoInput, EvoStack, EvoContainer, EvoDivider, EvoGrid, EvoBreadcrumb, EvoPagination, EvoSkeleton, EvoCommandPalette, EvoTreeSelect, EvoAlert and EvoThemeToggle, matching the rest of the library.',
+          'Docs: new "Smart defaults" examples on the Select and Form pages (prefill the recommended option + a one-tap "Use recommended").',
+        ],
+      },
+      {
+        kind: 'Changed',
+        items: [
+          'Elevation is now token-driven: `$shadow-sm…$shadow-2xl` consume `--evo-shadow-color` / `--evo-shadow-strength`, so shadows automatically deepen in dark mode (0.08 → 0.35) instead of staying a fixed light-mode black. Card, Modal, Tooltip, Notification, TopNav, Badge, CommandPalette, Select, AutoComplete, TreeSelect, Toggle and ThemeToggle now render correct dark-mode depth.',
+          'Button padding tokens snapped to the 4pt grid (0.63 / 0.13 / 0.38 / 0.37 / 0.88rem → 0.75 / 0.25 / 0.5 / 0.5 / 1rem); min-height still governs control height, so touch targets are unchanged.',
+          'Headings across Card, Modal, Form, RichTextArea and Table tightened (letter-spacing ~-0.02em, line-height ~1.2) for a more restrained type treatment, and off-grid spacing across ~20 components snapped to the 4pt grid.',
+        ],
+      },
+      {
+        kind: 'Fixed',
+        items: [
+          'Accessibility: added visible `:focus-visible` rings to previously-unfocusable controls (EvoToggle, EvoTabs, EvoCommandPalette results + search, EvoModal close, EvoPagination, and the secondary buttons on EvoAlert / EvoBadge / EvoNotification), and made EvoTable clickable rows keyboard-operable (Enter/Space, role, tabindex).',
+          'Motion: added `prefers-reduced-motion` guards to EvoSkeleton (its infinite shimmer), EvoModal, EvoCheckbox, EvoRadio, EvoToggle, EvoCommandPalette and others.',
+          'Disabled state: removed `pointer-events:none` (which suppressed the `not-allowed` cursor) from Button, Toggle, Tabs, Checkbox, Radio, Nav, Card and RichTextArea, so disabled controls now show `cursor:not-allowed`.',
+          'Touch targets raised toward the 44px minimum on coarse pointers across Button, Input, Tabs, Pagination, the Alert/Modal close buttons, Breadcrumb, the Select clear/chip buttons and ThemeToggle.',
+          'EvoAlert — replaced a hardcoded `#fff` status glyph with per-severity foreground tokens (fixes the amber-on-white warning contrast bug and the zero-hex rule); EvoImageCropper — replaced a hardcoded `#fff` handle background with a surface token; EvoToggle — the thumb no longer reads as a dark hole in dark mode.',
+        ],
+      },
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-07-12',
     summary:

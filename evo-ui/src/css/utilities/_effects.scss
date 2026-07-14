@@ -13,7 +13,7 @@
 .shadow-lg   { box-shadow: $shadow-lg; }
 .shadow-xl   { box-shadow: $shadow-xl; }
 .shadow-2xl  { box-shadow: $shadow-2xl; }
-.shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05); }
+.shadow-inner { box-shadow: inset 0 2px 4px 0 rgb(var(--evo-shadow-color) / calc(var(--evo-shadow-strength) * 0.6)); }
 
 // Opacity
 .opacity-0   { opacity: 0; }

@@ -14,14 +14,14 @@
 
 .tooltip {
   z-index: 10000; // portaled to <body>: sit above EvoModal / CommandPalette (9999)
-  padding: 0.375rem 0.625rem;
+  padding: 0.5rem 0.75rem; // 4pt grid (was 0.375rem/0.625rem, off-grid)
   background-color: $color-surface-elevated;
   color: $color-text-primary;
   font-size: $text-xs;
   font-family: $font-sans;
   border-radius: $radius-sm;
   white-space: nowrap;
-  box-shadow: $shadow-lg;
+  box-shadow: $shadow-lg; // strength-aware — deepens automatically in dark mode
   border: 1px solid $color-border;
   pointer-events: none;
   animation: tooltipFadeIn 150ms ease;
@@ -38,28 +38,73 @@
   height: 0;
   border: 5px solid transparent;
 
+  // Bordered triangle stacked directly behind the fill triangle, 1px larger
+  // on every side, so a 1px $color-border edge peeks out along the two
+  // visible diagonal edges — otherwise the arrow reads as detached from the
+  // tooltip body in dark mode (its fill blends into the page background).
+  &::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    z-index: -1;
+  }
+
   .tooltip[data-placement='top'] & {
     top: 100%;
     transform: translateX(-50%);
     border-top-color: $color-surface-elevated;
     border-bottom: none;
+
+    &::before {
+      top: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-top-color: $color-border;
+      border-bottom: none;
+    }
   }
   .tooltip[data-placement='bottom'] & {
     bottom: 100%;
     transform: translateX(-50%);
     border-bottom-color: $color-surface-elevated;
     border-top: none;
+
+    &::before {
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-bottom-color: $color-border;
+      border-top: none;
+    }
   }
   .tooltip[data-placement='left'] & {
     left: 100%;
     transform: translateY(-50%);
     border-left-color: $color-surface-elevated;
     border-right: none;
+
+    &::before {
+      left: -1px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left-color: $color-border;
+      border-right: none;
+    }
   }
   .tooltip[data-placement='right'] & {
     right: 100%;
     transform: translateY(-50%);
     border-right-color: $color-surface-elevated;
     border-left: none;
+
+    &::before {
+      right: -1px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right-color: $color-border;
+      border-left: none;
+    }
   }
 }

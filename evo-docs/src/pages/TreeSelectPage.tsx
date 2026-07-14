@@ -382,6 +382,8 @@ export default function TreeSelectPage() {
           { prop: 'name', type: 'string', description: 'Renders a hidden input for native form submission (comma-joined for multi).' },
           { prop: 'id', type: 'string', description: 'Custom id (auto-generated if omitted).' },
           { prop: 'className', type: 'string', description: 'Extra class applied to the outer field wrapper.' },
+          { prop: 'ref', type: 'Ref<HTMLDivElement>', description: 'Forwarded to the outer field wrapper div.' },
+          { prop: '...rest', type: 'HTMLAttributes<HTMLDivElement>', description: 'Any other native div attribute (data-*, aria-*, onClick, etc.) is spread onto the outer field wrapper.' },
         ]} />
       </div>
 

@@ -96,8 +96,10 @@ function Example() {
 | `id` | `string` | auto-generated (`evo-tree-<reactId>`) | No | Custom id for the trigger; auto-generated via `useId` if omitted. |
 | `name` | `string` | — | No | Renders a hidden `<input>` for native form submission (multi values are comma-joined). |
 | `className` | `string` | `''` | No | Extra class applied to the outer field wrapper. |
+| `ref` | `Ref<HTMLDivElement>` | — | No | Forwarded to the outer field wrapper `<div>` (the component is wrapped in `forwardRef`). |
+| `...rest` | `HTMLAttributes<HTMLDivElement>` | — | No | Any other native `<div>` attribute (`data-*`, `aria-*`, `onClick`, etc.) is spread onto the outer field wrapper. `EvoTreeSelectProps` extends `HTMLAttributes<HTMLDivElement>` (omitting `onChange`/`defaultValue`, which are redeclared with tree-specific signatures above). |
 
-This component is a custom (non-`forwardRef`) function component. It does not extend a native element attribute type and does not spread `...rest`; only the props listed above are accepted. `className` is applied to the outer field `<div>` wrapper, not the trigger button. There is no `ref` forwarding.
+This component is a `forwardRef<HTMLDivElement, EvoTreeSelectProps>` function component. `className` and any spread native attributes are applied to the outer field `<div>` wrapper, not the trigger button.
 
 ### TreeNode shape
 
@@ -327,7 +329,7 @@ When `searchable`, the search input auto-focuses on open and shares the same key
 - `value` typing depends on `multiple`: pass a `string` for single-select and a `string[]` for multi-select. `onChange` mirrors this — cast appropriately (e.g. `v as string` vs `v as string[]`).
 - Cascade is on by default in multi-select: checking a parent selects all descendant leaves and `onChange` returns leaves only (`checkedStrategy: 'leaf'`). Use `checkStrictly` to disable cascade, or `checkedStrategy` to return collapsed parents (`'parent'`) or every checked node (`'all'`).
 - `loadChildren` only fires for nodes with `isLeaf === false` (or nodes without `children` and not explicitly `isLeaf: true`), and only on their first expand — results are cached per node.
-- This component does not forward `ref` and does not spread arbitrary native attributes; only the documented props are accepted, and `className` lands on the outer wrapper, not the trigger button.
+- `ref` and any spread native `<div>` attributes land on the outer field wrapper, not the trigger button — reach the trigger via `document.getElementById` on the (auto-generated or explicit) `id` if needed.
 - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)` tokens — never hard-coded hex, which breaks dark mode. Touch targets are sized to be ≥44px on mobile.
 - Single, app-wide CSS import (`@justin_evo/evo-ui/dist/evo-ui.css`). Use named imports from `@justin_evo/evo-ui` only — never deep paths.
 - The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.

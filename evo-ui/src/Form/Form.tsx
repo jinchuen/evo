@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useId } from 'react';
+import { EvoButton } from '../Button/Button';
 import styles from '../css/form.module.scss';
 
 type FormSize = 'sm' | 'md' | 'lg';
@@ -42,7 +43,16 @@ export const EvoForm = ({
       style={maxWidth !== undefined ? { maxWidth, ...style } : style}
       {...rest}
     >
-      {children}
+      {/*
+        Render content inside a real <fieldset disabled> when `disabled` is
+        set, so every native control underneath is blocked by the browser
+        for free — not just controls that happen to read useFormContext().
+        `display: contents` (see .fieldset in form.module.scss) keeps the
+        fieldset out of the .form flex layout entirely.
+      */}
+      <fieldset className={styles.fieldset} disabled={disabled}>
+        {children}
+      </fieldset>
     </form>
   </FormContext.Provider>
 );
@@ -178,8 +188,91 @@ const EvoFormActions = ({
   </div>
 );
 
+// ---------- Repeater (repeatable field-group — "Add another") ----------
+interface EvoFormRepeaterApi<T> {
+  update: (index: number, patch: Partial<T>) => void;
+  remove: (index: number) => void;
+}
+
+interface EvoFormRepeaterProps<T> {
+  value: T[];
+  onChange: (next: T[]) => void;
+  min?: number;
+  max?: number;
+  addLabel?: React.ReactNode;
+  renderItem: (item: T, index: number, api: EvoFormRepeaterApi<T>) => React.ReactNode;
+  className?: string;
+}
+
+// The IKEA effect: users trust and value what they assemble themselves.
+// A repeatable "Add another" field-group lets people build up a list
+// (contacts, links, line items) one row at a time instead of being handed
+// a single rigid form — mirrors the Row/Field/Section slot pattern so it
+// composes the same way as the rest of EvoForm.
+function EvoFormRepeater<T>({
+  value,
+  onChange,
+  min = 0,
+  max,
+  addLabel = 'Add another',
+  renderItem,
+  className = '',
+}: EvoFormRepeaterProps<T>) {
+  const canAdd = max === undefined || value.length < max;
+  const canRemove = value.length > min;
+
+  const update = (index: number, patch: Partial<T>) => {
+    onChange(value.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+  };
+
+  const remove = (index: number) => {
+    if (!canRemove) return;
+    onChange(value.filter((_, i) => i !== index));
+  };
+
+  const add = () => {
+    if (!canAdd) return;
+    // Each new row starts as an empty object; renderItem is responsible for
+    // supplying sensible defaults for whatever fields it renders.
+    onChange([...value, {} as T]);
+  };
+
+  return (
+    <div className={cx(styles.repeaterList, className)}>
+      {value.map((item, index) => (
+        // eslint-disable-next-line react/no-array-index-key -- rows have no stable id in this generic shape
+        <div className={styles.repeaterItem} key={index}>
+          <div className={styles.repeaterItemBody}>{renderItem(item, index, { update, remove })}</div>
+          <EvoButton
+            variant="ghost"
+            severity="danger"
+            size="sm"
+            shape="square"
+            className={styles.repeaterRemove}
+            onClick={() => remove(index)}
+            disabled={!canRemove}
+            aria-label={`Remove row ${index + 1}`}
+          >
+            ✕
+          </EvoButton>
+        </div>
+      ))}
+      <EvoButton
+        variant="ghost"
+        size="sm"
+        className={styles.repeaterAdd}
+        onClick={add}
+        disabled={!canAdd}
+      >
+        {addLabel}
+      </EvoButton>
+    </div>
+  );
+}
+
 EvoForm.Header = EvoFormHeader;
 EvoForm.Section = EvoFormSection;
 EvoForm.Row = EvoFormRow;
 EvoForm.Field = EvoFormField;
 EvoForm.Actions = EvoFormActions;
+EvoForm.Repeater = EvoFormRepeater;

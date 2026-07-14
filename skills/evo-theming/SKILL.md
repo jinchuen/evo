@@ -106,8 +106,12 @@ A drop-in button that flips between light and dark mode. Must sit inside an `<Ev
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | No | Visual size of the toggle. |
 | `ariaLabel` | `string` | `'Toggle color theme'` | No | Accessible label for screen readers. |
 | `className` | `string` | — | No | Extra className merged with the built-in styles. |
+| `disabled` | `boolean` | `false` | No | Disables interaction and dims the control (native `disabled`, no `pointer-events: none`, so the `not-allowed` cursor still shows). |
 
-Note: `EvoThemeToggle` does not spread arbitrary `...rest` props or forward a `ref`; only `size`, `ariaLabel`, and `className` are accepted.
+`EvoThemeToggle` forwards a `ref` to the underlying `<button>` and spreads any other native
+`ButtonHTMLAttributes` (`onClick`, `id`, `data-*`, `aria-*`, …) onto it. If you pass `onClick`,
+it runs before the built-in `toggleTheme()` call; call `event.preventDefault()` in your handler
+to suppress the theme flip.
 
 ## Variants & options
 
@@ -222,7 +226,8 @@ import { getEvoThemeScript } from '@justin_evo/evo-ui';
 - The decorative sun and moon SVGs are marked `aria-hidden="true"`.
 - Theme transition animations respect `prefers-reduced-motion` (auto-disabled) and are also skipped on first paint to avoid fading in from the wrong colors.
 - When on `'system'`, the provider listens to `matchMedia('(prefers-color-scheme: dark)')` and updates live as the OS preference changes.
-- Ensure the toggle meets the ≥44px mobile touch-target requirement via its size styles.
+- Ensure the toggle meets the ≥44px mobile touch-target requirement — the `sm`/`md`/`lg` visual track sizes stay compact, but a `@media (pointer: coarse)` rule bumps the hit area to `2.75rem` (44px) square on touch devices.
+- The knob slide and icon rotate/fade are skipped under `prefers-reduced-motion: reduce`.
 
 ## Gotchas
 
@@ -230,7 +235,7 @@ import { getEvoThemeScript } from '@justin_evo/evo-ui';
 - `resolvedTheme` is never `'system'` — it is always `'light'` or `'dark'`. Use `theme` to read the user's raw selection.
 - `getEvoThemeScript()` must be given the **same** `storageKey` as the provider, or it will read the wrong key and the flash will reappear. Both default to `'evo-ui-theme'`.
 - `EvoThemeProvider` renders no DOM element — do not pass `className`, `style`, or `ref` to it; they are ignored.
-- `EvoThemeToggle` accepts only `size`, `ariaLabel`, and `className`; it does not forward `...rest` or a `ref`.
+- `EvoThemeToggle` forwards a `ref` and spreads native `<button>` attributes (`...rest`) onto the root element, in addition to `size`, `ariaLabel`, `className`, and `disabled`.
 - Changing `defaultTheme` after a value is already persisted in `localStorage` has no effect — the stored choice wins. Pass `storageKey={null}` to disable persistence, or clear the key.
 - Theme your UI through `var(--evo-color-*)` tokens (e.g. `var(--evo-color-primary)`, `var(--evo-color-bg)`), never hard-coded hex — hard-coded colors break dark mode.
 - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once; it ships the tokens that make theming work.

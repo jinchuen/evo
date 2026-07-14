@@ -6,10 +6,17 @@ import {
 import { CodeBlock } from '../components/CodeBlock'
 import { PropsTable } from '../components/PropsTable'
 
+interface Contact {
+  name?: string
+  email?: string
+}
+
 export default function FormPage() {
   const [submitted, setSubmitted] = useState(false)
   const [disabled, setDisabled] = useState(false)
   const [showError, setShowError] = useState(false)
+  const [contacts, setContacts] = useState<Contact[]>([{ name: '', email: '' }])
+  const [useRecommended, setUseRecommended] = useState(false)
 
   return (
     <div>
@@ -190,7 +197,7 @@ export default function FormPage() {
       {/* ------------------------------------------------------------------ */}
       <div className="docs-section">
         <div className="docs-section-title">Split Section Layout</div>
-        <p className="docs-section-desc" style={{ color: 'var(--docs-text-muted, #94a3b8)', margin: '0 0 0.75rem', fontSize: '0.875rem' }}>
+        <p className="docs-section-desc">
           Use <code>variant="split"</code> on a section to place the title and description in a
           dedicated left column on wide screens. Stacks vertically on mobile.
         </p>
@@ -226,7 +233,7 @@ export default function FormPage() {
       {/* ------------------------------------------------------------------ */}
       <div className="docs-section">
         <div className="docs-section-title">Field with Label / Description / Error</div>
-        <p className="docs-section-desc" style={{ color: 'var(--docs-text-muted, #94a3b8)', margin: '0 0 0.75rem', fontSize: '0.875rem' }}>
+        <p className="docs-section-desc">
           <code>EvoForm.Field</code> is a layout wrapper by default. Pass <code>label</code>,
           <code>description</code>, <code>error</code>, or <code>required</code> when you need to
           decorate non-Evo controls (a date picker, file uploader, custom widget, etc.) with
@@ -296,6 +303,124 @@ export default function FormPage() {
 
       {/* ------------------------------------------------------------------ */}
       <div className="docs-section">
+        <div className="docs-section-title">Repeatable Field Groups</div>
+        <p className="docs-section-desc">
+          <code>EvoForm.Repeater</code> renders a repeatable field-group — a row per array item,
+          plus an "Add another" affordance. It taps into the <strong>IKEA effect</strong>: letting
+          people literally assemble a list (contacts, links, line items) row by row makes the end
+          result feel more theirs than a form that hands them one rigid block. It mirrors the
+          existing Row / Field / Section slots, so it composes the same way as the rest of EvoForm.
+        </p>
+        <div className="docs-preview col" style={{ width: '100%', maxWidth: 560 }}>
+          <EvoForm onSubmit={(e) => e.preventDefault()}>
+            <EvoForm.Section title="Contacts" description="Add everyone who should be notified.">
+              <EvoForm.Repeater
+                value={contacts}
+                onChange={setContacts}
+                min={1}
+                max={5}
+                addLabel="Add another contact"
+                renderItem={(item, index, { update }) => (
+                  <EvoForm.Row key={index}>
+                    <EvoForm.Field>
+                      <EvoInput
+                        placeholder="Name"
+                        fullWidth
+                        value={item.name ?? ''}
+                        onChange={(e) => update(index, { name: e.target.value })}
+                      />
+                    </EvoForm.Field>
+                    <EvoForm.Field>
+                      <EvoInput
+                        placeholder="Email"
+                        type="email"
+                        fullWidth
+                        value={item.email ?? ''}
+                        onChange={(e) => update(index, { email: e.target.value })}
+                      />
+                    </EvoForm.Field>
+                  </EvoForm.Row>
+                )}
+              />
+            </EvoForm.Section>
+          </EvoForm>
+        </div>
+        <CodeBlock code={`const [contacts, setContacts] = useState([{ name: '', email: '' }])
+
+<EvoForm.Section title="Contacts" description="Add everyone who should be notified.">
+  <EvoForm.Repeater
+    value={contacts}
+    onChange={setContacts}
+    min={1}
+    max={5}
+    addLabel="Add another contact"
+    renderItem={(item, index, { update }) => (
+      <EvoForm.Row key={index}>
+        <EvoForm.Field>
+          <EvoInput
+            placeholder="Name"
+            fullWidth
+            value={item.name ?? ''}
+            onChange={(e) => update(index, { name: e.target.value })}
+          />
+        </EvoForm.Field>
+        <EvoForm.Field>
+          <EvoInput
+            placeholder="Email"
+            type="email"
+            fullWidth
+            value={item.email ?? ''}
+            onChange={(e) => update(index, { email: e.target.value })}
+          />
+        </EvoForm.Field>
+      </EvoForm.Row>
+    )}
+  />
+</EvoForm.Section>`} />
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      <div className="docs-section">
+        <div className="docs-section-title">Smart Defaults</div>
+        <p className="docs-section-desc">
+          A form-level "Use recommended settings" ghost button lets a user adopt every default in
+          one tap instead of visiting each field — a low-effort path that still leaves the fields
+          editable afterwards. Pair it with{' '}
+          <a href="/components/autocomplete">EvoAutoComplete's <code>recents</code></a> prop on
+          individual fields to remember and pre-fill a user's last choice automatically, so returning
+          users see their own previous answer as the smart default rather than a generic one.
+        </p>
+        <div className="docs-preview col" style={{ width: '100%', maxWidth: 480 }}>
+          <EvoForm onSubmit={(e) => e.preventDefault()}>
+            <EvoForm.Actions align="between" divider={false}>
+              <EvoButton
+                variant="ghost"
+                label="Use recommended settings"
+                onClick={() => setUseRecommended(true)}
+              />
+              <EvoButton label="Continue" onClick={() => {}} />
+            </EvoForm.Actions>
+            <EvoForm.Field description="Recommended: Weekly digest, Security alerts on.">
+              <EvoCheckbox label="Weekly product digest" checked={useRecommended} onChange={() => {}} />
+            </EvoForm.Field>
+          </EvoForm>
+        </div>
+        <CodeBlock code={`<EvoForm.Actions align="between" divider={false}>
+  <EvoButton variant="ghost" label="Use recommended settings" onClick={applyDefaults} />
+  <EvoButton label="Continue" />
+</EvoForm.Actions>
+
+{/* Field-level equivalent: remember what the user picked last time */}
+<EvoAutoComplete
+  options={countries}
+  recents={{ max: 4, storage: evoLocalRecents('country-picker') }}
+/>`} />
+      </div>
+
+      <EvoDivider />
+
+      {/* ------------------------------------------------------------------ */}
+      <div className="docs-section">
         <div className="docs-section-title">EvoForm Props</div>
         <PropsTable props={[
           { prop: 'disabled', type: 'boolean', default: 'false', description: 'Disables all child form inputs via context.' },
@@ -359,8 +484,21 @@ export default function FormPage() {
       </div>
 
       <div className="docs-section">
+        <div className="docs-section-title">EvoForm.Repeater Props</div>
+        <PropsTable props={[
+          { prop: 'value', type: 'T[]', required: true, description: 'The current array of row items.' },
+          { prop: 'onChange', type: '(next: T[]) => void', required: true, description: 'Called with the next array whenever a row is added, updated, or removed.' },
+          { prop: 'min', type: 'number', default: '0', description: 'Minimum row count. Remove is disabled once this floor is hit.' },
+          { prop: 'max', type: 'number', description: 'Maximum row count. "Add another" is disabled once this ceiling is hit.' },
+          { prop: 'addLabel', type: 'ReactNode', default: "'Add another'", description: 'Label for the trailing add-row button.' },
+          { prop: 'renderItem', type: '(item: T, index: number, api: { update, remove }) => ReactNode', required: true, description: 'Renders one row. `api.update(index, patch)` merges a partial patch into that row; `api.remove(index)` removes it.' },
+          { prop: 'className', type: 'string', description: 'Additional CSS class for the list container.' },
+        ]} />
+      </div>
+
+      <div className="docs-section">
         <div className="docs-section-title">useFormContext()</div>
-        <p style={{ color: 'var(--docs-text-muted, #94a3b8)', fontSize: '0.875rem', margin: '0 0 0.75rem' }}>
+        <p className="docs-section-desc">
           Read the current form context from any child component — useful when building custom
           controls that need to respect the form's <code>disabled</code> or <code>size</code> state.
         </p>

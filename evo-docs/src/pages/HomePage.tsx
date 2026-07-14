@@ -32,6 +32,13 @@ import {
   RichTextAreaPreview,
   ImageCropperPreview,
   CommandPalettePreview,
+  ProgressPreview,
+  ProgressRingPreview,
+  StepperPreview,
+  WizardPreview,
+  BannerPreview,
+  PricingTablePreview,
+  CountdownPreview,
 } from '../components/ComponentPreviews'
 
 type Entry = { name: string; path: string; Preview: ComponentType }
@@ -78,6 +85,16 @@ const groups: Group[] = [
     ],
   },
   {
+    name: 'Progress & Flow',
+    description: 'Momentum, staged tasks, and goal-gradient head starts.',
+    items: [
+      { name: 'Progress',      path: '/components/progress',      Preview: ProgressPreview },
+      { name: 'Progress Ring', path: '/components/progress-ring', Preview: ProgressRingPreview },
+      { name: 'Stepper',       path: '/components/stepper',       Preview: StepperPreview },
+      { name: 'Wizard',        path: '/components/wizard',        Preview: WizardPreview },
+    ],
+  },
+  {
     name: 'Data Display',
     description: 'Show information at a glance.',
     items: [
@@ -85,6 +102,8 @@ const groups: Group[] = [
       { name: 'Table',    path: '/components/table',    Preview: TablePreview },
       { name: 'Badge',    path: '/components/badge',    Preview: BadgePreview },
       { name: 'Skeleton', path: '/components/skeleton', Preview: SkeletonPreview },
+      { name: 'Pricing Table', path: '/components/pricing-table', Preview: PricingTablePreview },
+      { name: 'Countdown', path: '/components/countdown', Preview: CountdownPreview },
     ],
   },
   {
@@ -92,6 +111,7 @@ const groups: Group[] = [
     description: 'Alerts, overlays, and contextual messages.',
     items: [
       { name: 'Alert',   path: '/components/alert',   Preview: AlertPreview },
+      { name: 'Banner',  path: '/components/banner',  Preview: BannerPreview },
       { name: 'Modal',   path: '/components/modal',   Preview: ModalPreview },
       { name: 'Tooltip', path: '/components/tooltip', Preview: TooltipPreview },
       { name: 'Notification', path: '/components/notification', Preview: NotificationPreview },

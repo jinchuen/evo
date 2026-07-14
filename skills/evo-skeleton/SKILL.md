@@ -57,23 +57,28 @@ function LoadingRow() {
 | --- | --- | --- | --- | --- |
 | `width` | `number \| string` | `'100%'` | No | Width of the skeleton. A `number` is treated as pixels; a `string` is used verbatim (e.g. `'70%'`, `'12rem'`). |
 | `height` | `number \| string` | `'1rem'` | No | Height of the skeleton. A `number` is treated as pixels; a `string` is used verbatim. |
-| `borderRadius` | `number \| string` | `'6px'` | No | Corner radius. A `number` is treated as pixels; a `string` is used verbatim. |
-| `className` | `string` | `''` | No | Extra class name(s) appended to the skeleton element's class list. |
-| `animated` | `boolean` | `true` | No | Enables the shimmer animation. Set `false` for a static placeholder. |
+| `borderRadius` | `number \| string` | theme radius (`$radius-sm`, 6px) | No | Corner radius. A `number` is treated as pixels; a `string` is used verbatim. Omit to use the default token-driven radius. |
+| `className` | `string` | — | No | Extra class name(s) appended to the skeleton element's class list. |
+| `animated` | `boolean` | `true` | No | Enables the shimmer animation. Set `false` for a static placeholder. Automatically disabled (falls back to a static fill) under `prefers-reduced-motion: reduce`. |
+| `aria-hidden` | `boolean \| 'true' \| 'false'` | `'true'` | No | Marks the placeholder as decorative. Overridable like any standard `aria-*` prop. |
+| `ref` | `Ref<HTMLDivElement>` | — | No | Forwarded to the root `<div>`. |
 
-Note: `EvoSkeleton` does NOT forward `ref` or spread arbitrary native attributes — only the props above are accepted. `className` is merged onto the root `<div>`, but other HTML attributes (`id`, `style`, `data-*`, `aria-*`, event handlers) are not passed through.
+`EvoSkeleton` now forwards `ref` and spreads any remaining native `<div>` attributes (`id`, `data-*`, other `aria-*`, event handlers) onto the root element, in addition to the props above. `style` is intentionally not accepted — the component owns sizing/radius via `width`/`height`/`borderRadius` to keep the shimmer background from being clobbered.
 
 ## Sub-components
 
 ### EvoSkeleton.Text
 
-Renders a stacked group of `lines` skeleton bars to mimic a paragraph. Every line is full width except the last, which is rendered at `65%` width to suggest a final short line. Each bar has a fixed height of `0.875rem` and a `4px` border radius (these are not configurable via props).
+Renders a stacked group of `lines` skeleton bars to mimic a paragraph. Every line is full width except the last, which is rendered at `65%` width to suggest a final short line. Each bar has a fixed height of `0.875rem` and a `4px` border radius (`$evo-border-radius-sm`, not configurable via props). The wrapper carries `role="status"` plus a visually-hidden "Loading…" label; the individual bars are `aria-hidden="true"`.
 
 | Prop | Type | Default | Required | Description |
 | --- | --- | --- | --- | --- |
 | `lines` | `number` | `3` | No | Number of text lines (bars) to render. |
-| `className` | `string` | `''` | No | Extra class name(s) appended to the wrapping group element. |
-| `animated` | `boolean` | `true` | No | Enables the shimmer animation on every line. |
+| `className` | `string` | — | No | Extra class name(s) appended to the wrapping group element. |
+| `animated` | `boolean` | `true` | No | Enables the shimmer animation on every line. Disabled under `prefers-reduced-motion: reduce`. |
+| `ref` | `Ref<HTMLDivElement>` | — | No | Forwarded to the wrapping `<div role="status">`. |
+
+`EvoSkeleton.Text` forwards `ref` and spreads remaining native `<div>` attributes onto the wrapper.
 
 ### EvoSkeleton.Circle
 
@@ -82,8 +87,12 @@ Renders a single circular skeleton, ideal for avatars. Width and height are both
 | Prop | Type | Default | Required | Description |
 | --- | --- | --- | --- | --- |
 | `size` | `number \| string` | `40` | No | Diameter of the circle. A `number` is treated as pixels; a `string` is used verbatim. |
-| `className` | `string` | `''` | No | Extra class name(s) appended to the circle element. |
-| `animated` | `boolean` | `true` | No | Enables the shimmer animation. |
+| `className` | `string` | — | No | Extra class name(s) appended to the circle element. |
+| `animated` | `boolean` | `true` | No | Enables the shimmer animation. Disabled under `prefers-reduced-motion: reduce`. |
+| `aria-hidden` | `boolean \| 'true' \| 'false'` | `'true'` | No | Marks the placeholder as decorative. Overridable. |
+| `ref` | `Ref<HTMLDivElement>` | — | No | Forwarded to the root `<div>`. |
+
+`EvoSkeleton.Circle` forwards `ref` and spreads remaining native `<div>` attributes onto the root element.
 
 ## Variants & options
 
@@ -185,17 +194,19 @@ function StaticPlaceholders() {
 
 ## Accessibility
 
-- EvoSkeleton is purely presentational. It renders a plain `<div>` (`EvoSkeleton.Text` renders a wrapping `<div>` containing one `<div>` per line) with no `role`, no `aria-*` attributes, no `tabIndex`, and no keyboard handlers.
+- `EvoSkeleton` and `EvoSkeleton.Circle` default to `aria-hidden="true"` — as purely decorative placeholders they are hidden from assistive tech automatically. Pass `aria-hidden={false}` to override (rare — only if you want the placeholder itself announced).
+- `EvoSkeleton.Text` renders a wrapping `<div role="status">` containing a visually-hidden "Loading…" label plus one `aria-hidden="true"` bar per line — screen readers hear a single "Loading…" announcement instead of per-bar noise.
 - There is no focus management or keyboard interaction — skeletons are not interactive.
-- Because it carries no semantics, announce loading state at the container/region level if needed: place the skeleton inside an element with `aria-busy="true"` (and optionally `aria-live="polite"`) on your own wrapper while data loads, then swap in the real content when ready. EvoSkeleton itself does not set these — its props do not forward `aria-*`/`role` to the root, so set them on a wrapper you control.
+- The shimmer animation respects `prefers-reduced-motion: reduce`: it is disabled automatically and falls back to a static fill colour (WCAG 2.3.3) — no extra prop needed.
+- For app-level loading semantics beyond the built-in `role="status"` on `.Text`, you can still wrap any skeleton group in your own element with `aria-busy="true"` while data loads, then swap in real content when ready.
 
 ## Gotchas
 
-- No native attribute passthrough: only `width`/`height`/`borderRadius`/`className`/`animated` (base), `lines`/`className`/`animated` (Text), and `size`/`className`/`animated` (Circle) are read. `id`, `style`, `data-*`, `aria-*`, event handlers, and `ref` are NOT forwarded to the root element. Wrap the skeleton in your own element if you need those.
-- `number` means pixels: passing `height={16}` yields `16px`; passing a string like `'1rem'` or `'70%'` is used as-is. The default `height` is the string `'1rem'`, the default `borderRadius` is the string `'6px'`, and the default `width` is the string `'100%'`.
-- `EvoSkeleton.Text` lines are fixed-shape: each line is `0.875rem` tall with a `4px` radius, and the final line is `65%` wide. These are not configurable — for custom-sized rows compose base `EvoSkeleton` bars yourself.
+- `ref` and native attribute passthrough: all three components (`EvoSkeleton`, `EvoSkeleton.Text`, `EvoSkeleton.Circle`) now forward `ref` to their root element and spread remaining native `<div>` attributes (`id`, `data-*`, other `aria-*`, event handlers). `style` is still not accepted as a prop — sizing/radius go through `width`/`height`/`borderRadius`/`size`.
+- `number` means pixels: passing `height={16}` yields `16px`; passing a string like `'1rem'` or `'70%'` is used as-is. The default `height` is the string `'1rem'` and the default `width` is the string `'100%'`. `borderRadius` now defaults to the theme token `$radius-sm` (6px) when omitted, rather than a hard-coded `'6px'` string — functionally the same value, just token-driven.
+- `EvoSkeleton.Text` lines are fixed-shape: each line is `0.875rem` tall with a `$evo-border-radius-sm` (4px) radius, and the final line is `65%` wide. These are not configurable — for custom-sized rows compose base `EvoSkeleton` bars yourself.
 - `EvoSkeleton.Circle` ignores `borderRadius` — it is always a perfect circle (`50%`); `size` drives both width and height.
-- `animated` defaults to `true`; pass `animated={false}` everywhere you want a static placeholder. There is no global "animations off" prop — it is per-instance.
+- `animated` defaults to `true`; pass `animated={false}` everywhere you want a static placeholder. There is no global "animations off" prop — it is per-instance (though `prefers-reduced-motion` now overrides it automatically at the OS/browser level).
 - Theme via tokens: any surrounding real content should use `var(--evo-color-*)` tokens (e.g. `var(--evo-color-text)`), never hard-coded hex, so light and dark mode both work.
 - Single CSS import: import `@justin_evo/evo-ui/dist/evo-ui.css` once for the whole app; the skeleton styles (including the shimmer keyframes) come from there.
 - Named import only: `import { EvoSkeleton } from '@justin_evo/evo-ui'`. Access the compound parts as `EvoSkeleton.Text` and `EvoSkeleton.Circle` — never import from deep paths.
