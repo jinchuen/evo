@@ -1,7 +1,7 @@
 {
   "name": "evo-ui",
   "displayName": "Evo UI Skills",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "description": "Agent skills for building with the Evo UI React component library (@justin_evo/evo-ui): one exhaustive SKILL.md per component, plus a master catalogue that teaches agents to use real props instead of inventing them.",
   "author": {
     "name": "Justin Khor",
