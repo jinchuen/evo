@@ -184,6 +184,8 @@ Extends `Omit<HTMLAttributes<HTMLDivElement>, 'onClick'>`: all native div attrib
 | `inbox` | `boolean \| Partial<EvoInboxItemInput>` | — | Also push a copy into the notification center. |
 | `groupKey` | `string` | — | Coalescing key. Repeated toasts sharing a key fold into one card with a count badge. Ignored when `id` is also set. |
 | `progress` | `number` | — | Determinate progress, 0–1. Renders a progress bar; out-of-range values are clamped. Usually driven via `toast.progress()`. |
+| `urgency` | `boolean` | `false` | Loss-aversion emphasis — thickens the toast's left severity bar so its presence alone reads as heightened stakes, independent of copy. |
+| `deadline` | `number \| Date` | — | Renders a live [[evo-countdown]] plus a draining 1→0 time bar (reuses the progress-bar track). Ignored when an explicit `progress` is also set. |
 
 ### `EvoToastProgressHandle` (returned by `evoNotify.toast.progress()`)
 
@@ -220,10 +222,12 @@ Extends `Omit<HTMLAttributes<HTMLDivElement>, 'onClick'>`: all native div attrib
 | `onClick` | `(item: EvoInboxItem) => void` | — | Row click handler; clicking auto-marks read. |
 | `meta` | `Record<string, unknown>` | — | Arbitrary metadata you carry on the item. |
 | `toast` | `boolean \| Partial<EvoToastOptions>` | — | Also flash a toast right now when pushing. |
+| `urgency` | `boolean` | `false` | Loss-aversion emphasis — see `EvoToastOptions.urgency`. |
+| `deadline` | `number \| Date` | — | Renders a live [[evo-countdown]] next to the item's timestamp — see `EvoToastOptions.deadline`. |
 
 ### `EvoInboxItem` (the resolved record, e.g. from `inbox.getState()` / `useEvoInbox`)
 
-Resolved shape: `{ id: string; title: ReactNode; description?: ReactNode; severity: EvoNotificationSeverity; icon?: ReactNode; avatarUrl?: string; timestamp: number; read: boolean; action?: EvoNotificationAction; onClick?: (item: EvoInboxItem) => void; meta?: Record<string, unknown> }`.
+Resolved shape: `{ id: string; title: ReactNode; description?: ReactNode; severity: EvoNotificationSeverity; icon?: ReactNode; avatarUrl?: string; timestamp: number; read: boolean; action?: EvoNotificationAction; onClick?: (item: EvoInboxItem) => void; meta?: Record<string, unknown>; urgency?: boolean; deadline?: number }`. `deadline` is normalized to epoch-ms at push time even if you passed a `Date`.
 
 ### `useEvoInbox()` hook
 
@@ -332,6 +336,29 @@ evoNotify.push({
 evoNotify.inbox.markAllRead();
 ```
 
+Urgency and deadlines (loss-aversion emphasis composing [[evo-countdown]]):
+
+```tsx
+// Thickened left severity bar — no deadline, just heightened emphasis.
+evoNotify.toast.warning('Payment method expiring', { urgency: true });
+
+// Deadline: live EvoCountdown + a draining 1→0 time bar under the copy.
+evoNotify.toast.error('Session expiring', {
+  description: 'Save your work before it ends.',
+  urgency: true,
+  deadline: Date.now() + 2 * 60 * 1000, // number | Date
+  persistent: true,
+});
+
+// Same fields work on inbox items — the countdown renders next to the timestamp.
+evoNotify.push({
+  title: 'Renew subscription',
+  severity: 'warning',
+  urgency: true,
+  deadline: new Date('2026-08-01'),
+});
+```
+
 External-data mode (you own the list) and a standalone Panel:
 
 ```tsx
@@ -358,7 +385,8 @@ External-data mode (you own the list) and a standalone Panel:
 - **Panel:** rendered as `role="dialog"` with an `aria-label` from the title; includes a "Mark all read" button (when unread > 0) and an optional close button (`aria-label="Close notifications"`).
 - **Item rows:** interactive rows are `role="button"`, `tabIndex={0}`, and respond to Enter/Space; non-interactive rows are `role="group"`. Close/dismiss/action buttons are keyboard-reachable with a visible focus ring.
 - **Progress bar:** `role="progressbar"` with `aria-valuemin={0}`, `aria-valuemax={1}`, and `aria-valuenow`.
-- **Reduced motion:** respects `prefers-reduced-motion: reduce` automatically — enter/exit animation is skipped.
+- **Reduced motion:** respects `prefers-reduced-motion: reduce` automatically — enter/exit animation is skipped. The `deadline` time bar's continuous drain is disabled under reduced motion (rendered as a static full bar) and the count-change pop on `EvoNotification.Bell`'s badge / the toast's repeat-count badge is skipped, matching [[evo-countdown]]'s own no-sub-second-tick behaviour.
+- **`deadline`:** the rendered `EvoCountdown` carries its own `role="timer"` and accurate `aria-label` (see [[evo-countdown]]); the accompanying draining time bar is `aria-hidden="true"` — it's a redundant visual, not a second source of truth.
 
 ## Gotchas
 
@@ -368,6 +396,7 @@ External-data mode (you own the list) and a standalone Panel:
 - **`loading` toasts are persistent and not user-dismissible** (`persistent: true`, `dismissible: false`); resolve them with `toast.update(id, …)`, or use `toast.promise` / `toast.progress` which manage this for you.
 - **`groupKey` is ignored when `id` is also supplied** — id matching takes priority. Re-pushing an existing `id` refreshes the toast and restarts its timer (and revives it if mid-exit).
 - **`progress` is clamped to 0–1**; non-numbers/NaN fall back to 0.
+- **`deadline` and `progress` don't combine** — when both are set on a toast, the explicit `progress` bar wins and the deadline's auto-driven time bar is skipped (the `EvoCountdown` text still renders).
 - **Buttons default to `type="button"`** (close, action, mark-all-read, dismiss) — they never accidentally submit a surrounding form.
 - **Theme via `var(--evo-color-*)` / `--evo-spacing-*` / `--evo-radius-*` tokens**, never hard-coded hex — hard-coded colours break dark mode.
 - **Single CSS import:** import `@justin_evo/evo-ui/dist/evo-ui.css` once at the app root.
@@ -379,6 +408,7 @@ External-data mode (you own the list) and a standalone Panel:
 - [[evo-modal]] — blocking dialogs.
 - [[evo-tooltip]] — inline contextual hints.
 - [[evo-badge]] — standalone count/status badges (as used on the Bell).
+- [[evo-countdown]] — the standalone countdown primitive composed by `urgency`/`deadline`.
 - [[evo-button]] — the standard button primitive.
 - [[evo-theming]] — theme tokens and light/dark mode.
 - [[evo-ui]] — master index of all Evo UI components.

@@ -55,8 +55,9 @@ function Example() {
 | `fullWidth` | `boolean` | `false` | No | Stretches the field to fill its container's width. |
 | `className` | `string` | `''` | No | Additional class names appended to the root wrapper `<div>`. |
 | `id` | `string` | — | No | Explicit input id. When omitted, falls back to the auto-generated id derived from `label`. Used to link the input to its helper/error text. |
+| `ref` | `React.Ref<HTMLInputElement>` | — | No | Forwarded to the native `<input>` element (via `forwardRef`). Use for `react-hook-form`'s `register()`, programmatic `.focus()`/`.select()`, or any DOM measurement. |
 
-EvoInputProps extends `Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>` — so all native input attributes (`placeholder`, `type`, `value`, `defaultValue`, `onChange`, `disabled`, `required`, `name`, `autoComplete`, etc.) plus `className` are forwarded. Native attributes via `...rest` are applied to the inner `<input>` element; `className` is applied to the root wrapper `<div>`. Note: `size` is overridden to Evo's `'sm' | 'md' | 'lg'` union and does not pass through to the native `size` attribute. This component does not forward a `ref`.
+EvoInputProps extends `Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>` — so all native input attributes (`placeholder`, `type`, `value`, `defaultValue`, `onChange`, `disabled`, `required`, `name`, `autoComplete`, etc.) plus `className` are forwarded. Native attributes via `...rest` are applied to the inner `<input>` element; `className` is applied to the root wrapper `<div>`. Note: `size` is overridden to Evo's `'sm' | 'md' | 'lg'` union and does not pass through to the native `size` attribute. `EvoInput` is defined with `forwardRef<HTMLInputElement, EvoInputProps>` and has `displayName = 'EvoInput'`.
 
 ## Variants & options
 
@@ -160,6 +161,8 @@ function Controlled() {
 - `aria-describedby` points to the error message element (`{id}-error`) when `error` is set, otherwise to the helper text element (`{id}-helper`) when `helperText` is set, otherwise it is omitted.
 - The error message renders in a `<p id="{id}-error">` and the helper text in a `<p id="{id}-helper">`; only one of the two is shown at a time (error takes precedence).
 - The underlying element is a native `<input>`, so it is keyboard-focusable and supports all native input semantics; no custom keyboard handlers are added.
+- The wrapper shows a visible focus ring (`:focus-within` border + box-shadow) whenever the input is focused, and darkens its border on hover for a clearer affordance.
+- Every size (`sm`/`md`/`lg`) meets the 44px minimum touch target on coarse-pointer (touch) devices via a `@media (pointer: coarse)` bump, per WCAG target-size guidance.
 
 ## Gotchas
 
@@ -167,7 +170,7 @@ function Controlled() {
 - The input's `id` may be auto-generated from `label`. For unique/stable wiring (e.g. repeated labels, or programmatic focus), pass an explicit `id`.
 - `size` is the Evo size union (`'sm' | 'md' | 'lg'`), not the native HTML `size` attribute — it is intentionally omitted from the native attributes and will not set the input's character width.
 - `className` is applied to the root wrapper `<div>`, not the inner `<input>`. Other native attributes in `...rest` go to the `<input>`.
-- EvoInput does not forward a `ref` to the input element; if you need a DOM ref, you cannot obtain it via the standard `ref` prop on EvoInput.
+- `EvoInput` forwards `ref` to the native `<input>` — pass it directly to `react-hook-form`'s `register()` or a `useRef<HTMLInputElement>` for `.focus()`/`.select()`.
 - Theme via Evo CSS variable tokens (`var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`) — never hard-code hex colors, which break light/dark mode.
 - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once at your app root, or the input will render unstyled.
 - Use named imports from `@justin_evo/evo-ui` only — do not import from deep internal paths.

@@ -268,10 +268,16 @@ function MyToggle() {
 
       <div className="docs-section">
         <div className="docs-section-title">EvoThemeToggle props</div>
+        <p className="docs-section-desc">
+          <code>EvoThemeToggle</code> forwards a <code>ref</code> to the underlying{' '}
+          <code>&lt;button&gt;</code> and spreads any other native button attributes
+          (<code>onClick</code>, <code>id</code>, <code>data-*</code>, <code>aria-*</code>, …) onto it.
+        </p>
         <PropsTable props={[
           { prop: 'size',      type: "'sm' | 'md' | 'lg'", default: "'md'",                  description: 'Visual size of the toggle.' },
           { prop: 'ariaLabel', type: 'string',             default: "'Toggle color theme'", description: 'Accessible label for screen readers.' },
           { prop: 'className', type: 'string',             description: 'Extra className appended to the built-in styles.' },
+          { prop: 'disabled',  type: 'boolean',            default: 'false',                 description: 'Disables interaction and dims the control.' },
         ]} />
       </div>
     </div>

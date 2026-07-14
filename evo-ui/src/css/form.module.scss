@@ -17,7 +17,7 @@
   width: 100%;
 }
 
-.form_sm { gap: 0.875rem; font-size: $text-xs; }
+.form_sm { gap: 0.75rem; font-size: $text-xs; }
 .form_md { gap: 1.25rem;  font-size: $text-sm; }
 .form_lg { gap: 1.5rem;   font-size: $text-base; }
 
@@ -31,7 +31,7 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.25rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid $color-border;
 }
@@ -54,9 +54,9 @@
   margin: 0;
   font-size: $text-xl;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.2;
   color: $color-text-primary;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .headerDesc {
@@ -70,7 +70,7 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.75rem;
 
   & + & {
     margin-top: 0.5rem;
@@ -84,7 +84,7 @@
   flex-direction: column;
   gap: 0.25rem;
   position: relative;
-  padding-left: 0.625rem;
+  padding-left: 0.5rem;
 
   &::before {
     content: '';
@@ -103,9 +103,9 @@
   margin: 0;
   font-size: $text-base;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.2;
   color: $color-text-primary;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.015em;
 }
 
 .sectionDesc {
@@ -118,7 +118,7 @@
 .sectionBody {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.75rem;
 }
 
 // Split layout: title/description on the left, fields on the right.
@@ -152,7 +152,7 @@
 }
 
 .row_sm { gap: 0.5rem; }
-.row_md { gap: 0.875rem; }
+.row_md { gap: 0.75rem; }
 .row_lg { gap: 1.25rem; }
 
 .row_align_start  { align-items: flex-start; }
@@ -163,7 +163,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.25rem;
   min-width: 0;
 }
 
@@ -202,13 +202,13 @@
   color: $evo-danger-color;
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
 
   &::before {
     content: '';
     display: inline-block;
-    width: 0.35rem;
-    height: 0.35rem;
+    width: 0.25rem;
+    height: 0.25rem;
     border-radius: $radius-full;
     background: $evo-danger-color;
     flex-shrink: 0;
@@ -224,13 +224,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.5rem;
   padding-top: 0.5rem;
 }
 
 .actions_divider {
   margin-top: 0.5rem;
-  padding-top: 1.125rem;
+  padding-top: 1rem;
   border-top: 1px solid $color-border;
 }
 
@@ -239,7 +239,56 @@
 .actions_center  { justify-content: center;     }
 .actions_between { justify-content: space-between; }
 
-// ----- Disabled state (root only — children read context themselves) -----
-.form:has(:disabled) {
-  // visual hint without blocking interaction; child controls handle real disabling
+// ----- Disabled state -----
+// EvoForm renders its content inside a native <fieldset disabled> when the
+// `disabled` prop is set, so browsers block interaction with every native
+// control for free (no per-control wiring needed). `display: contents` keeps
+// the fieldset invisible to the .form flex layout — children behave exactly
+// as if they were direct flex items.
+.fieldset {
+  display: contents;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+
+  &[disabled] {
+    cursor: not-allowed;
+
+    .headerTitle,
+    .sectionTitle,
+    .fieldLabel,
+    .headerDesc,
+    .sectionDesc,
+    .fieldDesc {
+      color: $color-text-muted;
+    }
+  }
+}
+
+// ----- Repeater -----
+.repeaterList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.repeaterItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.repeaterItemBody {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.repeaterRemove {
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.repeaterAdd {
+  align-self: flex-start;
 }

@@ -104,8 +104,20 @@ export default function InputPage() {
           { prop: 'leadingAdornment', type: 'ReactNode', description: 'Element rendered before the input text.' },
           { prop: 'trailingAdornment', type: 'ReactNode', description: 'Element rendered after the input text.' },
           { prop: 'fullWidth', type: 'boolean', default: 'false', description: 'Stretches the input to fill its container.' },
+          { prop: 'ref', type: 'React.Ref<HTMLInputElement>', description: 'Forwarded to the native <input> element — use for react-hook-form register(), programmatic focus, or select-on-error.' },
           { prop: '...rest', type: 'InputHTMLAttributes', description: 'All native input attributes (placeholder, type, onChange, disabled, etc.)' },
         ]} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Accessibility</div>
+        <ul className="docs-list">
+          <li>The label is associated to the input via <code>htmlFor</code>/<code>id</code>.</li>
+          <li><code>aria-invalid</code> and <code>aria-describedby</code> are set automatically when <code>error</code> or <code>helperText</code> is present.</li>
+          <li>The input is a native <code>&lt;input&gt;</code>, so it is keyboard-focusable with a visible focus ring on the wrapper (<code>:focus-within</code>).</li>
+          <li>Every size meets the 44px minimum touch target on coarse-pointer (touch) devices.</li>
+          <li><code>EvoInput</code> forwards its <code>ref</code> to the underlying <code>&lt;input&gt;</code>, so it works with <code>react-hook-form</code>'s <code>register()</code> and programmatic <code>.focus()</code>/<code>.select()</code> calls.</li>
+        </ul>
       </div>
     </div>
   )

@@ -28,7 +28,7 @@
   max-height: 68vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 32px 64px rgb(0 0 0 / 0.30);
+  box-shadow: $shadow-2xl;
   overflow: hidden;
   animation: paletteIn $transition-fast forwards;
 }
@@ -38,13 +38,24 @@
   to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .palette {
+    animation: none;
+  }
+
+  .resultItem {
+    transition: none;
+  }
+}
+
 // --- Search row ---
 
 .searchRow {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.875rem 1rem;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid $color-border;
 }
 
@@ -59,7 +70,7 @@
   flex: 1;
   background: none;
   border: none;
-  outline: none;
+  border-radius: $radius-sm;
   font-family: $font-sans;
   font-size: $text-base;
   color: $color-text-primary;
@@ -68,11 +79,16 @@
   &::placeholder {
     color: $color-text-muted;
   }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-color;
+    outline-offset: 2px;
+  }
 }
 
 .escBadge {
   font-size: $text-xs;
-  padding: 0.125rem 0.4rem;
+  padding: 0.125rem 0.5rem;
   background: $color-surface-sunken;
   border: 1px solid $color-border;
   border-radius: $radius-sm;
@@ -86,7 +102,7 @@
 .results {
   flex: 1;
   overflow-y: auto;
-  padding: 0.375rem 0.5rem;
+  padding: 0.5rem;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -117,24 +133,39 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: $color-text-muted;
-  padding: 0.375rem 0.625rem 0.25rem;
+  padding: 0.5rem 0.5rem 0.25rem;
 }
 
 .resultItem {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.5625rem 0.75rem;
+  min-height: 2.75rem; // 44px touch target
+  padding: 0.5rem 0.75rem;
   border: none;
   border-radius: $radius-sm;
   background: transparent;
   cursor: pointer;
   font-family: $font-sans;
-  transition: background-color $transition-fast;
+  transition: background-color $transition-fast, box-shadow $transition-fast;
 
+  // Mouse hover — plain background tint, matches the rest of the design system.
+  &.resultHover {
+    background: $color-surface-hover;
+  }
+
+  // Keyboard roving selection — visually distinct from hover: background tint
+  // plus an inset accent bar so it reads unambiguously as "this is where
+  // Enter will act", even when the pointer is resting somewhere else.
   &.resultActive {
     background: $color-surface-hover;
+    box-shadow: inset 2px 0 0 $evo-primary-color;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-color;
+    outline-offset: -2px;
   }
 }
 
@@ -164,12 +195,12 @@
 
 .resultShortcut {
   display: flex;
-  gap: 0.2rem;
+  gap: 0.25rem;
   flex-shrink: 0;
 
   kbd {
     font-size: $text-xs;
-    padding: 0.125rem 0.375rem;
+    padding: 0.125rem 0.5rem;
     background: $color-surface-sunken;
     border: 1px solid $color-border;
     border-radius: $radius-sm;

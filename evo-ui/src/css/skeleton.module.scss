@@ -11,6 +11,19 @@
   background-color: $color-skeleton-base;
 }
 
+.rect {
+  border-radius: $radius-sm;
+}
+
+.textLine {
+  height: 0.875rem;
+  border-radius: $evo-border-radius-sm;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
 .animated {
   background: linear-gradient(
     90deg,
@@ -20,6 +33,11 @@
   );
   background-size: 200% 100%;
   animation: skeletonShimmer 1.6s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: $color-skeleton-base;
+  }
 }
 
 .textGroup {
@@ -27,4 +45,16 @@
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }

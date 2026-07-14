@@ -219,6 +219,47 @@ evoNotify.dismissAll()`} />
         <CodeBlock code={`evoNotify.toast.info('Pinned bottom-center', { anchor: 'bottom-center' })`} />
       </div>
 
+      <div className="docs-section">
+        <div className="docs-section-title">Toast — urgency &amp; deadlines</div>
+        <p className="docs-section-desc">
+          <code>urgency</code> thickens the toast's left severity bar so its presence alone reads
+          as heightened stakes — the loss-aversion principle from the UX psychology doc. Pair it
+          with <code>deadline</code> to render a live <code>EvoCountdown</code> plus a draining
+          1→0 time bar under the copy.
+        </p>
+        <div className="docs-preview">
+          <EvoStack direction="row" gap="0.5rem" wrap>
+            <EvoButton
+              label="Urgent warning"
+              severity="warning"
+              variant="outline"
+              onClick={() => evoNotify.toast.warning('Payment method expiring', { urgency: true })}
+            />
+            <EvoButton
+              label="Deadline (2 min)"
+              severity="danger"
+              variant="outline"
+              onClick={() =>
+                evoNotify.toast.error('Session expiring', {
+                  description: 'Save your work before it ends.',
+                  urgency: true,
+                  deadline: Date.now() + 2 * 60 * 1000,
+                  persistent: true,
+                })
+              }
+            />
+          </EvoStack>
+        </div>
+        <CodeBlock code={`evoNotify.toast.warning('Payment method expiring', { urgency: true })
+
+evoNotify.toast.error('Session expiring', {
+  description: 'Save your work before it ends.',
+  urgency: true,
+  deadline: Date.now() + 2 * 60 * 1000, // number | Date
+  persistent: true,
+})`} />
+      </div>
+
       <EvoDivider />
 
       <div className="docs-section">
@@ -357,6 +398,8 @@ evoNotify.inbox.markAllRead()`} />
           { prop: 'inbox',       type: 'boolean | Partial<EvoInboxItemInput>', description: 'Also push a copy into the notification center.' },
           { prop: 'groupKey',    type: 'string',        description: 'Coalescing key. Repeated toasts sharing a key fold into one with a count badge. Ignored when `id` is also set.' },
           { prop: 'progress',    type: 'number',        description: 'Determinate progress, 0–1. Renders a progress bar. Out-of-range values are clamped. Usually driven via toast.progress().' },
+          { prop: 'urgency',     type: 'boolean',       default: 'false', description: 'Loss-aversion emphasis — thickens the left severity bar.' },
+          { prop: 'deadline',    type: 'number | Date', description: 'Renders a live EvoCountdown plus a draining 1→0 time bar (reuses the progress track). Ignored when an explicit `progress` is also set.' },
           { prop: 'className',   type: 'string',        description: 'Additional CSS class on the toast root.' },
         ]} />
       </div>
@@ -379,6 +422,11 @@ evoNotify.inbox.markAllRead()`} />
 
       <div className="docs-section">
         <div className="docs-section-title">evoNotify.push + evoNotify.inbox.*</div>
+        <p className="docs-section-desc">
+          <code>EvoInboxItemInput</code> mirrors <code>EvoToastOptions</code>' <code>urgency</code>{' '}
+          and <code>deadline</code> fields — a pushed item thickens its own left severity bar and
+          renders a live <code>EvoCountdown</code> next to its timestamp when a deadline is set.
+        </p>
         <PropsTable props={[
           { prop: 'push(item)',                type: '(EvoInboxItemInput) => string',  description: 'Add to the notification center. Returns the id.' },
           { prop: 'inbox.markRead(id)',        type: '(string) => void',               description: 'Mark a single item as read.' },

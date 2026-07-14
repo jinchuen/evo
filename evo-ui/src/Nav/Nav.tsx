@@ -375,7 +375,7 @@ const NavRow = forwardRef<HTMLLIElement, RowInternalProps>(function NavRow(
 
   const rowStyle =
     tier === 'subitem' && depth > 0
-      ? ({ ['--evo-nav-indent' as string]: `${depth * 0.875}rem` } as CSSProperties)
+      ? ({ ['--evo-nav-indent' as string]: `${depth}rem` } as CSSProperties)
       : undefined;
 
   const commonRowProps = {

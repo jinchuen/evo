@@ -235,6 +235,13 @@ export default function CardPage() {
           <li>
             All motion (hover lift, press) respects <code>prefers-reduced-motion</code>.
           </li>
+          <li>
+            The interactive button form disables via the native <code>disabled</code> attribute. The
+            anchor form has no native disabled state, so pass <code>aria-disabled="true"</code> — the
+            component guards the click and calls <code>preventDefault</code> so the link doesn't
+            navigate. Both forms keep a visible <code>cursor: not-allowed</code> instead of hiding it
+            behind <code>pointer-events: none</code>.
+          </li>
         </ul>
       </div>
     </div>

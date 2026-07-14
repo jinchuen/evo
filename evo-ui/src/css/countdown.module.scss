@@ -1,0 +1,56 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+// ==========================================================
+// EvoCountdown
+// ----------------------------------------------------------
+// Deliberately chrome-less: a plain inline <span>, no border, no
+// background, no pill — so it drops into EvoAlert / EvoNotification /
+// EvoBadge text without fighting the host's own box. All the meaning
+// lives in two states:
+//   - default → --evo-color-warning  (the whole visible life of the
+//     countdown reads as "pay attention", per the UX doc's loss-aversion
+//     guidance — a countdown is inherently a soft warning)
+//   - .danger → --evo-color-danger   (once inside `dangerThreshold`)
+// Both use the *base* semantic token (not the `-fg` variant, which is
+// tuned for text sitting on a solid warning/danger background, not for
+// plain text on the page surface — using `-fg` here would render
+// near-invisible in dark mode).
+//
+// The only motion is `.flip`, a single micro pulse fired once on the
+// instant the color escalates — confirmation, not decoration — and it
+// is fully removed under prefers-reduced-motion.
+// ==========================================================
+
+.countdown {
+  display: inline-flex;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: $evo-warning-color;
+  transition: color $transition-normal;
+}
+
+.danger {
+  color: $evo-danger-color;
+}
+
+.expired {
+  color: $color-text-muted;
+  font-weight: 500;
+}
+
+.flip {
+  animation: evo-countdown-flip 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes evo-countdown-flip {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .countdown { transition: none; }
+  .flip { animation: none; }
+}

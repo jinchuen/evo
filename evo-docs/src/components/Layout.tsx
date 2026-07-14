@@ -60,18 +60,30 @@ const nav = [
     ],
   },
   {
+    group: 'Progress & Flow',
+    items: [
+      { label: 'Progress', path: '/components/progress' },
+      { label: 'Progress Ring', path: '/components/progress-ring' },
+      { label: 'Stepper', path: '/components/stepper' },
+      { label: 'Wizard', path: '/components/wizard' },
+    ],
+  },
+  {
     group: 'Data Display',
     items: [
       { label: 'Card', path: '/components/card' },
       { label: 'Table', path: '/components/table' },
       { label: 'Badge', path: '/components/badge' },
       { label: 'Skeleton', path: '/components/skeleton' },
+      { label: 'Pricing Table', path: '/components/pricing-table' },
+      { label: 'Countdown', path: '/components/countdown' },
     ],
   },
   {
     group: 'Feedback',
     items: [
       { label: 'Alert', path: '/components/alert' },
+      { label: 'Banner', path: '/components/banner' },
       { label: 'Modal', path: '/components/modal' },
       { label: 'Tooltip', path: '/components/tooltip' },
       { label: 'Notification', path: '/components/notification' },
@@ -111,9 +123,13 @@ const SUB_PAGES: Record<string, { title: string; parentPath: string }> = {
 // these labels short: the badge renders inside EvoNav's ellipsis-clipped label,
 // so a long label + badge would truncate.
 const NEW_PATHS = new Set([
-  '/components/image-cropper',
-  '/components/autocomplete',
-  '/components/tree-select',
+  '/components/progress',
+  '/components/progress-ring',
+  '/components/stepper',
+  '/components/wizard',
+  '/components/banner',
+  '/components/pricing-table',
+  '/components/countdown',
 ])
 
 const SearchIcon = () => (
@@ -342,7 +358,7 @@ export default function Layout() {
           <span className="docs-logo-mark" aria-hidden="true">E</span>
           <span className="docs-logo-text">Evo UI</span>
           {/* Keep in sync with evo-ui/package.json version on each release. */}
-          <span className="docs-logo-version">v1.2</span>
+          <span className="docs-logo-version">v1.4</span>
         </div>
 
         <div className="docs-sidebar-search">

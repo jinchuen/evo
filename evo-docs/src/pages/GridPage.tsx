@@ -84,19 +84,42 @@ export default function GridPage() {
 </EvoGrid>`} />
       </div>
 
+      <div className="docs-section">
+        <div className="docs-section-title">Self-collapsing (minColWidth)</div>
+        <p className="docs-section-desc">
+          Set <code>minColWidth</code> instead of <code>cols</code> to let the grid pick its own
+          column count via <code>repeat(auto-fit, minmax(minColWidth, 1fr))</code>. Cells wrap down
+          to a single column automatically as the container narrows — no manual breakpoint needed.
+          When set, <code>minColWidth</code> takes precedence over <code>cols</code>.
+        </p>
+        <div className="docs-preview col" style={{ width: '100%' }}>
+          <EvoGrid minColWidth="10rem" gap="0.75rem">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Cell key={i}>Cell {i + 1}</Cell>
+            ))}
+          </EvoGrid>
+        </div>
+        <CodeBlock code={`<EvoGrid minColWidth="10rem" gap="0.75rem">
+  {/* ... */}
+</EvoGrid>`} />
+      </div>
+
       <EvoDivider />
 
       <div className="docs-section">
         <div className="docs-section-title">EvoGrid Props</div>
         <PropsTable props={[
           { prop: 'children', type: 'ReactNode', required: true, description: 'Grid children (typically EvoGrid.Item elements).' },
-          { prop: 'cols', type: 'number | string', default: '3', description: 'Number of columns or a CSS grid-template-columns value.' },
+          { prop: 'cols', type: 'number | string', default: '3', description: 'Number of columns or a CSS grid-template-columns value. Ignored when minColWidth is set.' },
           { prop: 'rows', type: 'number | string', description: 'Number of rows or CSS grid-template-rows value.' },
           { prop: 'gap', type: 'number | string', default: "'1rem'", description: 'Gap between cells.' },
           { prop: 'colGap', type: 'number | string', description: 'Column gap override.' },
           { prop: 'rowGap', type: 'number | string', description: 'Row gap override.' },
+          { prop: 'minColWidth', type: 'number | string', description: 'Overrides cols with repeat(auto-fit, minmax(minColWidth, 1fr)) so the grid self-collapses at narrow widths.' },
           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
           { prop: 'style', type: 'CSSProperties', description: 'Inline styles.' },
+          { prop: 'ref', type: 'React.Ref<HTMLDivElement>', description: 'Forwarded to the root <div>.' },
+          { prop: '...rest', type: 'React.HTMLAttributes<HTMLDivElement>', description: 'All other native div attributes (id, data-*, onClick, aria-*, …) are spread onto the root.' },
         ]} />
       </div>
 
@@ -108,6 +131,8 @@ export default function GridPage() {
           { prop: 'rowSpan', type: 'number', description: 'Number of rows to span.' },
           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
           { prop: 'style', type: 'CSSProperties', description: 'Inline styles.' },
+          { prop: 'ref', type: 'React.Ref<HTMLDivElement>', description: 'Forwarded to the root <div>.' },
+          { prop: '...rest', type: 'React.HTMLAttributes<HTMLDivElement>', description: 'All other native div attributes are spread onto the root.' },
         ]} />
       </div>
     </div>

@@ -303,6 +303,7 @@ function Headings() {
 - `interactive` must be exactly `true` (not just truthy at runtime in spirit — the component checks `interactive === true`). Without it the root is a static `<div>` with no click/keyboard semantics.
 - The button form defaults `type="button"`; do not set `type="submit"` unless you intend the card to submit a form.
 - `type` is only meaningful on the interactive button form. In the anchor form (`href` set) it is not a valid prop.
+- The interactive button form disables via the native `disabled` attribute. The anchor form has no native disabled state — pass `aria-disabled="true"` and the component itself guards the click (calls `preventDefault`) so the link doesn't navigate; your own `onClick` still fires normally when not disabled. Both forms show `cursor: not-allowed` (never `pointer-events: none`, which would silently swallow the cursor feedback).
 - For an accessible image, pass `alt` whenever you pass `src`. Omitting `alt` silently falls back to `alt=""` (decorative), which is wrong for informative images.
 - `EvoCard.Media`'s `aspectRatio` only applies "when no explicit dimensions are given"; if you set width/height (or your own `style.aspectRatio`) those take effect — your `style` is spread after the prop-derived `aspectRatio`.
 - `responsive` orientation swaps layout at the 768px breakpoint; test at mobile widths to verify the stack/split behavior.

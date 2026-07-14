@@ -113,9 +113,10 @@ A polymorphic nav item rendered inside a `<li>`. Picks its element by props: `as
 | `rel` | `string` | — | No | Anchor rel. Defaults to `"noopener noreferrer"` when `target="_blank"`. |
 | `onClick` | `(e: React.MouseEvent) => void` | — | No | Click handler. With `href`, runs alongside the default navigation. Auto-closes the drawer on activation unless `e.preventDefault()` is called. |
 | `asChild` | `boolean` | — | No | Clones the single child and merges our props (className, onClick, aria-current). Use for a router `<Link>`. |
+| `disabled` | `boolean` | `false` | No | Dims the item (50% opacity) and blocks activation — `onClick`/navigation never fire. Sets `aria-disabled` (plus native `disabled` when rendered as a `<button>`); disabled anchors also get `tabIndex={-1}` so they're skipped by keyboard nav. |
 | `className` | `string` | — | No | Extra class on the rendered element. |
 
-Note: `EvoTopNavItemProps` does NOT extend a native element attribute type — only the props above are accepted.
+`EvoTopNavItemProps` extends `Omit<React.HTMLAttributes<HTMLElement>, 'onClick' | 'className'>` — native attributes (e.g. `id`, `data-*`, `style`) plus `ref` are forwarded to the rendered element via `...rest`.
 
 ### EvoTopNav.Actions
 
@@ -344,6 +345,8 @@ function Header() {
 - Dropdown keyboard support: on the trigger, ArrowDown / Enter / Space open and focus the first item; ArrowUp opens and focuses the last item. Inside the panel, ArrowDown / ArrowUp cycle items, Home / End jump to first / last, Tab leaves and closes the panel, Escape closes and returns focus to the trigger. Clicking outside also closes desktop dropdowns.
 - While the drawer is open: focus is trapped inside the Menu (wrapping Tab / Shift+Tab), the body is scroll-locked, Escape closes it, a backdrop click closes it, and focus is restored to the toggle on close. The Menu is `aria-hidden` while the drawer is closed.
 - Hover-to-open is disabled automatically on coarse pointers (`(hover: hover) and (pointer: fine)` gates it), so touch devices use click-only. All animations respect `prefers-reduced-motion`.
+- Item, DropdownItem, Search, and Toggle all show a `:active` press state (a darker surface tint) for immediate tactile feedback on click/tap, in addition to the `:hover` and `:focus-visible` states.
+- `EvoTopNav.Item`'s `disabled` dims the item to 50% opacity and sets `aria-disabled` / native `disabled`; it never fires `onClick` or navigates while disabled.
 
 ## Gotchas
 
@@ -354,7 +357,8 @@ function Header() {
 - `Menu`, `Toggle`, `Dropdown`, and `DropdownItem` must be rendered inside `<EvoTopNav>`; `Menu` and `Toggle` throw a descriptive error if used outside it.
 - `asChild` requires exactly one child element (it uses `React.Children.only`); your props (className, onClick, aria-current) are merged onto that child.
 - Item / DropdownItem with `target="_blank"` auto-apply `rel="noopener noreferrer"` unless you pass your own `rel`.
-- `EvoTopNavItemProps`, `EvoTopNavDropdownProps`, and `EvoTopNavDropdownItemProps` do NOT extend native attribute types — passing arbitrary DOM attributes (e.g. `id`, `data-*`) to those parts is not part of the typed API; spreadable native attributes are only available on the root, Brand, Menu, Actions, and Toggle.
+- `EvoTopNavItemProps` extends `HTMLAttributes<HTMLElement>` and forwards `...rest` (native attributes like `id`, `data-*`, `style` pass through), but `EvoTopNavDropdownProps` and `EvoTopNavDropdownItemProps` still do NOT extend a native attribute type — only their documented props are accepted.
+- `EvoTopNav.Item`'s `disabled` prop only exists on Item — Dropdown / DropdownItem do not have a `disabled` prop yet.
 - Theme via `var(--evo-color-*)` / `var(--evo-spacing-*)` / `var(--evo-radius-*)` tokens; never hard-code hex colors (breaks dark mode).
 - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once globally. Use named imports from `@justin_evo/evo-ui` only — never deep paths.
 - `entrance` plays once on mount and is fully disabled under `prefers-reduced-motion` (the component drops the `data-entrance` attribute, and CSS has a media-query fallback). It animates the Brand, each Menu item, Search, and Actions.

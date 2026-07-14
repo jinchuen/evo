@@ -65,18 +65,30 @@ const CATALOGUE: { group: string; items: { name: string; path: string }[] }[] = 
     ],
   },
   {
+    group: 'Progress & Flow',
+    items: [
+      { name: 'EvoProgress',     path: '/components/progress'      },
+      { name: 'EvoProgressRing', path: '/components/progress-ring' },
+      { name: 'EvoStepper',      path: '/components/stepper'       },
+      { name: 'EvoWizard',       path: '/components/wizard'        },
+    ],
+  },
+  {
     group: 'Data Display',
     items: [
       { name: 'EvoCard',     path: '/components/card'     },
       { name: 'EvoTable',    path: '/components/table'    },
       { name: 'EvoBadge',    path: '/components/badge'    },
       { name: 'EvoSkeleton', path: '/components/skeleton' },
+      { name: 'EvoPricingTable', path: '/components/pricing-table' },
+      { name: 'EvoCountdown',    path: '/components/countdown'      },
     ],
   },
   {
     group: 'Feedback',
     items: [
       { name: 'EvoAlert',   path: '/components/alert'   },
+      { name: 'EvoBanner',  path: '/components/banner'  },
       { name: 'EvoModal',   path: '/components/modal'   },
       { name: 'EvoTooltip', path: '/components/tooltip' },
       { name: 'EvoNotification', path: '/components/notification' },
@@ -179,7 +191,7 @@ export default function SkillsPage() {
       <div className="docs-section">
         <div className="docs-section-title">
           What you get
-          <EvoBadge severity="success" variant="subtle">30 skills + catalogue</EvoBadge>
+          <EvoBadge severity="success" variant="subtle">37 skills + catalogue</EvoBadge>
         </div>
         <p className="docs-section-desc">
           The plugin bundles one exhaustive skill per component plus a master catalogue that

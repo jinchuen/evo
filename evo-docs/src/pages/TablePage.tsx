@@ -242,6 +242,45 @@ const columns = [
 />`} />
       </div>
 
+      {/* ----- Clickable rows ----- */}
+      <div className="docs-section">
+        <div className="docs-section-title">Clickable Rows</div>
+        <p className="docs-section-desc">
+          Passing <code>onRowClick</code> (or <code>onRowDoubleClick</code>) makes every
+          row keyboard-operable too: rows become focusable (<code>tabIndex=0</code>,{' '}
+          <code>role="button"</code>) and <kbd>Enter</kbd>/<kbd>Space</kbd> fire the same
+          handler as a click.
+        </p>
+        <EvoTable
+          columns={columns}
+          data={data}
+          rowKey="id"
+          onRowClick={(row) => setSelected(row as unknown as User)}
+        />
+        <CodeBlock code={`<EvoTable
+  columns={columns}
+  data={data}
+  onRowClick={(row) => openDetail(row)} // Tab to a row, press Enter/Space
+/>`} />
+      </div>
+
+      {/* ----- Highlight column ----- */}
+      <div className="docs-section">
+        <div className="docs-section-title">Highlighting a Column</div>
+        <p className="docs-section-desc">
+          Set <code>highlightColumn</code> to a column's <code>key</code> to visually
+          anchor it — a subtle primary tint plus a top accent bar on the header. Useful
+          for a "recommended" column in a comparison table. Leave it{' '}
+          <code>undefined</code> (default) for no highlight.
+        </p>
+        <EvoTable columns={columns} data={data} rowKey="id" highlightColumn="visits" />
+        <CodeBlock code={`<EvoTable
+  columns={columns}
+  data={data}
+  highlightColumn="visits" // tints that column's th/td
+/>`} />
+      </div>
+
       {/* ----- Responsive ----- */}
       <div className="docs-section">
         <div className="docs-section-title">Mobile Responsive</div>
@@ -289,6 +328,7 @@ const columns = [
           { prop: 'sort', type: 'TableSortState | null', description: 'Controlled sort state. Pair with onSortChange.' },
           { prop: 'onSortChange', type: '(next) => void', description: 'Sort change callback.' },
           { prop: 'defaultSort', type: 'TableSortState', description: 'Initial sort for uncontrolled mode.' },
+          { prop: 'highlightColumn', type: 'string', description: "Tint a single column (matched by TableColumn.key) with a subtle primary wash + top accent bar — e.g. a recommended plan/tier. Omit for no highlight." },
           { prop: 'className', type: 'string', description: 'Additional CSS class on the wrapper.' },
         ]} />
       </div>

@@ -1,7 +1,18 @@
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useAnchoredPosition } from '../hooks/useAnchoredPosition';
 import styles from '../css/treeselect.module.scss';
+
+// Merge a forwarded ref with an internally-owned ref onto the same node.
+function mergeRefs<T>(...refs: Array<React.Ref<T> | undefined>) {
+  return (node: T | null) => {
+    refs.forEach(ref => {
+      if (!ref) return;
+      if (typeof ref === 'function') ref(node);
+      else (ref as React.MutableRefObject<T | null>).current = node;
+    });
+  };
+}
 
 /* ---------------- Types ---------------- */
 
@@ -18,7 +29,8 @@ export interface TreeNode {
 
 export type CheckedStrategy = 'leaf' | 'parent' | 'all';
 
-export interface EvoTreeSelectProps {
+export interface EvoTreeSelectProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
   data: TreeNode[];
 
   /** Controlled value. String for single-select, string[] for multi-select. */
@@ -192,7 +204,7 @@ const renderHighlighted = (label: string, query: string) => {
 
 /* ---------------- Component ---------------- */
 
-export const EvoTreeSelect = ({
+export const EvoTreeSelect = forwardRef<HTMLDivElement, EvoTreeSelectProps>(({
   data,
   value: controlledValue,
   defaultValue,
@@ -219,7 +231,8 @@ export const EvoTreeSelect = ({
   id,
   name,
   className = '',
-}: EvoTreeSelectProps) => {
+  ...rest
+}, ref) => {
   const reactId = useId();
   const selectId = id ?? `evo-tree-${reactId}`;
   const listId = `${selectId}-tree`;
@@ -727,13 +740,14 @@ export const EvoTreeSelect = ({
 
   return (
     <div
-      ref={wrapperRef}
+      ref={mergeRefs(wrapperRef, ref)}
       className={[
         styles.field,
         fullWidth ? styles.fullWidth : '',
         disabled ? styles.disabled : '',
         className,
       ].filter(Boolean).join(' ')}
+      {...rest}
     >
       {label && (
         <label htmlFor={selectId} className={styles.label}>
@@ -839,4 +853,6 @@ export const EvoTreeSelect = ({
       {!error && helperText && <p className={styles.helperText}>{helperText}</p>}
     </div>
   );
-};
+});
+
+EvoTreeSelect.displayName = 'EvoTreeSelect';

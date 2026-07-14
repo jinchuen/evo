@@ -74,6 +74,22 @@ export default function PaginationPage() {
           { prop: 'siblingCount', type: 'number', default: '1', description: 'Number of page buttons shown on each side of the current page.' },
           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
         ]} />
+        <p className="docs-section-desc">
+          <code>EvoPagination</code> forwards a <code>ref</code> to the root <code>&lt;nav&gt;</code>
+          element and spreads any remaining native <code>&lt;nav&gt;</code> attributes
+          (<code>id</code>, <code>data-*</code>, <code>aria-*</code>, event handlers, …) onto it.
+        </p>
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Accessibility</div>
+        <ul className="docs-list">
+          <li>Root is a semantic <code>&lt;nav aria-label="Pagination"&gt;</code> landmark.</li>
+          <li>Previous/next/page controls are native <code>&lt;button type="button"&gt;</code> elements — keyboard-reachable via Tab, activate with Enter/Space, and never submit a surrounding form.</li>
+          <li>Every page, previous, and next button shows a visible focus ring (<code>:focus-visible</code>) using the primary color token.</li>
+          <li>All buttons meet the 44px minimum touch target (<code>min-height</code>/<code>min-width: 2.75rem</code>).</li>
+          <li>The active page carries <code>aria-current="page"</code>.</li>
+        </ul>
       </div>
     </div>
   )

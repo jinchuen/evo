@@ -14,7 +14,7 @@
   font-size: $text-sm;
   font-weight: 600;
   color: $color-text-primary;
-  margin-bottom: 0.125rem;
+  margin-bottom: 0.25rem;
   font-family: $font-sans;
 }
 
@@ -24,7 +24,10 @@
 
   &.disabled {
     opacity: 0.5;
-    pointer-events: none;
+
+    .label {
+      cursor: not-allowed;
+    }
   }
 }
 
@@ -54,8 +57,13 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 2.75rem;
   cursor: pointer;
   font-family: $font-sans;
+}
+
+.radio:not(.disabled) .label:hover .radiomark {
+  border-color: $color-border-strong;
 }
 
 .radiomark {
@@ -80,6 +88,13 @@
     opacity: 0;
     transform: scale(0.3);
     transition: opacity $transition-fast, transform $transition-spring;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radiomark,
+  .radiomark::after {
+    transition: opacity $transition-fast;
   }
 }
 

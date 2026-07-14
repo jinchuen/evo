@@ -91,6 +91,7 @@ export function Example() {
 | `sort` | `TableSortState \| null` | — | No | Controlled sort state. Providing this prop (even `null`) puts the table in controlled sort mode; pair with `onSortChange`. |
 | `onSortChange` | `(next: TableSortState \| null) => void` | — | No | Sort change callback. Fires in both controlled and uncontrolled modes. |
 | `defaultSort` | `TableSortState` | — | No | Initial sort for uncontrolled mode. |
+| `highlightColumn` | `string` | — | No | Tint a single column (matched by `TableColumn.key`) with a subtle primary wash on its `th`/`td` plus a top accent bar on the header — e.g. to anchor a recommended plan/tier column in a comparison table. `undefined` (default) leaves every column styled identically. |
 | `className` | `string` | — | No | Additional CSS class applied to the wrapper `<div>`. |
 
 Notes:
@@ -264,13 +265,31 @@ export function ControlledSortTable({ columns, data }: { columns: any[]; data: a
 }
 ```
 
+### Keyboard-operable clickable rows with a highlighted column
+
+```tsx
+import { EvoTable } from '@justin_evo/evo-ui';
+
+export function OpenableTable({ columns, data }: { columns: any[]; data: any[] }) {
+  return (
+    <EvoTable
+      columns={columns}
+      data={data}
+      rowKey="id"
+      onRowClick={(row) => openDetail(row)}   // rows become Tab + Enter/Space operable
+      highlightColumn="visits"                 // tints that column's th/td
+    />
+  );
+}
+```
+
 ## Accessibility
 
 - Renders semantic table markup: a `<table>` with `<caption>` (when `caption` is set), `<thead>`/`<tbody>`, header `<th scope="col">`, and body `<td>` cells.
 - Sortable headers expose `aria-sort` on the `<th>`: `"ascending"` or `"descending"` when active, `"none"` when the column is sortable but not the active sort, and the attribute is omitted for non-sortable columns.
 - Sortable headers render a native `<button type="button">` (keyboard-focusable and Enter/Space activatable) wrapping the header label and a decorative sort icon. The SVG sort icon is marked `aria-hidden="true"` and `focusable="false"`.
 - Each body cell carries a `data-label` attribute (the column `header` when it is a string, otherwise the `key`) which drives the `responsive="stack"` mobile card labels.
-- The component does not add row-level ARIA roles or keyboard handlers for `onRowClick`/`onRowDoubleClick`; those fire on mouse interaction only. If you need keyboard-activatable rows, render an interactive control inside a cell via `render`.
+- **Clickable rows are keyboard-operable.** When `onRowClick` is provided, each `<tr>` gets `tabIndex={0}`, `role="button"`, and an `onKeyDown` handler that fires `onRowClick` on <kbd>Enter</kbd> or <kbd>Space</kbd> (with `preventDefault` to stop the page from scrolling on Space). A visible `:focus-visible` outline (`$evo-primary-focus`, inset) marks the focused row. `onRowDoubleClick` alone does **not** add this — double-click has no reliable keyboard equivalent, so pair it with `onRowClick` (or a `render`-based control) if double-click is the primary action.
 
 ## Gotchas
 
@@ -282,6 +301,7 @@ export function ControlledSortTable({ columns, data }: { columns: any[]; data: a
 - **Dot notation is read-only path access.** `key: 'role.name'` reads `row.role.name`; missing intermediate objects resolve to `undefined` (rendered as an empty string by the default renderer).
 - **`rowKey` falls back to the array index** when omitted or when the resolved value isn't a string/number — pass a stable `rowKey` to avoid remount bugs on reorder.
 - **`loadingRows` is clamped to a minimum of 1**; values below 1 still render one skeleton row.
+- **`highlightColumn` matches by `TableColumn.key`, not header text or index.** A typo'd key silently highlights nothing (no warning).
 - **No built-in pagination/selection/virtualization.** Slice your `data` yourself and pair with [[evo-pagination]] for large datasets.
 - **Theme with tokens, not hex.** Custom content in `render`/`emptyState` should use `var(--evo-color-*)` tokens so light/dark mode and contrast stay correct; never hard-code hex.
 - **Single CSS import, named imports only.** Import `@justin_evo/evo-ui/dist/evo-ui.css` once at app root, and import `EvoTable` from `@justin_evo/evo-ui` (never a deep path).

@@ -48,6 +48,7 @@ const EvoTab = ({ id, children, disabled = false, className = '' }: EvoTabProps)
   const { active, setActive } = useTabsCtx();
   return (
     <button
+      type="button"
       role="tab"
       aria-selected={active === id}
       disabled={disabled}

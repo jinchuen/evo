@@ -884,3 +884,5 @@ export const EvoRichTextArea = forwardRef<EvoRichTextHandle, EvoRichTextAreaProp
     </div>
   );
 });
+
+EvoRichTextArea.displayName = 'EvoRichTextArea';

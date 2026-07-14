@@ -1,4 +1,4 @@
-import { EvoAlert, EvoDivider } from '@justin_evo/evo-ui'
+import { EvoAlert, EvoDivider, EvoCountdown } from '@justin_evo/evo-ui'
 import { CodeBlock } from '../components/CodeBlock'
 import { PropsTable } from '../components/PropsTable'
 
@@ -64,6 +64,41 @@ export default function AlertPage() {
 </EvoAlert>`} />
       </div>
 
+      <div className="docs-section">
+        <div className="docs-section-title">Urgency (loss aversion)</div>
+        <p className="docs-section-desc">
+          Set <code>urgency</code> to escalate a <code>warning</code> or <code>error</code> alert
+          (or any type) into a higher-attention treatment — a filled soft background, a heavier
+          left accent, and a bolder title. It composes with <code>type</code> rather than
+          replacing it, so any severity can be urgent or not. Pairing it with{' '}
+          <code>EvoCountdown</code> makes the cost of inaction concrete: the shrinking number
+          reinforces what's about to be lost.
+        </p>
+        <div className="docs-preview col" style={{ width: '100%' }}>
+          <EvoAlert type="warning" title="Discount expires soon" urgency>
+            Your 20% renewal discount expires in{' '}
+            <EvoCountdown deadline={Date.now() + 47 * 60 * 60 * 1000} />. Renew now to keep it.
+          </EvoAlert>
+          <EvoAlert type="error" title="Trial ending" urgency dismissible>
+            Your workspace will be downgraded and your data archived in{' '}
+            <EvoCountdown deadline={Date.now() + 6 * 60 * 1000} format="clock" />.
+          </EvoAlert>
+        </div>
+        <CodeBlock code={`<EvoAlert type="warning" title="Discount expires soon" urgency>
+  Your 20% renewal discount expires in{' '}
+  <EvoCountdown deadline={Date.now() + 47 * 60 * 60 * 1000} />. Renew now to keep it.
+</EvoAlert>
+
+<EvoAlert type="error" title="Trial ending" urgency dismissible>
+  Your workspace will be downgraded and your data archived in{' '}
+  <EvoCountdown deadline={Date.now() + 6 * 60 * 1000} format="clock" />.
+</EvoAlert>`} />
+        <ul className="docs-list">
+          <li>Use urgency sparingly — reserve it for messages with a real deadline or real cost, not every warning.</li>
+          <li>It never introduces a new color; it only intensifies the existing severity token, so dark mode stays correct automatically.</li>
+        </ul>
+      </div>
+
       <EvoDivider />
 
       <div className="docs-section">
@@ -73,6 +108,7 @@ export default function AlertPage() {
           { prop: 'type', type: "'success' | 'error' | 'warning' | 'info'", default: "'info'", description: 'Semantic type. Determines icon and color.' },
           { prop: 'title', type: 'string', description: 'Bold title rendered above the message.' },
           { prop: 'dismissible', type: 'boolean', default: 'false', description: 'Shows a dismiss button that hides the alert.' },
+          { prop: 'urgency', type: 'boolean', default: 'false', description: 'Escalates the severity treatment (filled soft background, heavier left accent, bolder title) for higher-attention messages. Orthogonal to type.' },
           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
         ]} />
       </div>

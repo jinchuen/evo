@@ -97,13 +97,15 @@ $evo-card-padding:   1rem 0.5rem;
 
 // ---------- Static design tokens (theme-independent) ----------
 
-// Button sizing
+// Button sizing — padding snapped to the 4pt grid (was 0.63/0.13/0.38/0.37/0.88rem,
+// arbitrary hand-rounded decimals). min-height governs total control height, so
+// nudging the vertical padding onto the grid does not change the touch target.
 $evo-btn-padding-y:       0.25rem;
-$evo-btn-padding-x:       0.63rem;
-$evo-btn-padding-y-sm:    0.13rem;
-$evo-btn-padding-x-sm:    0.38rem;
-$evo-btn-padding-y-lg:    0.37rem;
-$evo-btn-padding-x-lg:    0.88rem;
+$evo-btn-padding-x:       0.75rem;
+$evo-btn-padding-y-sm:    0.25rem;
+$evo-btn-padding-x-sm:    0.5rem;
+$evo-btn-padding-y-lg:    0.5rem;
+$evo-btn-padding-x-lg:    1rem;
 
 $evo-btn-font-size:       0.875rem;
 $evo-btn-font-size-sm:    0.75rem;
@@ -123,13 +125,19 @@ $radius-lg:   16px;
 $radius-xl:   20px;
 $radius-full: 9999px;
 
-// Shadows — read `--evo-shadow-color` and `--evo-shadow-strength`
-// so they automatically deepen in dark mode.
-$shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.05);
-$shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -2px rgba(0, 0, 0, 0.10);
-$shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10);
-$shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10);
-$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+// Shadows — driven by the theme's `--evo-shadow-color` (space-separated RGB
+// channels) and `--evo-shadow-strength` custom properties so elevation
+// automatically deepens in dark mode (strength 0.08 light → 0.35 dark).
+// Deeper elevations scale the base strength up; shallower ones down. Previously
+// these hardcoded rgba(0,0,0,…) and the auto-deepen comment was dead code.
+$shadow-sm:  0 1px 2px 0 rgb(var(--evo-shadow-color) / calc(var(--evo-shadow-strength) * 0.6));
+$shadow-md:  0 4px 6px -1px rgb(var(--evo-shadow-color) / var(--evo-shadow-strength)),
+             0 2px 4px -2px rgb(var(--evo-shadow-color) / var(--evo-shadow-strength));
+$shadow-lg:  0 10px 15px -3px rgb(var(--evo-shadow-color) / var(--evo-shadow-strength)),
+             0 4px 6px -4px rgb(var(--evo-shadow-color) / var(--evo-shadow-strength));
+$shadow-xl:  0 20px 25px -5px rgb(var(--evo-shadow-color) / calc(var(--evo-shadow-strength) * 1.25)),
+             0 8px 10px -6px rgb(var(--evo-shadow-color) / var(--evo-shadow-strength));
+$shadow-2xl: 0 25px 50px -12px rgb(var(--evo-shadow-color) / calc(var(--evo-shadow-strength) * 2));
 
 // Transitions
 $transition-fast:   150ms ease;

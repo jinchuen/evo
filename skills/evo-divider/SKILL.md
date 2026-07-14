@@ -30,7 +30,6 @@ import { EvoDivider } from '@justin_evo/evo-ui'
 
 - You need a semantic landmark or grouping — use proper headings/sections instead; EvoDivider renders plain `<div>`s, not `<hr>` or `<section>`.
 - You need a labeled vertical divider — the label is only rendered for the horizontal (label-present) layout; `orientation` is ignored when `label` is set.
-- You need to forward a `ref` or arbitrary native HTML attributes to the divider — only `className` is accepted (see Gotchas).
 - You want spacing/padding around the divider — apply margins via the parent layout or `className`; EvoDivider does not expose spacing props.
 
 ## Quick start
@@ -56,8 +55,9 @@ function Example() {
 | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | No | Direction of the divider line. Ignored when `label` is provided (the labeled layout is always horizontal). |
 | `label` | `string` | `undefined` | No | Optional text centered within the divider. When set, the component renders the labeled (horizontal) layout with a line on each side of the text; `orientation` has no effect. |
 | `className` | `string` | `''` | No | Additional CSS class appended to the root element's class list. |
+| `...rest` | `React.HTMLAttributes<HTMLDivElement>` | — | No | All other native `div` attributes (`id`, `style`, `aria-*`, `data-*`, event handlers, …) are spread onto the root element. |
 
-Note: EvoDivider does NOT extend a native element attributes type. It accepts only the three props above — it does not forward `ref` or arbitrary `...rest` native HTML attributes to the root element. Only `className` is merged onto the rendered root `<div>`.
+`EvoDividerProps` extends `React.HTMLAttributes<HTMLDivElement>`, and the component forwards a `ref` to its root `<div>` via `forwardRef` (`displayName: 'EvoDivider'`).
 
 ## Variants & options
 
@@ -139,15 +139,16 @@ function Spaced() {
 
 ## Accessibility
 
-- EvoDivider is purely presentational. It renders plain `<div>` elements (and a `<span>` for the label text); it sets no `role`, no `aria-*` attributes, and no `tabIndex`. It is not focusable and has no keyboard interactions.
-- Because it carries no semantics, it is not exposed as a separator to assistive technology. If a meaningful separation between groups is required for screen-reader users, rely on semantic structure (headings, lists, sections) rather than on EvoDivider alone.
+- The root element carries `role="separator"`, so EvoDivider is announced to assistive technology as a separator.
+- For the unlabeled variant, `aria-orientation="vertical"` is set automatically when `orientation="vertical"`; horizontal is the ARIA default so no attribute is added in that case.
+- For the labeled variant, the outer `role="separator"` container gets `aria-label` from the `label` prop, and the two decorative line `<div>`s are marked `aria-hidden="true"` so only the label text is exposed to screen readers.
 - The line and label colors are driven by Evo CSS variables, so the divider remains visible in both light and dark mode without any consumer configuration.
+- Not focusable and has no keyboard interactions — a divider is not an interactive control.
 
 ## Gotchas
 
-- No ref / no `...rest` forwarding: unlike most Evo components, EvoDivider does not call `forwardRef` and does not spread arbitrary native attributes onto its root. Only `className` is applied. Do not expect `id`, `style`, `data-*`, or `ref` props to reach the DOM node.
 - `label` overrides `orientation`: if you pass `label`, the component always renders the horizontal labeled layout; `orientation="vertical"` is silently ignored. There is no labeled vertical divider.
-- Vertical needs height: a `vertical` divider draws nothing useful unless its parent gives it height (e.g. a flex row with `align-items: center` and a set `height`). Place it inside such a container.
+- Vertical needs height: a `vertical` divider draws nothing useful unless its parent gives it height (e.g. a flex row with `align-items: center` and a set `height`). The `.vertical` style now has a `min-height: 1rem` floor so it stays visible even outside a stretching flex/grid parent, but a taller explicit height still looks better inline.
 - Theme with tokens, not hex: when styling via `className`, use `var(--evo-color-*)`, `var(--evo-spacing-*)`, and `var(--evo-radius-*)`; never hard-code hex values (they break dark mode).
 - Single CSS import: the divider's line/label styles come from `@justin_evo/evo-ui/dist/evo-ui.css`. Import that stylesheet once, app-wide, or the divider will render unstyled.
 - Named imports only: import `EvoDivider` from `@justin_evo/evo-ui` — never from a deep/internal path.

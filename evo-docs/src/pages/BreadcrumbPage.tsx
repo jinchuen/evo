@@ -64,10 +64,15 @@ export default function BreadcrumbPage() {
         <PropsTable props={[
           { prop: 'EvoBreadcrumb — children', type: 'ReactNode', required: true, description: 'EvoBreadcrumb.Item elements.' },
           { prop: 'EvoBreadcrumb — separator', type: 'ReactNode', default: "'/'", description: 'Separator rendered between items.' },
-          { prop: 'EvoBreadcrumb — className', type: 'string', description: 'Additional CSS class.' },
+          { prop: 'EvoBreadcrumb — className', type: 'string', description: 'Additional CSS class, merged onto the root <nav>.' },
+          { prop: 'EvoBreadcrumb — ref', type: 'Ref<HTMLElement>', description: 'Forwarded to the root <nav> element.' },
+          { prop: 'EvoBreadcrumb — ...rest', type: 'HTMLAttributes<HTMLElement>', description: 'Any other native <nav> attribute is spread onto the root element.' },
           { prop: 'EvoBreadcrumb.Item — children', type: 'ReactNode', required: true, description: 'Item label.' },
           { prop: 'EvoBreadcrumb.Item — href', type: 'string', description: 'Link href. Not rendered when current=true.' },
           { prop: 'EvoBreadcrumb.Item — current', type: 'boolean', default: 'false', description: 'Marks this as the current page. Adds aria-current="page" and disables the link.' },
+          { prop: 'EvoBreadcrumb.Item — className', type: 'string', description: 'Additional CSS class, merged onto the <li>.' },
+          { prop: 'EvoBreadcrumb.Item — ref', type: 'Ref<HTMLLIElement>', description: 'Forwarded to the <li> element.' },
+          { prop: 'EvoBreadcrumb.Item — ...rest', type: 'LiHTMLAttributes<HTMLLIElement>', description: 'Any other native <li> attribute is spread onto the item.' },
         ]} />
       </div>
     </div>

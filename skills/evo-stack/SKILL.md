@@ -32,7 +32,6 @@ import { EvoStack } from '@justin_evo/evo-ui';
 - You need a two-dimensional layout with rows and columns — use [[evo-grid]] instead.
 - You need page-level max-width / horizontal centering / padding — use [[evo-container]].
 - You need a visual separator line between items — use [[evo-divider]] (EvoStack only controls spacing, not separators).
-- You need ref forwarding or arbitrary native DOM attributes/event handlers on the root — EvoStack only accepts the documented props (see Gotchas).
 
 ## Quick start
 
@@ -62,8 +61,9 @@ function Example() {
 | `wrap` | `boolean` | `false` | No | When `true` sets `flex-wrap: wrap`; otherwise `flex-wrap: nowrap`. |
 | `className` | `string` | `''` | No | Additional CSS class applied to the root `<div>`. |
 | `style` | `CSSProperties` | — | No | Inline styles merged onto the root `<div>` (spread after the computed flex styles, so it can override them). |
+| `...rest` | `React.HTMLAttributes<HTMLDivElement>` | — | No | Any other native `<div>` attribute or event handler (`id`, `role`, `aria-*`, `data-*`, `onClick`, …) is spread onto the root element. |
 
-EvoStack renders a single `<div>`. It applies only `className` and `style` to that element — it does **not** forward `ref` and does **not** spread other native `...rest` attributes (see Gotchas).
+EvoStack renders a single `<div>` and forwards `ref` to it (`forwardRef<HTMLDivElement, EvoStackProps>`). All native attributes and event handlers you pass are spread onto that root element alongside the computed flex styles.
 
 ## Variants & options
 
@@ -166,14 +166,31 @@ function Tags({ tags }: { tags: string[] }) {
 }
 ```
 
+### Ref + native attributes (list semantics)
+
+```tsx
+import { useRef } from 'react';
+import { EvoStack } from '@justin_evo/evo-ui';
+
+function RecentItems() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  return (
+    <EvoStack ref={ref} role="list" aria-label="Recent items" data-testid="recent-stack">
+      <div role="listitem">Item 1</div>
+      <div role="listitem">Item 2</div>
+    </EvoStack>
+  );
+}
+```
+
 ## Accessibility
 
 EvoStack is a purely presentational layout primitive. It renders a plain `<div>` and adds no `role`, `aria-*`, `tabIndex`, focus management, or keyboard handlers of its own — visual layout has no inherent semantics. Make the content inside it accessible (use semantic elements, headings, labels, and roles on the children as appropriate). Because EvoStack only reorders/spaces children visually via flexbox, keep the DOM order meaningful so screen-reader and tab order remain logical; avoid relying on flex reordering to convey meaning.
 
 ## Gotchas
 
-- **No ref forwarding / no `...rest` passthrough.** Unlike most Evo components, EvoStack only applies `className` and `style` to its root `<div>`. It does **not** accept a `ref`, and arbitrary native attributes/event handlers (e.g. `id`, `onClick`, `data-*`, `aria-*`) are **not** spread onto the root. If you need those, wrap EvoStack in your own element or apply them to a child.
-- **`gap` numbers are pixels.** A numeric `gap` (e.g. `gap={16}`) is converted to `"16px"`. Pass a string to use any other unit (`gap="1rem"`, `gap="2%"`). The default is `'1rem'`.
+- **`gap` numbers are pixels.** A numeric `gap` (e.g. `gap={16}`) is converted to `"16px"`. Pass a string to use any other unit (`gap="1rem"`, `gap="2%"`). The default is `'1rem'`. This behavior is unchanged (changing it would be a breaking change) — but prefer a `rem` string that is a multiple of 4px, or the `.gap-{n}` spacing utility classes, over an arbitrary pixel number so spacing stays on the 4pt grid. In development only, a numeric `gap` that is not a multiple of 4 logs a one-line `console.warn` to flag the off-grid value; it is a no-op in production and never throws or blocks rendering.
 - **`style` overrides computed flex styles.** Your `style` object is spread *after* the computed flex declarations, so keys like `display`, `flexDirection`, `gap`, `alignItems`, `justifyContent`, or `flexWrap` in `style` will override the corresponding props. Prefer the dedicated props; reserve `style` for additional CSS.
 - **Default `align` is `stretch`.** Children stretch to fill the cross axis by default. In a `row`, that means children stretch to equal height; in a `column`, children stretch to full width. Set `align="start"` (or another value) if you do not want this.
 - **Default `direction` is `column`.** Omitting `direction` stacks vertically, not horizontally. Set `direction="row"` for an inline group.

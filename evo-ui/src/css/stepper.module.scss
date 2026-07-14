@@ -1,0 +1,240 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+// ============================================================
+// EvoStepper
+// ------------------------------------------------------------
+// Orthogonal axes:
+//   1. orientation — horizontal / vertical
+//   2. severity    — accent for the *current* step only (primary /
+//                    success / info). complete/error keep fixed
+//                    semantic colors — they carry meaning that
+//                    shouldn't be reskinned.
+//   3. size        — sm / md / lg (marker diameter + type scale)
+//
+// The one distinctive move: `.connectorFilled` — the line after a
+// completed step banks solid in the success color, with a smooth
+// color transition when `active` advances. That is the whole
+// flourish; everything else here is quiet.
+// ============================================================
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.root {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: $font-sans;
+}
+
+// ----- Orientation -------------------------------------------
+
+.horizontal {
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+
+  > .step {
+    flex-direction: column;
+    align-items: stretch;
+
+    &:last-child {
+      flex: 0 0 auto;
+    }
+  }
+}
+
+.vertical {
+  flex-direction: column;
+
+  > .step {
+    flex-direction: row;
+  }
+}
+
+// ----- Step ----------------------------------------------------
+
+.step {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.horizontal .indicator {
+  flex-direction: row;
+  width: 100%;
+}
+
+.vertical .indicator {
+  flex-direction: column;
+  align-self: stretch;
+}
+
+// ----- Marker ---------------------------------------------------
+
+.marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid $color-border;
+  background-color: $color-surface;
+  color: $color-text-muted;
+  font-weight: 700;
+  line-height: 1;
+  font-family: inherit;
+  padding: 0;
+  cursor: default;
+  transition:
+    background-color $transition-normal,
+    border-color $transition-normal,
+    color $transition-normal,
+    box-shadow $transition-normal;
+}
+
+button.marker {
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
+  &:hover {
+    border-color: $color-border-strong;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $evo-primary-focus;
+    outline-offset: 2px;
+  }
+
+  // Touch targets stay compact on desktop (the visual size communicates
+  // step density) and only grow to a full 44px hit area on coarse pointers.
+  @media (pointer: coarse) {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+.size-sm .marker { width: 1.5rem; height: 1.5rem; font-size: $text-xs; }
+.size-md .marker { width: 2rem; height: 2rem; font-size: $text-sm; }
+.size-lg .marker { width: 2.5rem; height: 2.5rem; font-size: $text-base; }
+
+.marker.complete {
+  background-color: $evo-success-color;
+  border-color: $evo-success-color;
+  color: $evo-success-fg;
+}
+
+.marker.error {
+  background-color: $evo-danger-color;
+  border-color: $evo-danger-color;
+  color: $evo-danger-fg;
+}
+
+.marker.current {
+  &.severity-primary { border-color: $evo-primary-color; color: $evo-primary-color; box-shadow: 0 0 0 3px $evo-primary-soft; }
+  &.severity-success  { border-color: $evo-success-color; color: $evo-success-color; box-shadow: 0 0 0 3px $evo-success-soft; }
+  &.severity-info     { border-color: $evo-info-color; color: $evo-info-color; box-shadow: 0 0 0 3px $evo-info-soft; }
+  background-color: $color-surface;
+}
+
+.marker.upcoming {
+  background-color: $color-surface-sunken;
+  border-color: $color-border;
+  color: $color-text-muted;
+}
+
+// ----- Connector --------------------------------------------------
+
+.connector {
+  background-color: $color-border;
+  transition: background-color $transition-normal;
+}
+
+.horizontal .connector {
+  flex: 1 1 auto;
+  height: 2px;
+  margin: 0 0.5rem;
+}
+
+.vertical .connector {
+  width: 2px;
+  flex: 1 1 auto;
+  min-height: 1.5rem;
+  margin: 0.25rem 0;
+  align-self: center;
+}
+
+// The one distinctive flourish: banked progress reads as a solid filled
+// line, not just a completed dot — see the file header comment.
+.connectorFilled {
+  background-color: $evo-success-color;
+}
+
+// ----- Content ----------------------------------------------------
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.horizontal .content {
+  padding-top: 0.5rem;
+}
+
+.vertical .content {
+  padding-bottom: 1rem;
+  padding-top: 0.125rem;
+}
+
+.title {
+  font-size: $text-sm;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $color-text-primary;
+  overflow-wrap: anywhere;
+
+  &.severity-primary { color: $evo-primary-color; }
+  &.severity-success  { color: $evo-success-color; }
+  &.severity-info     { color: $evo-info-color; }
+}
+
+.description {
+  font-size: $text-xs;
+  line-height: 1.5;
+  color: $color-text-muted;
+  overflow-wrap: anywhere;
+}
+
+.size-sm .title { font-size: $text-xs; }
+.size-lg .title { font-size: $text-base; }
+
+// ----- Motion preferences ------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  .marker,
+  .connector {
+    transition: none;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { forwardRef, useState, useEffect, useRef, useCallback } from 'react';
 import styles from '../css/commandpalette.module.scss';
 
 export interface CommandPaletteItem {
@@ -10,12 +10,26 @@ export interface CommandPaletteItem {
   onSelect: () => void;
 }
 
-interface EvoCommandPaletteProps {
+export interface EvoCommandPaletteProps extends React.HTMLAttributes<HTMLDivElement> {
   items: CommandPaletteItem[];
   placeholder?: string;
   open?: boolean;
   onClose?: () => void;
 }
+
+// Merge a forwarded ref with an internally-owned ref onto the same node.
+function mergeRefs<T>(...refs: Array<React.Ref<T> | undefined>) {
+  return (node: T | null) => {
+    refs.forEach(ref => {
+      if (!ref) return;
+      if (typeof ref === 'function') ref(node);
+      else (ref as React.MutableRefObject<T | null>).current = node;
+    });
+  };
+}
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 // Detect Mac for shortcut display only — keyboard handler uses ctrlKey||metaKey for both
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
@@ -27,17 +41,27 @@ const SearchIcon = () => (
   </svg>
 );
 
-export const EvoCommandPalette = ({
-  items,
-  placeholder = 'Search commands…',
-  open: controlledOpen,
-  onClose,
-}: EvoCommandPaletteProps) => {
+export const EvoCommandPalette = forwardRef<HTMLDivElement, EvoCommandPaletteProps>(function EvoCommandPalette(
+  {
+    items,
+    placeholder = 'Search commands…',
+    open: controlledOpen,
+    onClose,
+    className,
+    ...rest
+  },
+  ref,
+) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
+  // Distinguishes a roving keyboard selection from a mouse hover so the two
+  // states can be styled differently (see .resultActive vs .resultHover).
+  const [activeSource, setActiveSource] = useState<'keyboard' | 'mouse'>('keyboard');
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const paletteRef = useRef<HTMLDivElement>(null);
 
   const isControlled = controlledOpen !== undefined;
   const isOpen = isControlled ? controlledOpen : internalOpen;
@@ -64,6 +88,7 @@ export const EvoCommandPalette = ({
     if (isOpen) {
       setQuery('');
       setActiveIdx(0);
+      setActiveSource('keyboard');
       // Small delay so the element is mounted before focus
       const t = setTimeout(() => inputRef.current?.focus(), 30);
       return () => clearTimeout(t);
@@ -95,6 +120,7 @@ export const EvoCommandPalette = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
+      setActiveSource('keyboard');
       setActiveIdx(i => {
         const next = Math.min(i + 1, flat.length - 1);
         scrollActiveIntoView(next);
@@ -102,6 +128,7 @@ export const EvoCommandPalette = ({
       });
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
+      setActiveSource('keyboard');
       setActiveIdx(i => {
         const next = Math.max(i - 1, 0);
         scrollActiveIntoView(next);
@@ -110,6 +137,22 @@ export const EvoCommandPalette = ({
     } else if (e.key === 'Enter' && flat[activeIdx]) {
       flat[activeIdx].onSelect();
       close();
+    } else if (e.key === 'Tab') {
+      // Focus trap: Tab must not escape behind the overlay.
+      const nodes = paletteRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (!nodes || nodes.length === 0) return;
+      const focusable = Array.from(nodes);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   };
 
@@ -118,8 +161,16 @@ export const EvoCommandPalette = ({
   let globalIdx = 0;
 
   return (
-    <div className={styles.overlay} onClick={close} role="dialog" aria-modal="true">
+    <div
+      ref={mergeRefs(overlayRef, ref)}
+      className={[styles.overlay, className].filter(Boolean).join(' ')}
+      onClick={close}
+      role="dialog"
+      aria-modal="true"
+      {...rest}
+    >
       <div
+        ref={paletteRef}
         className={styles.palette}
         onClick={e => e.stopPropagation()}
         onKeyDown={handleKeyDown}
@@ -131,7 +182,7 @@ export const EvoCommandPalette = ({
             className={styles.searchInput}
             placeholder={placeholder}
             value={query}
-            onChange={e => { setQuery(e.target.value); setActiveIdx(0); }}
+            onChange={e => { setQuery(e.target.value); setActiveIdx(0); setActiveSource('keyboard'); }}
             aria-label="Command search"
           />
           <kbd className={styles.escBadge}>Esc</kbd>
@@ -149,12 +200,17 @@ export const EvoCommandPalette = ({
                 return (
                   <button
                     key={item.label}
+                    type="button"
                     data-idx={idx}
-                    className={[styles.resultItem, idx === activeIdx ? styles.resultActive : '']
+                    className={[
+                      styles.resultItem,
+                      idx === activeIdx && activeSource === 'keyboard' ? styles.resultActive : '',
+                      idx === activeIdx && activeSource === 'mouse' ? styles.resultHover : '',
+                    ]
                       .filter(Boolean)
                       .join(' ')}
                     onClick={() => { item.onSelect(); close(); }}
-                    onMouseEnter={() => setActiveIdx(idx)}
+                    onMouseEnter={() => { setActiveSource('mouse'); setActiveIdx(idx); }}
                   >
                     {item.icon && <span className={styles.resultIcon}>{item.icon}</span>}
                     <span className={styles.resultLabel}>{item.label}</span>
@@ -182,4 +238,6 @@ export const EvoCommandPalette = ({
       </div>
     </div>
   );
-};
+});
+
+EvoCommandPalette.displayName = 'EvoCommandPalette';

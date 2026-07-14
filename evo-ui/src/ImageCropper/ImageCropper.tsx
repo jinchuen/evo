@@ -793,7 +793,10 @@ export const EvoImageCropper = forwardRef<EvoImageCropperHandle, EvoImageCropper
         </div>
 
         {showControls && (
-          <div className={styles.controls} aria-label="Cropper controls">
+          <div
+            className={`${styles.controls} ${disabled ? styles.disabled : ''}`}
+            aria-label="Cropper controls"
+          >
             <div className={styles.controlGroup}>
               <span className={styles.controlLabel}>Zoom</span>
               <button
@@ -878,6 +881,7 @@ export const EvoImageCropper = forwardRef<EvoImageCropperHandle, EvoImageCropper
     );
   },
 );
+EvoImageCropper.displayName = 'EvoImageCropper';
 
 // ----------------------------------------------------------------------------
 // Inline icons — kept inline so the component has zero external deps

@@ -55,7 +55,8 @@ export interface EvoTopNavMenuProps
   className?: string;
 }
 
-export interface EvoTopNavItemProps {
+export interface EvoTopNavItemProps
+  extends Omit<React.HTMLAttributes<HTMLElement>, 'onClick' | 'className'> {
   children: React.ReactNode;
   active?: boolean;
   icon?: React.ReactNode;
@@ -64,6 +65,8 @@ export interface EvoTopNavItemProps {
   rel?: string;
   onClick?: (e: React.MouseEvent) => void;
   asChild?: boolean;
+  /** Disables activation and dims the item. Applies `aria-disabled` (and native `disabled` when rendered as a `<button>`). @default false */
+  disabled?: boolean;
   className?: string;
 }
 
@@ -467,7 +470,7 @@ const EvoTopNavMenu = forwardRef<HTMLUListElement, EvoTopNavMenuProps>(
 
 const EvoTopNavItem = forwardRef<HTMLElement, EvoTopNavItemProps>(
   function EvoTopNavItem(
-    { children, active, icon, href, target, rel, onClick, asChild, className },
+    { children, active, icon, href, target, rel, onClick, asChild, className, disabled, ...rest },
     ref,
   ) {
     const ctx = React.useContext(TopNavContext);
@@ -475,14 +478,20 @@ const EvoTopNavItem = forwardRef<HTMLElement, EvoTopNavItemProps>(
 
     // Auto-close drawer on activation (SPA route nav heuristic).
     const handleActivation = (e: React.MouseEvent) => {
+      if (disabled) {
+        e.preventDefault();
+        return;
+      }
       onClick?.(e);
       if (!e.defaultPrevented && inDrawerCtx) ctx.setDrawerOpen(false);
     };
 
     const shared = {
+      ...rest,
       className: cn(styles.topNavItem, active && styles.topNavItemActive, className),
       'aria-current': active ? ('page' as const) : undefined,
       'data-active': active || undefined,
+      'aria-disabled': disabled || undefined,
     };
 
     const content = (
@@ -518,6 +527,7 @@ const EvoTopNavItem = forwardRef<HTMLElement, EvoTopNavItemProps>(
             rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined)
           }
           onClick={handleActivation}
+          tabIndex={disabled ? -1 : undefined}
           {...shared}
         >
           {content}
@@ -529,6 +539,7 @@ const EvoTopNavItem = forwardRef<HTMLElement, EvoTopNavItemProps>(
           ref={ref as React.Ref<HTMLButtonElement>}
           type="button"
           onClick={handleActivation}
+          disabled={disabled}
           {...shared}
         >
           {content}

@@ -212,6 +212,50 @@ function RoleField() {
 }
 ```
 
+### Smart defaults — prefill the recommended option
+
+Don't make users choose when you already know what most of them want. Preselect
+the best-fit option, annotate it as "Recommended" in that option's `description`,
+and pair it with a one-tap ghost `EvoButton` reset so people who know better can
+still change it in one click. This is a composition of existing props — there is
+no `recommended` field on `SelectOption`.
+
+```tsx
+import { useState } from 'react';
+import { EvoSelect, EvoButton } from '@justin_evo/evo-ui';
+
+const RECOMMENDED_PLAN = 'pro';
+
+const plans = [
+  { value: 'free', label: 'Free', description: '1 project · community support' },
+  { value: 'pro', label: 'Pro', description: 'Recommended — unlimited projects, priority support' },
+  { value: 'team', label: 'Team', description: 'Collaboration · SSO · audit logs' },
+];
+
+function PlanField() {
+  // Preselect the recommended option instead of an empty placeholder.
+  const [plan, setPlan] = useState(RECOMMENDED_PLAN);
+  return (
+    <>
+      <EvoSelect
+        label="Plan"
+        options={plans}
+        value={plan}
+        onChange={setPlan}
+        helperText="Recommended for most teams — change any time."
+      />
+      <EvoButton
+        variant="ghost"
+        size="sm"
+        label="Use recommended"
+        onClick={() => setPlan(RECOMMENDED_PLAN)}
+        disabled={plan === RECOMMENDED_PLAN}
+      />
+    </>
+  );
+}
+```
+
 ### Sizes, full width, and disabled
 
 ```tsx
@@ -254,6 +298,7 @@ import { EvoSelect } from '@justin_evo/evo-ui';
 - **One CSS import, named imports only.** Import `@justin_evo/evo-ui/dist/evo-ui.css` once at the app root and import `EvoSelect` from `@justin_evo/evo-ui` — never from a deep path.
 - **No ref / rest passthrough.** Unlike most Evo inputs, EvoSelect's props are a closed set; only `className`, `id`, `name`, and `label` reach the DOM. Do not expect arbitrary native attributes or a forwarded `ref`.
 - The dropdown menu is viewport-aware: it renders in a portal and flips upward when the trigger is near the bottom of the screen, so it is never clipped by `overflow: hidden` / scroll containers (including inside an EvoModal). Automatic; no props.
+- **No built-in "recommended" marker.** There is no `recommended` field on `SelectOption`. To flag a default choice, preselect it via `value`/`defaultValue` and put the word "Recommended" in that option's `description` — see "Smart defaults" above.
 
 ## Related
 

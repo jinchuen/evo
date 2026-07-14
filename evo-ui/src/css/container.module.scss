@@ -1,9 +1,15 @@
-@use 'base/variables' as *;
-
+// Horizontal padding follows the 4pt spacing scale (0.25rem steps) and
+// grows a step at wider breakpoints so gutters feel proportional to the
+// available width instead of a single fixed inset.
 .container {
   width: 100%;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 1rem; // spacing-4
+  padding-right: 1rem; // spacing-4
+
+  @media (min-width: 640px) {
+    padding-left: 1.5rem; // spacing-6
+    padding-right: 1.5rem; // spacing-6
+  }
 }
 
 .centered {

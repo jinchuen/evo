@@ -60,6 +60,12 @@ $_palette: (
 .text-current     { color: currentColor; }
 .bg-transparent   { background-color: transparent; }
 .bg-inherit       { background-color: inherit; }
+
+// Absolute black/white escape hatches. These are INTENTIONALLY literal (not theme
+// tokens): they mean "true white / true black in every theme" — e.g. a photo mat,
+// a print surface, or an element that must not invert in dark mode. They do NOT
+// track the theme; reach for var(--evo-color-bg)/--evo-color-text (or .bg-surface /
+// .text-default) when you want the theme-aware colour instead.
 .bg-white         { background-color: #fff; }
 .bg-black         { background-color: #000; }
 .text-white       { color: #fff; }

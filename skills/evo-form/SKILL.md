@@ -1,6 +1,6 @@
 ---
 name: evo-form
-description: Use when building a form layout — login/signup forms, settings pages, multi-section profile or account forms, or wrapping non-Evo controls with consistent label/description/error/required metadata; covers EvoForm and its slots EvoForm.Header, EvoForm.Section, EvoForm.Row, EvoForm.Field, EvoForm.Actions, plus the useFormContext hook.
+description: Use when building a form layout — login/signup forms, settings pages, multi-section profile or account forms, repeatable field-groups (contacts, links, line items), or wrapping non-Evo controls with consistent label/description/error/required metadata; covers EvoForm and its slots EvoForm.Header, EvoForm.Section, EvoForm.Row, EvoForm.Field, EvoForm.Actions, EvoForm.Repeater, plus the useFormContext hook.
 ---
 
 # EvoForm — Evo UI
@@ -9,7 +9,7 @@ description: Use when building a form layout — login/signup forms, settings pa
 
 ## Overview
 
-EvoForm is a lightweight, composable form layout system. The root renders a real `<form>` and shares a `disabled` / `size` / `layout` context with its children, while a small set of slot components (Header, Section, Row, Field, Actions) assemble everything from a single login form to a multi-section settings page.
+EvoForm is a lightweight, composable form layout system. The root renders a real `<form>` and shares a `disabled` / `size` / `layout` context with its children, while a small set of slot components (Header, Section, Row, Field, Actions, Repeater) assemble everything from a single login form to a multi-section settings page. When `disabled` is set, content is also rendered inside a native `<fieldset disabled>` so every descendant form control — Evo or plain HTML — is blocked by the browser itself, not just controls that happen to read `useFormContext`.
 
 ## Import
 
@@ -26,6 +26,7 @@ import { EvoForm, useFormContext } from '@justin_evo/evo-ui';
 - Placing fields side-by-side that wrap on small screens (EvoForm.Row).
 - Decorating non-Evo controls (date pickers, file uploaders, custom widgets) with a label, helper description, error message, or required asterisk via EvoForm.Field.
 - Disabling or sizing an entire form's controls at once via context.
+- Letting users build up a repeatable list (contacts, links, line items) one row at a time via EvoForm.Repeater — the "assemble it yourself" pattern (IKEA effect) that makes the result feel like the user's own.
 
 ## When NOT to use
 
@@ -63,7 +64,7 @@ Root component `EvoForm`:
 | Prop | Type | Default | Required | Description |
 | --- | --- | --- | --- | --- |
 | `children` | `React.ReactNode` | — | Yes | Form content — typically EvoForm.Header, EvoForm.Section, EvoForm.Row, EvoForm.Field, and EvoForm.Actions. |
-| `disabled` | `boolean` | `false` | No | Disables all child form inputs via context (read by Evo controls and `useFormContext`). |
+| `disabled` | `boolean` | `false` | No | Disables all child form inputs. Content renders inside a native `<fieldset disabled>`, so every descendant control (Evo or plain HTML) is actually blocked by the browser; also shared via context for components that want to read `useFormContext` (e.g. to show a muted/"disabled" visual state without a real form control). |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | No | Density / spacing preset shared via context. |
 | `layout` | `'vertical' \| 'horizontal'` | `'vertical'` | No | Layout hint passed via context for child controls. |
 | `maxWidth` | `number \| string` | `undefined` | No | Caps the form width. Convenient shorthand applied to the root `<form>` style; merges with any `style` you pass. |
@@ -133,6 +134,56 @@ Renders a `<div>` footer row for action buttons (typically Cancel / Submit).
 | `divider` | `boolean` | `true` | No | Renders a subtle top border above the actions row. |
 | `children` | `React.ReactNode` | — | Yes | Typically EvoButton elements (Cancel / Submit). |
 | `className` | `string` | `''` | No | Additional CSS class for the actions `<div>`. |
+
+### EvoForm.Repeater
+
+Renders a repeatable field-group: one row per item in `value`, plus a trailing "Add another" button. Each row gets a ghost, danger-severity remove button (disabled once `min` is reached); the add button disables once `max` is reached. Mirrors the Row/Field/Section slot pattern — put whatever fields you like inside `renderItem`.
+
+| Prop | Type | Default | Required | Description |
+| --- | --- | --- | --- | --- |
+| `value` | `T[]` | — | Yes | The current array of row items. |
+| `onChange` | `(next: T[]) => void` | — | Yes | Called with the next array whenever a row is added, updated, or removed. |
+| `min` | `number` | `0` | No | Minimum row count. The remove button on each row is disabled once the array is at this floor. |
+| `max` | `number` | `undefined` | No | Maximum row count. The add button is disabled once the array is at this ceiling. |
+| `addLabel` | `React.ReactNode` | `'Add another'` | No | Label for the trailing add-row button. |
+| `renderItem` | `(item: T, index: number, api: { update: (index: number, patch: Partial<T>) => void; remove: (index: number) => void }) => React.ReactNode` | — | Yes | Renders one row. Call `api.update(index, patch)` to merge a partial patch into that row's state, or `api.remove(index)` to remove it (in addition to the built-in remove button). |
+| `className` | `string` | `''` | No | Additional CSS class for the list container. |
+
+```tsx
+import { EvoForm, EvoInput } from '@justin_evo/evo-ui';
+
+const [contacts, setContacts] = useState([{ name: '', email: '' }]);
+
+<EvoForm.Section title="Contacts">
+  <EvoForm.Repeater
+    value={contacts}
+    onChange={setContacts}
+    min={1}
+    max={5}
+    addLabel="Add another contact"
+    renderItem={(item, index, { update }) => (
+      <EvoForm.Row key={index}>
+        <EvoForm.Field>
+          <EvoInput
+            placeholder="Name"
+            fullWidth
+            value={item.name}
+            onChange={(e) => update(index, { name: e.target.value })}
+          />
+        </EvoForm.Field>
+        <EvoForm.Field>
+          <EvoInput
+            placeholder="Email"
+            fullWidth
+            value={item.email}
+            onChange={(e) => update(index, { email: e.target.value })}
+          />
+        </EvoForm.Field>
+      </EvoForm.Row>
+    )}
+  />
+</EvoForm.Section>
+```
 
 ### useFormContext()
 
@@ -291,7 +342,7 @@ import { EvoForm, EvoButton } from '@justin_evo/evo-ui';
 ## Gotchas
 
 - EvoForm is layout + context only. It does NOT manage values, validation, or submission — wire your own `onSubmit` handler (and call `e.preventDefault()` to stop a full-page navigation).
-- `disabled` on the root only propagates through React context. Evo controls and components reading `useFormContext` honor it; a plain `<input>` you drop in will NOT be disabled automatically — read `useFormContext` yourself or set `disabled` on it.
+- `disabled` on the root disables every descendant form control for real, via a native `<fieldset disabled>` wrapper (rendered with `display: contents` so it doesn't affect layout) — this includes plain `<input>`/`<select>`/`<button>` elements you drop in, not just Evo controls. It is also still exposed through `useFormContext` for components that want to mirror the disabled visual state without being a real form control.
 - Buttons placed in `EvoForm.Actions` default `type="button"` (Evo convention) and will not submit the form by accident. To make a button submit, set `type="submit"` explicitly.
 - `EvoForm.Field` is a bare wrapper unless you pass `label`, `description`, or `error` — passing only `required` without a `label` renders no asterisk (the asterisk lives inside the label).
 - `error` takes precedence over `description`: when both are set, only the error line is shown.
@@ -299,10 +350,14 @@ import { EvoForm, EvoButton } from '@justin_evo/evo-ui';
 - Theme via CSS variables (`var(--evo-color-*)`, `var(--evo-spacing-*)`, `var(--evo-radius-*)`); never hard-code hex colors — they break dark mode.
 - Import the stylesheet `@justin_evo/evo-ui/dist/evo-ui.css` exactly once globally; use named imports from `@justin_evo/evo-ui` (no deep paths).
 - Interactive controls inside a form should keep ≥44px touch targets on mobile; rely on Evo control sizing rather than shrinking them with custom CSS.
+- `EvoForm.Repeater` is uncontrolled-state-free (fully controlled): you own `value`/`onChange`. A new row is appended as `{}` — `renderItem` is responsible for supplying sensible defaults/placeholders for whatever fields it renders.
+- `EvoForm.Repeater` does not assign a stable `id` to rows; if your items don't already carry one, the example above keys on `index`. Give items a real id when rows can be reordered or removed from the middle to avoid input-focus jumping.
+- Pair `EvoForm.Repeater`/smart-defaults affordances with [[evo-autocomplete]]'s `recents` prop on individual fields to remember a user's last picks — a returning user's own previous answer is the strongest "smart default".
 
 ## Related
 
 - [[evo-input]]
+- [[evo-autocomplete]]
 - [[evo-select]]
 - [[evo-checkbox]]
 - [[evo-radio]]

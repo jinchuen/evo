@@ -101,9 +101,25 @@ export const EvoCardRoot = forwardRef<HTMLElement, EvoCardRootProps>(
     const classes = rootClasses(variant, orientation, isInteractive, className);
 
     if (isInteractive && typeof (rest as { href?: string }).href === 'string') {
-      const anchorRest = rest as AnchorHTMLAttributes<HTMLAnchorElement>;
+      const { onClick, ...anchorRest } = rest as AnchorHTMLAttributes<HTMLAnchorElement>;
+      // <a> has no native `disabled` state (unlike <button>), so an
+      // aria-disabled anchor must have its navigation guarded in JS —
+      // pointer-events:none would also silently kill the visible
+      // `cursor: not-allowed`, so we guard the click instead.
+      const isAriaDisabled = anchorRest['aria-disabled'] === true || anchorRest['aria-disabled'] === 'true';
       return (
-        <a ref={ref as Ref<HTMLAnchorElement>} className={classes} {...anchorRest}>
+        <a
+          ref={ref as Ref<HTMLAnchorElement>}
+          className={classes}
+          {...anchorRest}
+          onClick={(event) => {
+            if (isAriaDisabled) {
+              event.preventDefault();
+              return;
+            }
+            onClick?.(event);
+          }}
+        >
           {children}
         </a>
       );

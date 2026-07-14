@@ -381,6 +381,15 @@ export default function TopNavPage() {
           <li>
             All animations respect <code>prefers-reduced-motion</code>.
           </li>
+          <li>
+            <code>disabled</code> on <code>EvoTopNav.Item</code> sets{' '}
+            <code>aria-disabled</code> (plus native <code>disabled</code> when
+            rendered as a <code>&lt;button&gt;</code>) and dims the item to
+            50% opacity; disabled anchors are also removed from the tab
+            order. Every item and the search/toggle triggers also show a
+            pressed state (<code>:active</code>) for immediate tactile
+            feedback on click/tap.
+          </li>
         </ul>
       </div>
 
@@ -412,6 +421,7 @@ export default function TopNavPage() {
           { prop: 'EvoTopNav.Item — rel', type: 'string', description: 'Rel attribute. Defaults to "noopener noreferrer" when target="_blank".' },
           { prop: 'EvoTopNav.Item — onClick', type: '(e: MouseEvent) => void', description: 'Click handler. With href, runs alongside default nav.' },
           { prop: 'EvoTopNav.Item — asChild', type: 'boolean', description: 'Clones the single child and merges our props (className, onClick, aria-current). Use for router Link.' },
+          { prop: 'EvoTopNav.Item — disabled', type: 'boolean', description: 'Dims the item and blocks activation. Sets aria-disabled (and native disabled when rendered as a <button>); anchors are also removed from tab order.', default: 'false' },
 
           { prop: 'EvoTopNav.Actions — children', type: 'ReactNode', required: true, description: 'Right-aligned slot for buttons, badges, avatars.' },
 

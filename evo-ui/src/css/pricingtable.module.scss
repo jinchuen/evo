@@ -1,0 +1,301 @@
+@use './base/variables' as *;
+
+// ============================================================
+// EvoPricingTable
+// ------------------------------------------------------------
+// Orthogonal axes:
+//   1. size          — sm / md / lg (padding + type scale)
+//   2. tier.anchor      — flagship/reference tier, chrome recedes
+//   3. tier.recommended — the pick, chrome is raised + ringed
+//
+// The one distinctive move: `.tiers` is a CSS Grid with an explicit
+// `--evo-pricing-cols` column count (set from React, so tiers never
+// wrap into a second grid row) and, at ≥768px, every `.tier` is a
+// `grid-template-rows: subgrid` item spanning 5 shared row tracks
+// (name, price, description, divider, body). That forces every
+// tier's price line, and every tier's CTA, onto one shared
+// horizontal baseline — the mechanical prerequisite for the price
+// "living in context" instead of reading as five unrelated cards.
+// Below 768px (and whenever `alignFeatures={false}`) tiers fall
+// back to plain stacked flex cards. Everything else here — color,
+// spacing, motion — stays as quiet as EvoCard.
+// ============================================================
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: $font-sans;
+  color: $color-text-primary;
+}
+
+.cadence {
+  display: flex;
+  justify-content: center;
+}
+
+// ----- Grid ---------------------------------------------------
+
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .tiers:not(.noAlign) {
+    grid-template-columns: repeat(var(--evo-pricing-cols, 3), minmax(0, 1fr));
+    grid-template-rows: repeat(5, auto);
+  }
+}
+
+// ----- Tier card ------------------------------------------------
+
+.tier {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: $color-surface-elevated;
+  border: 1px solid $color-border-subtle;
+  border-radius: $evo-border-radius-lg;
+  box-shadow: $shadow-sm;
+  transition:
+    box-shadow $transition-fast,
+    background-color $transition-fast,
+    border-color $transition-fast;
+}
+
+@media (min-width: 768px) {
+  .tiers:not(.noAlign) > .tier {
+    grid-row: 1 / -1;
+    display: grid;
+    grid-template-rows: subgrid;
+  }
+}
+
+.tierHeader {
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tierName {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.tierPrice {
+  grid-row: 2;
+}
+
+.tierDescription {
+  grid-row: 3;
+  color: $color-text-secondary;
+  line-height: 1.5;
+
+  &:empty {
+    display: none;
+
+    @media (min-width: 768px) {
+      // keep the row track alive so sibling tiers still align even
+      // when this tier has no description.
+      display: block;
+    }
+  }
+}
+
+.tierDivider {
+  grid-row: 4;
+  height: 1px;
+  background-color: $color-border-subtle;
+}
+
+.tierBody {
+  grid-row: 5 / -1;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+// ----- Anchor tier (flagship reference — recedes) ---------------
+
+.anchor {
+  background-color: $color-surface;
+  box-shadow: none;
+
+  .priceValue {
+    color: $color-text-secondary;
+  }
+}
+
+// ----- Recommended tier (the pick — raised + ringed) -------------
+
+.recommended {
+  background-color: $color-surface-elevated;
+  border-color: $evo-primary-color;
+  box-shadow: $shadow-lg;
+  outline: 2px solid $evo-primary-color;
+  outline-offset: -1px;
+}
+
+// ----- Price ------------------------------------------------
+
+.price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.priceAnchor {
+  color: $color-text-secondary;
+  font-size: $text-sm;
+
+  del {
+    text-decoration-thickness: 1px;
+  }
+}
+
+.priceValue {
+  font-size: $text-3xl;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.pricePeriod {
+  color: $color-text-muted;
+  font-size: $text-sm;
+}
+
+// ----- Feature list ------------------------------------------------
+
+.featureList {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  flex: 1 1 auto;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: $text-sm;
+  line-height: 1.45;
+}
+
+.featureIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.1rem;
+  color: $evo-success-color;
+}
+
+.excluded {
+  color: $color-text-muted;
+
+  .featureIcon {
+    color: $color-text-muted;
+  }
+}
+
+.featureText {
+  min-width: 0;
+}
+
+// ----- Cta --------------------------------------------------
+
+.cta {
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+// ----- Sizes ---------------------------------------------------
+//
+// Padding lives on the header/price/description/divider/body slots
+// (not on `.tier` itself) so the subgrid row tracks stay driven by
+// content only — a padding on the grid item would offset row 1's
+// start position per-column and break alignment.
+
+.tier > .tierHeader,
+.tier > .tierDescription {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.tier > .tierHeader {
+  padding-top: 1.25rem;
+}
+
+.tier > .tierPrice {
+  padding: 0.5rem 1.25rem 0;
+}
+
+.tier > .tierDivider {
+  margin: 1rem 1.25rem 0;
+  width: auto;
+}
+
+.tier > .tierBody {
+  padding: 0 1.25rem 1.25rem;
+}
+
+.sm {
+  .priceValue { font-size: $text-xl; }
+  .tierName { font-size: $text-sm; }
+
+  .tier > .tierHeader,
+  .tier > .tierDescription,
+  .tier > .tierBody { padding-left: 1rem; padding-right: 1rem; }
+  .tier > .tierHeader { padding-top: 1rem; }
+  .tier > .tierPrice { padding: 0.375rem 1rem 0; }
+  .tier > .tierDivider { margin: 0.75rem 1rem 0; }
+  .tier > .tierBody { padding-bottom: 1rem; }
+}
+
+.lg {
+  .priceValue { font-size: 2.25rem; }
+  .tierName { font-size: $text-lg; }
+
+  .tier > .tierHeader,
+  .tier > .tierDescription,
+  .tier > .tierBody { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .tier > .tierHeader { padding-top: 1.5rem; }
+  .tier > .tierPrice { padding: 0.625rem 1.5rem 0; }
+  .tier > .tierDivider { margin: 1.25rem 1.5rem 0; }
+  .tier > .tierBody { padding-bottom: 1.5rem; }
+}
+
+// ----- Motion preferences -----------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  .tier {
+    transition: none;
+  }
+}

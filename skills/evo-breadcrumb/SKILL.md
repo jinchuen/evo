@@ -56,9 +56,11 @@ function Example() {
 | --- | --- | --- | --- | --- |
 | `children` | `React.ReactNode` | — | Yes | The `EvoBreadcrumb.Item` elements that make up the trail. |
 | `separator` | `React.ReactNode` | `'/'` | No | Node rendered between each item. Can be a string or any React node. |
-| `className` | `string` | `''` | No | Additional CSS class applied to the root `<nav>` element. |
+| `className` | `string` | — | No | Additional CSS class merged onto the root `<nav>` element. |
+| `ref` | `Ref<HTMLElement>` | — | No | Forwarded to the root `<nav>` element. |
+| `...rest` | `HTMLAttributes<HTMLElement>` | — | No | Any other native `<nav>` attribute is spread onto the root element. |
 
-Note: `EvoBreadcrumb` does not forward `ref` or arbitrary `...rest` native attributes — only `className` is applied to the root `<nav>` element.
+`EvoBreadcrumb` is wrapped in `forwardRef` and spreads `...rest` (plus merges `className`) onto the root `<nav>`, matching every other Evo UI component.
 
 ## Sub-components
 
@@ -71,8 +73,11 @@ A single segment of the breadcrumb trail. Rendered as a list item (`<li>`). When
 | `children` | `React.ReactNode` | — | Yes | The item label / content. |
 | `href` | `string` | — | No | Link target. Rendered as an `<a href>` only when `current` is not `true`; when `current` is `true` the `href` is ignored and a non-link `<span>` is rendered. |
 | `current` | `boolean` | `false` | No | Marks this item as the current page. Renders a `<span>` with `aria-current="page"` instead of a link, even if `href` is supplied. |
+| `className` | `string` | — | No | Additional CSS class merged onto the `<li>`. |
+| `ref` | `Ref<HTMLLIElement>` | — | No | Forwarded to the `<li>` element. |
+| `...rest` | `LiHTMLAttributes<HTMLLIElement>` | — | No | Any other native `<li>` attribute is spread onto the item. |
 
-Note: `EvoBreadcrumb.Item` does not accept `className`, `ref`, or arbitrary native attributes — only `children`, `href`, and `current`.
+`EvoBreadcrumb.Item` is wrapped in `forwardRef` and spreads `...rest` (plus merges `className`) onto the `<li>`, matching every other Evo UI component.
 
 ## Variants & options
 
@@ -146,8 +151,6 @@ function DotSeparatorBreadcrumb() {
 - Setting `current` on an item overrides its `href`: even if you pass `href`, a `current` item renders as a non-link `<span>` (with `aria-current="page"`), never an anchor.
 - An item with neither `href` nor `current` also renders as a plain `<span>` (no link).
 - Separators are inserted automatically between items by the parent — do not add your own separator nodes between `EvoBreadcrumb.Item` children.
-- `EvoBreadcrumb.Item` only accepts `children`, `href`, and `current`; it does not forward `className`, `ref`, or other native attributes.
-- `EvoBreadcrumb` applies `className` to its root `<nav>` but does not forward `ref` or arbitrary native attributes (`...rest`).
 - Theme via Evo CSS variables (e.g. `var(--evo-color-text-muted)`) rather than hard-coded hex, so the breadcrumb stays correct in light and dark mode.
 - Import the stylesheet once: `@justin_evo/evo-ui/dist/evo-ui.css`. Use named imports from `@justin_evo/evo-ui` only — never deep import paths.
 

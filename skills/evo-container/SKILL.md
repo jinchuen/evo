@@ -31,7 +31,6 @@ import { EvoContainer } from '@justin_evo/evo-ui';
 - For row/column flex layouts of items — use [[evo-stack]].
 - For 2D column/row grids — use [[evo-grid]].
 - For visual separation between content blocks — use [[evo-divider]].
-- When you need the element to forward a `ref`, native HTML attributes, or arbitrary `...rest` props to the DOM node — EvoContainer only accepts the props below (see Gotchas).
 
 ## Quick start
 
@@ -55,9 +54,10 @@ export function Page() {
 | `children` | `React.ReactNode` | — | Yes | Container content rendered inside the wrapper. |
 | `size` | `'sm' \| 'md' \| 'lg' \| 'xl' \| 'full'` | `'lg'` | No | Max-width preset for the content column. |
 | `centered` | `boolean` | `true` | No | Centers the container horizontally within its parent. |
-| `className` | `string` | `''` | No | Additional CSS class appended to the root element. |
+| `className` | `string` | — | No | Additional CSS class appended to the root element. |
+| `...rest` | `React.HTMLAttributes<HTMLDivElement>` | — | No | Every other native `<div>` attribute (`id`, `style`, `data-*`, `aria-*`, `role`, `onClick`, …) is spread onto the root element. |
 
-EvoContainer renders a single `<div>` as its root. It accepts only the four props above; it does **not** forward a `ref`, spread `...rest`, or accept arbitrary native HTML attributes. Only `className` is merged onto the root element.
+EvoContainer renders a single `<div>` as its root, wrapped in `forwardRef<HTMLDivElement>`, so you can attach a `ref` to it. It extends `React.HTMLAttributes<HTMLDivElement>` and spreads `...rest` onto the root, so any native attribute or event handler you pass through is applied directly to the wrapper `<div>`.
 
 ## Variants & options
 
@@ -115,9 +115,9 @@ export function HeroSection() {
       <div
         style={{
           background: 'var(--evo-color-primary)',
-          color: 'var(--evo-color-on-primary)',
-          padding: 'var(--evo-spacing-lg)',
-          borderRadius: 'var(--evo-radius-md)',
+          color: 'var(--evo-color-primary-fg)',
+          padding: '1rem',
+          borderRadius: '12px',
         }}
       >
         Full-width hero content with no max-width cap.
@@ -152,7 +152,7 @@ EvoContainer is purely presentational. It renders a plain `<div>` with no `role`
 ## Gotchas
 
 - `children` is required — EvoContainer always renders a wrapper `<div>` around its content.
-- Not a `forwardRef` component: you cannot attach a `ref` to it, and it does **not** spread `...rest`/native HTML attributes (`id`, `onClick`, `data-*`, `style`, etc.) onto the root. Only `children`, `size`, `centered`, and `className` have any effect. If you need DOM attributes or a ref, wrap your own element inside the container.
+- EvoContainer is a `forwardRef<HTMLDivElement>` component: you can attach a `ref` to it, and it spreads `...rest` (native attributes like `id`, `onClick`, `data-*`, `aria-*`, `role`, `style`) onto the root `<div>`.
 - The default `size` is `'lg'`, and the default `centered` is `true` — omit those props to get a wide, centered column.
 - `size` includes `'xl'` and `'full'` in addition to the usual `'sm' | 'md' | 'lg'`. `full` removes the max-width constraint entirely.
 - Theme via `var(--evo-color-*)`, `var(--evo-spacing-*)`, and `var(--evo-radius-*)` tokens for any inner styling — never hard-code hex values, which breaks dark mode.

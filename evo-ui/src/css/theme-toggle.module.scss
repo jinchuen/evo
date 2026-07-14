@@ -22,6 +22,29 @@
     outline-offset: 3px;
     border-radius: $radius-full;
   }
+
+  &:hover:not(:disabled) .track {
+    border-color: $evo-primary-color;
+  }
+
+  &:active:not(:disabled) .track {
+    background: $color-surface-active;
+  }
+
+  &:active:not(:disabled) .thumb {
+    box-shadow: 0 1px 3px rgb(var(--evo-shadow-color) / var(--evo-shadow-strength));
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  // Meet the 44px touch target without changing the visual track size.
+  @media (pointer: coarse) {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
 }
 
 .track {
@@ -44,7 +67,7 @@
   background-color: $color-background;
   color: $evo-primary-color;
   border-radius: 50%;
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.18);
+  box-shadow: 0 2px 6px rgb(var(--evo-shadow-color) / var(--evo-shadow-strength));
   transition: transform $transition-normal cubic-bezier(0.34, 1.56, 0.64, 1),
               background-color $transition-fast;
 
@@ -53,6 +76,14 @@
     width: 60%;
     height: 60%;
     transition: opacity $transition-fast ease, transform $transition-normal ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    svg {
+      transition: none;
+    }
   }
 }
 
@@ -72,9 +103,9 @@
   &[data-theme-state='dark'] .thumb { transform: translate(16px, -50%); }
 }
 .md {
-  .track { width: 48px; height: 26px; }
-  .thumb { width: 22px; height: 22px; left: 2px; }
-  &[data-theme-state='dark'] .thumb { transform: translate(22px, -50%); }
+  .track { width: 48px; height: 24px; }
+  .thumb { width: 20px; height: 20px; left: 2px; }
+  &[data-theme-state='dark'] .thumb { transform: translate(24px, -50%); }
 }
 .lg {
   .track { width: 60px; height: 32px; }

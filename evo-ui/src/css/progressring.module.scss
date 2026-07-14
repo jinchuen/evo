@@ -1,0 +1,79 @@
+@use 'base/variables' as *;
+@use 'base/color' as *;
+
+// ==========================================================
+// EvoProgressRing
+// ----------------------------------------------------------
+// A single track circle + a single indicator circle stacked via CSS grid
+// (both `grid-area: 1 / 1`), with the optional center content overlaid the
+// same way. The indicator's `stroke-dasharray`/`stroke-dashoffset` (set
+// inline from JS, since they depend on the runtime diameter/value) draws
+// the arc; this file only owns color, the transition, and typography.
+//
+// Severity is the only color axis — track color stays neutral
+// ($color-surface-sunken) in every severity so the arc itself always reads
+// as the signal.
+// ==========================================================
+
+.root {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.svg {
+  display: block;
+  grid-area: 1 / 1;
+}
+
+.track {
+  stroke: $color-surface-sunken;
+}
+
+.indicator {
+  stroke: $evo-primary-color;
+  transition: stroke-dashoffset $transition-slow;
+}
+
+.noAnimate {
+  transition: none;
+}
+
+// --- Severities (indicator arc color only — track stays neutral) ---
+.primary { stroke: $evo-primary-color; }
+.success { stroke: $evo-success-color; }
+.warning { stroke: $evo-warning-color; }
+.danger  { stroke: $evo-danger-color; }
+.info    { stroke: $evo-info-color; }
+
+// --- Center content slot ---
+.content {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 78%;
+  max-height: 78%;
+  overflow: hidden;
+  font-weight: 600;
+  line-height: 1;
+  color: $color-text-primary;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  text-align: center;
+
+  // Any icon passed as custom center content normalizes to the slot's
+  // own font-size, mirroring EvoButton's `.icon` 1em convention.
+  > svg {
+    width: 1em;
+    height: 1em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator {
+    transition: none;
+  }
+}

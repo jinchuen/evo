@@ -91,13 +91,44 @@ export default function StackPage() {
         <PropsTable props={[
           { prop: 'children', type: 'ReactNode', required: true, description: 'Stack children.' },
           { prop: 'direction', type: "'row' | 'column'", default: "'column'", description: 'Flex direction.' },
-          { prop: 'gap', type: 'number | string', default: "'1rem'", description: 'Gap between items (any CSS value).' },
+          { prop: 'gap', type: 'number | string', default: "'1rem'", description: 'Gap between items. A number is raw pixels; prefer a rem multiple of 4 (e.g. "1rem") or the .gap-{n} utility classes to stay on the 4pt grid — a dev-only console warning fires when a numeric gap is not a multiple of 4.' },
           { prop: 'align', type: "'start' | 'center' | 'end' | 'stretch' | 'baseline'", default: "'stretch'", description: 'align-items value.' },
           { prop: 'justify', type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'", default: "'start'", description: 'justify-content value.' },
           { prop: 'wrap', type: 'boolean', default: 'false', description: 'Enable flex-wrap.' },
           { prop: 'className', type: 'string', description: 'Additional CSS class.' },
-          { prop: 'style', type: 'CSSProperties', description: 'Inline styles.' },
+          { prop: 'style', type: 'CSSProperties', description: 'Inline styles, merged after the computed flex styles.' },
+          { prop: '...rest', type: 'React.HTMLAttributes<HTMLDivElement>', description: 'Any other native div attribute (id, role, aria-*, data-*, onClick, …) is spread onto the root element.' },
         ]} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Ref forwarding & native attributes</div>
+        <p className="docs-section-desc">
+          EvoStack forwards <code>ref</code> to its root <code>&lt;div&gt;</code> and spreads any
+          other native attributes you pass — <code>id</code>, <code>role</code>,
+          <code> aria-*</code>, <code>data-*</code>, event handlers like <code>onClick</code> —
+          straight onto that element, just like every other Evo component.
+        </p>
+        <CodeBlock code={`const ref = useRef<HTMLDivElement>(null)
+
+<EvoStack ref={ref} role="list" aria-label="Recent items" data-testid="recent-stack">
+  <div role="listitem">Item 1</div>
+  <div role="listitem">Item 2</div>
+</EvoStack>`} />
+      </div>
+
+      <div className="docs-section">
+        <div className="docs-section-title">Gap and the 4pt grid</div>
+        <p className="docs-section-desc">
+          Changing the numeric-gap-as-pixels behavior would be a breaking change, so it stays as
+          is: a numeric <code>gap</code> is still raw pixels (e.g. <code>{'gap={16}'}</code> →{' '}
+          <code>16px</code>). To keep spacing consistent across the app, prefer a{' '}
+          <code>rem</code> string that is a multiple of 4px (e.g. <code>gap="1rem"</code>,{' '}
+          <code>gap="0.5rem"</code>) or one of the <code>.gap-{'{n}'}</code> spacing utility
+          classes instead of an arbitrary pixel number. In development, passing a numeric{' '}
+          <code>gap</code> that is not a multiple of 4 logs a one-line console warning to flag the
+          off-grid value — it has no effect in production builds.
+        </p>
       </div>
     </div>
   )
